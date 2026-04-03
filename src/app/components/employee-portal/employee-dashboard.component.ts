@@ -1,7 +1,8 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { filter } from 'rxjs/operators';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -154,7 +155,8 @@ export class ApplyLeaveDialogComponent {
     MatDialogModule,
     MatTooltipModule,
     CurrencyPipe,
-    DatePipe
+    DatePipe,
+    RouterModule
   ],
   template: `
     <!-- Payslip Detail Overlay -->
@@ -210,33 +212,53 @@ export class ApplyLeaveDialogComponent {
         </button>
       </div>
 
-      <!-- Quick Stats -->
-      <div class="stats-grid">
-        <mat-card class="stat-card">
-          <mat-icon class="stat-icon">event_available</mat-icon>
-          <div class="stat-content">
-            <h3>{{ leaveBalance }}</h3>
-            <p>Days Remaining</p>
-          </div>
-        </mat-card>
-        <mat-card class="stat-card">
-          <mat-icon class="stat-icon pending">pending_actions</mat-icon>
-          <div class="stat-content">
-            <h3>{{ getPendingLeaveCount() }}</h3>
-            <p>Pending Requests</p>
-          </div>
-        </mat-card>
-        <mat-card class="stat-card">
-          <mat-icon class="stat-icon approved">check_circle</mat-icon>
-          <div class="stat-content">
-            <h3>{{ getApprovedLeaveCount() }}</h3>
-            <p>Approved Requests</p>
-          </div>
-        </mat-card>
-      </div>
+      <!-- Quick Stats (hidden - moved into Overview tab) -->
 
       <!-- Main Content Tabs -->
-      <mat-tab-group class="content-tabs">
+      <mat-tab-group class="content-tabs" [selectedIndex]="selectedTabIndex" (selectedIndexChange)="onTabChange($event)">
+        <!-- Overview Tab -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>dashboard</mat-icon>
+            Overview
+          </ng-template>
+          <div class="tab-content">
+            <div class="tab-header">
+              <h2>Welcome back, {{ employeeName }}!</h2>
+            </div>
+            <div class="stats-grid">
+              <mat-card class="stat-card">
+                <mat-icon class="stat-icon">event_available</mat-icon>
+                <div class="stat-content">
+                  <h3>{{ leaveBalance }}</h3>
+                  <p>Leave Days Remaining</p>
+                </div>
+              </mat-card>
+              <mat-card class="stat-card">
+                <mat-icon class="stat-icon pending">pending_actions</mat-icon>
+                <div class="stat-content">
+                  <h3>{{ getPendingLeaveCount() }}</h3>
+                  <p>Pending Requests</p>
+                </div>
+              </mat-card>
+              <mat-card class="stat-card">
+                <mat-icon class="stat-icon approved">check_circle</mat-icon>
+                <div class="stat-content">
+                  <h3>{{ getApprovedLeaveCount() }}</h3>
+                  <p>Approved Requests</p>
+                </div>
+              </mat-card>
+              <mat-card class="stat-card">
+                <mat-icon class="stat-icon">receipt_long</mat-icon>
+                <div class="stat-content">
+                  <h3>{{ payslips.length }}</h3>
+                  <p>Total Payslips</p>
+                </div>
+              </mat-card>
+            </div>
+          </div>
+        </mat-tab>
+
         <!-- Payslips Tab -->
         <mat-tab>
           <ng-template mat-tab-label>
@@ -838,6 +860,12 @@ export class EmployeeDashboardComponent implements OnInit {
   leaveRequests: LeaveRequest[] = [];
   payslips: any[] = [];
   loadingPayslips = false;
+  selectedTabIndex = 0;
+
+  private readonly routeToTab: Record<string, number> = {
+    overview: 0, payslips: 1, leaves: 2, notices: 3, profile: 4
+  };
+  private readonly tabToRoute: string[] = ['overview', 'payslips', 'leaves', 'notices', 'profile'];
   showPayslipDetail = false;
   selectedPayslip: any = null;
   notices: any[] = [];
@@ -848,18 +876,33 @@ export class EmployeeDashboardComponent implements OnInit {
     private http: HttpClient,
     private dialog: MatDialog,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd)
+    ).subscribe((e: any) => {
+      const segment = e.urlAfterRedirects.split('/').pop()?.split('?')[0] ?? 'overview';
+      this.selectedTabIndex = this.routeToTab[segment] ?? 0;
+      this.cdr.detectChanges();
+    });
+  }
 
   ngOnInit() {
-    // Load employee info from localStorage
     this.employeeName = localStorage.getItem('employeeName') || 'Employee';
     this.employeeEmail = localStorage.getItem('employeeEmail') || '';
     this.employeeId = localStorage.getItem('employeeId') || '';
 
-    // Load data
+    // Set active tab from current URL
+    const segment = this.router.url.split('/').pop()?.split('?')[0] ?? 'overview';
+    this.selectedTabIndex = this.routeToTab[segment] ?? 0;
+
     this.loadLeaveRequests();
     this.loadPayslips();
     this.loadNotices();
+  }
+
+  onTabChange(index: number) {
+    const route = this.tabToRoute[index] ?? 'overview';
+    this.router.navigate(['/employee-dashboard', route]);
   }
 
   loadLeaveRequests() {
