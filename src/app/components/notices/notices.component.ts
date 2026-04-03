@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,14 +8,16 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CreateNoticeDialogComponent } from './create-notice-dialog.component';
+import { environment } from '../../../environments/environment';
 
 interface Notice {
   id: number;
   title: string;
   message: string;
   type: 'info' | 'warning' | 'error' | 'success';
-  date: Date;
+  createdAt: string;
   read: boolean;
   priority: 'low' | 'medium' | 'high';
   category: string;
@@ -31,7 +34,8 @@ interface Notice {
     MatChipsModule,
     MatBadgeModule,
     MatMenuModule,
-    MatDialogModule
+    MatDialogModule,
+    MatSnackBarModule
   ],
   template: `
     <div class="notices-container">
@@ -126,7 +130,7 @@ interface Notice {
                       @if (notice.priority === 'high') {
                         <mat-chip class="priority-chip high">High Priority</mat-chip>
                       }
-                      <span class="date">{{ formatDate(notice.date) }}</span>
+                      <span class="date">{{ formatDate(notice.createdAt) }}</span>
                     </div>
                   </div>
                 </div>
@@ -411,67 +415,19 @@ interface Notice {
 export class NoticesComponent implements OnInit {
   activeFilter: string = 'all';
   notices: Notice[] = [];
+  private readonly apiUrl = environment.apiUrl + '/notices';
 
-  constructor(private dialog: MatDialog) {}
+  constructor(private dialog: MatDialog, private http: HttpClient, private snackBar: MatSnackBar) {}
 
   ngOnInit() {
     this.loadNotices();
   }
 
   loadNotices() {
-    // Sample notices - replace with API call
-    this.notices = [
-      {
-        id: 1,
-        title: 'PAYE Filing Deadline Approaching',
-        message: 'Your PAYE filing is due on March 15, 2026. Please ensure all employee tax deductions are up to date.',
-        type: 'warning',
-        date: new Date('2026-03-01'),
-        read: false,
-        priority: 'high',
-        category: 'Tax & Compliance'
-      },
-      {
-        id: 2,
-        title: 'NIS Contribution Update',
-        message: 'NIS contribution rates have been updated for Q2 2026. The new rates are now in effect.',
-        type: 'info',
-        date: new Date('2026-02-28'),
-        read: false,
-        priority: 'medium',
-        category: 'Payroll'
-      },
-      {
-        id: 3,
-        title: 'System Maintenance Scheduled',
-        message: 'Scheduled maintenance on March 10, 2026 from 2:00 AM - 4:00 AM EST. Services may be temporarily unavailable.',
-        type: 'info',
-        date: new Date('2026-02-25'),
-        read: true,
-        priority: 'low',
-        category: 'System Updates'
-      },
-      {
-        id: 4,
-        title: 'Payroll Processed Successfully',
-        message: 'February 2026 payroll has been processed successfully. All employees have been paid.',
-        type: 'success',
-        date: new Date('2026-02-15'),
-        read: true,
-        priority: 'low',
-        category: 'Payroll'
-      },
-      {
-        id: 5,
-        title: 'Education Tax Return Overdue',
-        message: 'Your Education Tax return for January 2026 is overdue. Please file immediately to avoid penalties.',
-        type: 'error',
-        date: new Date('2026-02-20'),
-        read: false,
-        priority: 'high',
-        category: 'Tax & Compliance'
-      }
-    ];
+    this.http.get<Notice[]>(this.apiUrl).subscribe({
+      next: data => this.notices = data,
+      error: () => this.snackBar.open('Failed to load notices', 'Close', { duration: 3000 })
+    });
   }
 
   getUnreadCount(): number {
@@ -510,16 +466,16 @@ export class NoticesComponent implements OnInit {
     }
   }
 
-  formatDate(date: Date): string {
+  formatDate(value: string | Date): string {
     const now = new Date();
-    const diffMs = now.getTime() - new Date(date).getTime();
+    const diffMs = now.getTime() - new Date(value).getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
     
-    return new Date(date).toLocaleDateString('en-JM', { 
+    return new Date(value).toLocaleDateString('en-JM', { 
       year: 'numeric', 
       month: 'short', 
       day: 'numeric' 
@@ -539,7 +495,13 @@ export class NoticesComponent implements OnInit {
   }
 
   deleteNotice(id: number) {
-    this.notices = this.notices.filter(n => n.id !== id);
+    this.http.delete(`${this.apiUrl}/${id}`).subscribe({
+      next: () => {
+        this.notices = this.notices.filter(n => n.id !== id);
+        this.snackBar.open('Notice deleted', 'Close', { duration: 2000 });
+      },
+      error: () => this.snackBar.open('Failed to delete notice', 'Close', { duration: 3000 })
+    });
   }
 
   openCreateDialog() {
@@ -556,18 +518,12 @@ export class NoticesComponent implements OnInit {
   }
 
   addNotice(noticeData: any) {
-    const newNotice: Notice = {
-      id: Math.max(...this.notices.map(n => n.id), 0) + 1,
-      title: noticeData.title,
-      message: noticeData.message,
-      type: noticeData.type,
-      date: new Date(),
-      read: false,
-      priority: noticeData.priority,
-      category: noticeData.category
-    };
-
-    // Add to the beginning of the array (most recent first)
-    this.notices.unshift(newNotice);
+    this.http.post<Notice>(this.apiUrl, noticeData).subscribe({
+      next: created => {
+        this.notices.unshift({ ...created, read: false });
+        this.snackBar.open('Notice created', 'Close', { duration: 2000 });
+      },
+      error: () => this.snackBar.open('Failed to create notice', 'Close', { duration: 3000 })
+    });
   }
 }

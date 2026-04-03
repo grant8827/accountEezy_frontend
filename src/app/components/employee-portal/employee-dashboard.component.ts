@@ -412,9 +412,9 @@ export class ApplyLeaveDialogComponent {
                         <mat-icon>{{ getNoticeIcon(notice.type) }}</mat-icon>
                       </div>
                       <div class="notice-content">
-                        <h4>{{ notice.title }}</h4>
+                        <h4>{{ notice.title }} <span *ngIf="notice.priority === 'high'" class="notice-priority-badge">High Priority</span></h4>
                         <p>{{ notice.message }}</p>
-                        <span class="notice-date">{{ notice.createdAt }}</span>
+                        <span class="notice-date">{{ notice.createdAt | date:'dd MMM yyyy' }} · {{ notice.category }}</span>
                       </div>
                     </div>
                   }
@@ -773,6 +773,19 @@ export class ApplyLeaveDialogComponent {
       color: #9ca3af;
     }
 
+    .notice-priority-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+
     .profile-card {
       padding: 2rem;
     }
@@ -935,8 +948,13 @@ export class EmployeeDashboardComponent implements OnInit {
   }
 
   loadNotices() {
-    // Mock data for now
-    this.notices = [];
+    const token = localStorage.getItem('employeeToken');
+    if (!token) return;
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    this.http.get<any[]>(environment.apiUrl + '/employee-portal/notices', { headers }).subscribe({
+      next: data => this.notices = data,
+      error: () => {} // silently fail — empty state is shown
+    });
   }
 
   viewPayslip(payslip: any) {
