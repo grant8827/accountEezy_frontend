@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Inject } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -17,7 +17,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { environment } from '../../../environments/environment';
 import { LeaveRequest, LeaveRequestDto } from '../../types/index';
 
@@ -37,13 +37,15 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
     MatIconModule
   ],
   template: `
-    <h2 mat-dialog-title>
+    <h2 mat-dialog-title class="dialog-title">
       <mat-icon>event_available</mat-icon>
       Apply for Leave
     </h2>
-    <mat-dialog-content>
-      <form [formGroup]="leaveForm" class="leave-form">
-        <mat-form-field appearance="outline">
+
+    <mat-dialog-content class="dialog-content">
+      <!-- Leave type selector always visible -->
+      <div [formGroup]="leaveTypeForm">
+        <mat-form-field appearance="outline" class="type-select">
           <mat-label>Leave Type</mat-label>
           <mat-select formControlName="leaveType">
             <mat-option value="Vacation">Vacation</mat-option>
@@ -51,39 +53,93 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
             <mat-option value="Personal">Personal</mat-option>
           </mat-select>
         </mat-form-field>
+      </div>
 
-        <div class="date-range">
-          <mat-form-field appearance="outline">
-            <mat-label>Start Date</mat-label>
-            <input matInput [matDatepicker]="startPicker" formControlName="startDate">
-            <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-            <mat-datepicker #startPicker></mat-datepicker>
-          </mat-form-field>
+      <!-- ═══ VACATION / PERSONAL — paper form ═══ -->
+      @if (leaveType === 'Vacation' || leaveType === 'Personal') {
+        <div class="paper-form" [formGroup]="vacationForm">
+          <div class="paper-header">
+            <h3>{{ leaveType === 'Vacation' ? 'Vacation Request Form' : 'Personal Leave Request Form' }}</h3>
+            <p class="paper-note">Please submit this form for approval at least four weeks in advance of your preferred leave dates.</p>
+          </div>
 
-          <mat-form-field appearance="outline">
-            <mat-label>End Date</mat-label>
-            <input matInput [matDatepicker]="endPicker" formControlName="endDate">
-            <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-            <mat-datepicker #endPicker></mat-datepicker>
-          </mat-form-field>
+          <div class="paper-row">
+            <span class="paper-label">Date:</span>
+            <span class="paper-value readonly-val">{{ today | date:'MM/dd/yyyy' }}</span>
+          </div>
+
+          <div class="paper-row">
+            <span class="paper-label">Employee Name:</span>
+            <span class="paper-value readonly-val">{{ employeeName }}</span>
+          </div>
+
+          <div class="paper-row">
+            <span class="paper-label">Title:</span>
+            <input class="paper-input" formControlName="title" placeholder="Your job title" />
+          </div>
+
+          <div class="paper-row">
+            <span class="paper-label">Department:</span>
+            <input class="paper-input" formControlName="department" placeholder="Your department" />
+          </div>
+
+          <div class="paper-row">
+            <span class="paper-label">{{ leaveType === 'Vacation' ? 'Vacation' : 'Leave' }} Days Earned:</span>
+            <input class="paper-input short-input" formControlName="daysEarned"
+                   type="number" min="0" placeholder="0" />
+          </div>
+
+          <div class="paper-row dates-row">
+            <span class="paper-label">{{ leaveType === 'Vacation' ? 'Vacation' : 'Leave' }} Dates Requested:</span>
+            <div class="dates-inline">
+              <input class="paper-input date-input" [matDatepicker]="fromPicker"
+                     formControlName="startDate" placeholder="MM/DD/YYYY" readonly
+                     (click)="fromPicker.open()" />
+              <mat-datepicker #fromPicker></mat-datepicker>
+              <span class="date-sep">through</span>
+              <input class="paper-input date-input" [matDatepicker]="throughPicker"
+                     formControlName="endDate" placeholder="MM/DD/YYYY" readonly
+                     (click)="throughPicker.open()" />
+              <mat-datepicker #throughPicker></mat-datepicker>
+            </div>
+          </div>
+
+          <div class="paper-row">
+            <span class="paper-label">Returning:</span>
+            <span class="paper-value readonly-val">{{ returningDate | date:'MM/dd/yyyy' }}</span>
+          </div>
+
+          <div class="paper-row">
+            <span class="paper-label">Total Number of Days Requested:</span>
+            <span class="paper-value readonly-val">{{ totalDays }}</span>
+          </div>
         </div>
+      }
 
-        <mat-form-field appearance="outline">
-          <mat-label>Number of Days</mat-label>
-          <input matInput type="number" formControlName="daysRequested" min="1">
-        </mat-form-field>
+      <!-- ═══ SICK LEAVE — upload form ═══ -->
+      @if (leaveType === 'Sick') {
+        <form [formGroup]="sickForm" class="sick-form">
+          <div class="date-range">
+            <mat-form-field appearance="outline">
+              <mat-label>Start Date</mat-label>
+              <input matInput [matDatepicker]="sickStart" formControlName="startDate">
+              <mat-datepicker-toggle matSuffix [for]="sickStart"></mat-datepicker-toggle>
+              <mat-datepicker #sickStart></mat-datepicker>
+            </mat-form-field>
 
-        <!-- Reason field: Vacation and Personal only -->
-        @if (leaveType !== 'Sick') {
+            <mat-form-field appearance="outline">
+              <mat-label>End Date</mat-label>
+              <input matInput [matDatepicker]="sickEnd" formControlName="endDate">
+              <mat-datepicker-toggle matSuffix [for]="sickEnd"></mat-datepicker-toggle>
+              <mat-datepicker #sickEnd></mat-datepicker>
+            </mat-form-field>
+          </div>
+
           <mat-form-field appearance="outline">
-            <mat-label>Reason (Optional)</mat-label>
-            <textarea matInput rows="3" formControlName="reason"
-              placeholder="Brief explanation for your leave request"></textarea>
+            <mat-label>Number of Days</mat-label>
+            <input matInput type="number" formControlName="daysRequested" min="1">
           </mat-form-field>
-        }
 
-        <!-- Medical certificate upload: Sick Leave only -->
-        @if (leaveType === 'Sick') {
           <div class="file-upload-section">
             <p class="file-upload-label">
               Medical Certificate <span class="required-star">*</span>
@@ -102,9 +158,10 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
               <p class="file-error">{{ fileError }}</p>
             }
           </div>
-        }
-      </form>
+        </form>
+      }
     </mat-dialog-content>
+
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close>Cancel</button>
       <button mat-raised-button color="primary" [disabled]="isSubmitDisabled" (click)="submit()">
@@ -114,11 +171,130 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
     </mat-dialog-actions>
   `,
   styles: [`
-    .leave-form {
+    .dialog-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dialog-content {
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      min-width: 420px;
+      min-width: 480px;
+      max-width: 560px;
+    }
+
+    .type-select { width: 100%; }
+
+    /* ── Paper form ───────────────────────────────── */
+    .paper-form {
+      border: 2px solid #333;
+      border-radius: 4px;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      background: #fafafa;
+      font-family: 'Times New Roman', Times, serif;
+    }
+
+    .paper-header {
+      text-align: center;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #aaa;
+    }
+
+    .paper-header h3 {
+      margin: 0 0 0.35rem 0;
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .paper-note {
+      margin: 0;
+      font-size: 11.5px;
+      color: #444;
+      font-style: italic;
+    }
+
+    .paper-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .paper-label {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-width: 180px;
+      color: #222;
+    }
+
+    .paper-value {
+      flex: 1;
+      font-size: 13px;
+    }
+
+    .readonly-val {
+      color: #1a1a1a;
+      font-size: 13.5px;
+      min-height: 20px;
+    }
+
+    .paper-input {
+      flex: 1;
+      border: none;
+      border-bottom: 1px solid #888;
+      background: transparent;
+      outline: none;
+      font-size: 13.5px;
+      font-family: inherit;
+      padding: 2px 4px;
+      color: #1a1a1a;
+      width: 100%;
+    }
+
+    .paper-input:focus {
+      border-bottom-color: #1976d2;
+    }
+
+    .short-input { max-width: 80px; }
+
+    .dates-row { align-items: center; flex-wrap: wrap; gap: 6px; }
+
+    .dates-inline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      flex-wrap: wrap;
+    }
+
+    .date-input {
+      max-width: 110px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .date-sep {
+      font-size: 13px;
+      color: #555;
+      white-space: nowrap;
+    }
+
+    /* ── Sick form ───────────────────────────────── */
+    .sick-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
 
     .date-range {
@@ -127,28 +303,9 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
       gap: 1rem;
     }
 
-    mat-dialog-title {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    /* File upload */
-    .file-upload-section {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .file-upload-label {
-      margin: 0;
-      font-size: 12px;
-      color: rgba(0,0,0,.6);
-      font-weight: 500;
-      letter-spacing: 0.02em;
-    }
-
-    .required-star { color: #f44336; }
+    .file-upload-section { display: flex; flex-direction: column; gap: 6px; }
+    .file-upload-label   { margin: 0; font-size: 12px; color: rgba(0,0,0,.6); font-weight: 500; }
+    .required-star       { color: #f44336; }
 
     .file-upload-area {
       border: 2px dashed #ccc;
@@ -164,75 +321,90 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
       color: #757575;
     }
 
-    .file-upload-area:hover {
-      border-color: #1976d2;
-      background: #f0f7ff;
-      color: #1976d2;
-    }
+    .file-upload-area:hover  { border-color: #1976d2; background: #f0f7ff; color: #1976d2; }
+    .file-upload-area mat-icon { font-size: 2.2rem; height: 2.2rem; width: 2.2rem; }
+    .file-upload-area.has-file { border-color: #43a047; background: #f1f8f1; color: #2e7d32; }
+    .file-upload-area.has-error { border-color: #f44336; background: #fff5f5; }
+    .file-name  { font-size: 14px; font-weight: 500; word-break: break-all; }
+    .file-hint  { font-size: 11px; color: #aaa; }
+    .file-error { margin: 0; font-size: 12px; color: #f44336; }
 
-    .file-upload-area mat-icon {
-      font-size: 2.2rem;
-      height: 2.2rem;
-      width: 2.2rem;
-    }
-
-    .file-upload-area.has-file {
-      border-color: #43a047;
-      background: #f1f8f1;
-      color: #2e7d32;
-    }
-
-    .file-upload-area.has-error {
-      border-color: #f44336;
-      background: #fff5f5;
-    }
-
-    .file-name { font-size: 14px; font-weight: 500; word-break: break-all; }
-    .file-hint { font-size: 11px; color: #aaa; }
-
-    .file-error {
-      margin: 0;
-      font-size: 12px;
-      color: #f44336;
-    }
-
-    @media (max-width: 640px) {
-      .leave-form { min-width: 300px; }
-      .date-range { grid-template-columns: 1fr; }
+    @media (max-width: 600px) {
+      .dialog-content { min-width: 300px; }
+      .paper-form     { padding: 1rem; }
+      .paper-label    { min-width: 130px; }
+      .date-range     { grid-template-columns: 1fr; }
     }
   `]
 })
 export class ApplyLeaveDialogComponent {
-  leaveForm: FormGroup;
+  today = new Date();
+
+  leaveTypeForm: FormGroup;
+  vacationForm: FormGroup;
+  sickForm: FormGroup;
+
   selectedFile: File | null = null;
   fileError: string | null = null;
 
   get leaveType(): string {
-    return this.leaveForm.get('leaveType')?.value ?? 'Vacation';
+    return this.leaveTypeForm.get('leaveType')?.value ?? 'Vacation';
+  }
+
+  get returningDate(): Date | null {
+    const end = this.vacationForm.get('endDate')?.value;
+    if (!end) return null;
+    const d = new Date(end);
+    d.setDate(d.getDate() + 1);
+    return d;
+  }
+
+  get totalDays(): number {
+    const start = this.vacationForm.get('startDate')?.value;
+    const end   = this.vacationForm.get('endDate')?.value;
+    if (!start || !end) return 0;
+    const diff = Math.ceil((new Date(end).getTime() - new Date(start).getTime()) / 86400000) + 1;
+    return diff > 0 ? diff : 0;
   }
 
   get isSubmitDisabled(): boolean {
-    if (this.leaveForm.invalid) return true;
-    if (this.leaveType === 'Sick' && !this.selectedFile) return true;
-    return false;
+    if (this.leaveType === 'Sick') {
+      return this.sickForm.invalid || !this.selectedFile;
+    }
+    const s = this.vacationForm.get('startDate')?.value;
+    const e = this.vacationForm.get('endDate')?.value;
+    return !s || !e || this.totalDays < 1;
   }
+
+  employeeName: string;
 
   constructor(
     private fb: FormBuilder,
-    private dialogRef: MatDialogRef<ApplyLeaveDialogComponent>
+    private dialogRef: MatDialogRef<ApplyLeaveDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) data: { employeeName: string }
   ) {
-    this.leaveForm = this.fb.group({
-      leaveType: ['Vacation', Validators.required],
-      startDate: ['', Validators.required],
-      endDate: ['', Validators.required],
-      daysRequested: [1, [Validators.required, Validators.min(1)]],
-      reason: ['']
+    this.employeeName = data?.employeeName ?? '';
+
+    this.leaveTypeForm = this.fb.group({ leaveType: ['Vacation'] });
+
+    this.vacationForm = this.fb.group({
+      title:        [''],
+      department:   [''],
+      daysEarned:   [null],
+      startDate:    ['', Validators.required],
+      endDate:      ['', Validators.required]
+    });
+
+    this.sickForm = this.fb.group({
+      startDate:      ['', Validators.required],
+      endDate:        ['', Validators.required],
+      daysRequested:  [1, [Validators.required, Validators.min(1)]]
     });
   }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
+    if (!input.files?.length) return;
     const file = input.files[0];
     if (file.size > 5 * 1024 * 1024) {
       this.fileError = 'File size must not exceed 5 MB';
@@ -245,7 +417,23 @@ export class ApplyLeaveDialogComponent {
 
   submit() {
     if (this.isSubmitDisabled) return;
-    this.dialogRef.close({ ...this.leaveForm.value, file: this.selectedFile });
+
+    if (this.leaveType === 'Sick') {
+      this.dialogRef.close({ ...this.sickForm.value, leaveType: 'Sick', file: this.selectedFile });
+      return;
+    }
+
+    // Vacation / Personal
+    const v = this.vacationForm.value;
+    const payload = {
+      leaveType:      this.leaveType,
+      startDate:      v.startDate,
+      endDate:        v.endDate,
+      daysRequested:  this.totalDays,
+      reason:         [v.title, v.department].filter(Boolean).join(' | ') || undefined,
+      file:           null
+    };
+    this.dialogRef.close(payload);
   }
 }
 
@@ -1144,7 +1332,8 @@ export class EmployeeDashboardComponent implements OnInit {
 
   openApplyLeaveDialog() {
     const dialogRef = this.dialog.open(ApplyLeaveDialogComponent, {
-      width: '500px'
+      width: '580px',
+      data: { employeeName: this.employeeName }
     });
 
     dialogRef.afterClosed().subscribe((result: LeaveRequestDto & { file?: File | null }) => {
