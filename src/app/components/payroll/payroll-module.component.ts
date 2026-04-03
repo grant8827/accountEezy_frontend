@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -754,7 +755,7 @@ export class PayrollModuleComponent implements OnInit {
 
   loadBatches() {
     this.loadingBatches = true;
-    this.http.get<PayrollBatchSummary[]>('/api/payroll-batches').subscribe({
+    this.http.get<PayrollBatchSummary[]>(environment.apiUrl + '/payroll-batches').subscribe({
       next: data => { this.batches = data; this.loadingBatches = false; this.cdr.detectChanges(); },
       error: () => { this.loadingBatches = false; this.cdr.detectChanges(); this.snack.open('Failed to load pay periods', 'Close', { duration: 3000 }); }
     });
@@ -770,7 +771,7 @@ export class PayrollModuleComponent implements OnInit {
       this.snack.open('Please fill in all required fields', 'Close', { duration: 3000 }); return;
     }
     this.creating = true;
-    this.http.post<{ id: number }>('/api/payroll-batches', {
+    this.http.post<{ id: number }>(environment.apiUrl + '/payroll-batches', {
       payCycle: this.newBatch.payCycle,
       startDate: this.newBatch.startDate,
       endDate: this.newBatch.endDate,
@@ -800,7 +801,7 @@ export class PayrollModuleComponent implements OnInit {
   }
 
   markPaid(id: number) {
-    this.http.post(`/api/payroll-batches/${id}/mark-paid`, {}).subscribe({
+    this.http.post(`${environment.apiUrl}/payroll-batches/${id}/mark-paid`, {}).subscribe({
       next: () => { this.loadBatches(); this.snack.open('Batch marked as paid', '', { duration: 2500 }); },
       error: (e) => this.snack.open(e.error?.message || 'Error', 'Close', { duration: 3000 })
     });
@@ -808,14 +809,14 @@ export class PayrollModuleComponent implements OnInit {
 
   deleteBatch(id: number) {
     if (!confirm('Delete this pay period? This cannot be undone.')) return;
-    this.http.delete(`/api/payroll-batches/${id}`).subscribe({
+    this.http.delete(`${environment.apiUrl}/payroll-batches/${id}`).subscribe({
       next: () => { this.loadBatches(); this.snack.open('Deleted', '', { duration: 2000 }); },
       error: (e) => this.snack.open(e.error?.message || 'Error', 'Close', { duration: 3000 })
     });
   }
 
   loadBatchDetail(id: number, switchTab = false) {
-    this.http.get<PayrollBatchDetail>(`/api/payroll-batches/${id}`).subscribe({
+    this.http.get<PayrollBatchDetail>(`${environment.apiUrl}/payroll-batches/${id}`).subscribe({
       next: batch => {
         this.processedBatch = batch;
         this.cdr.detectChanges();
@@ -829,7 +830,7 @@ export class PayrollModuleComponent implements OnInit {
 
   loadWorksheetEmployees() {
     this.loadingEmployees = true;
-    this.http.get<Employee[]>('/api/employees').subscribe({
+    this.http.get<Employee[]>(environment.apiUrl + '/employees').subscribe({
       next: employees => {
         this.worksheetEntries = employees.map(e => ({
           employeeId: e.id, name: e.name, baseSalary: e.grossSalary,
@@ -853,7 +854,7 @@ export class PayrollModuleComponent implements OnInit {
         loanDeduction: e.loanDeduction || 0
       }))
     };
-    this.http.post<PayrollBatchDetail>(`/api/payroll-batches/${this.activeBatch.id}/process`, body).subscribe({
+    this.http.post<PayrollBatchDetail>(`${environment.apiUrl}/payroll-batches/${this.activeBatch.id}/process`, body).subscribe({
       next: result => {
         this.processing = false;
         this.processedBatch = result;
@@ -882,7 +883,7 @@ export class PayrollModuleComponent implements OnInit {
   // ── Remittance ──────────────────────────────────────────────────────────────
 
   loadRemittance(id: number) {
-    this.http.get<RemittanceReport>(`/api/payroll-batches/${id}/remittance`).subscribe({
+    this.http.get<RemittanceReport>(`${environment.apiUrl}/payroll-batches/${id}/remittance`).subscribe({
       next: r => { this.remittance = r; this.cdr.detectChanges(); setTimeout(() => { this.activeTab = 2; }); },
       error: () => this.snack.open('Failed to load remittance report', 'Close', { duration: 3000 })
     });
@@ -893,7 +894,7 @@ export class PayrollModuleComponent implements OnInit {
   // ── Tax Settings ────────────────────────────────────────────────────────────
 
   loadTaxConfig() {
-    this.http.get<TaxConfig>('/api/tax-config').subscribe({
+    this.http.get<TaxConfig>(environment.apiUrl + '/tax-config').subscribe({
       next: cfg => {
         this.taxConfig = cfg;
         this.syncPctFromConfig();
@@ -930,7 +931,7 @@ export class PayrollModuleComponent implements OnInit {
       educationTaxRateEmployer: this.taxPct.edEr / 100, heartRateEmployer: this.taxPct.heartEr / 100
     };
     this.savingTax = true;
-    this.http.put<TaxConfig>('/api/tax-config', body).subscribe({
+    this.http.put<TaxConfig>(environment.apiUrl + '/tax-config', body).subscribe({
       next: saved => {
         this.taxConfig = saved; this.savingTax = false;
         this.snack.open('Tax configuration saved!', '', { duration: 2500 });

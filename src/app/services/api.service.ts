@@ -19,14 +19,7 @@ export class ApiService {
   }
 
   private getApiBaseUrl(): string {
-    const hostname = window.location.hostname;
-    const isLocalDevelopment = hostname === 'localhost' || hostname === '127.0.0.1';
-
-    if (isLocalDevelopment) {
-      return 'http://localhost:5000/api';
-    } else {
-      return 'https://your-production-url.com/api';
-    }
+    return environment.apiUrl;
   }
 
   get<T>(endpoint: string): Observable<T> {

@@ -876,7 +876,7 @@ export class EmployeeDashboardComponent implements OnInit {
       return;
     }
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-    this.http.get<any[]>('/api/employee-portal/payslips', { headers }).subscribe({
+    this.http.get<any[]>(environment.apiUrl + '/employee-portal/payslips', { headers }).subscribe({
       next: data => {
         console.log('[Payslips] Loaded', data.length, 'entries', data);
         this.payslips = data;

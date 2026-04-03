@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface FinancialLineItem {
   category: string;
@@ -140,7 +141,7 @@ export interface So2Report {
 @Injectable({ providedIn: 'root' })
 export class ReportsService {
   private http = inject(HttpClient);
-  private base = '/api/reports';
+  private base = environment.apiUrl + '/reports';
 
   getMonthly(month: number, year: number): Observable<MonthlyTaxReport> {
     return this.http.get<MonthlyTaxReport>(`${this.base}/monthly?month=${month}&year=${year}`);

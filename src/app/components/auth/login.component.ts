@@ -9,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -462,7 +463,7 @@ export class LoginComponent {
     this.forgotLoading = true;
     this.forgotError = null;
     const { email } = this.forgotForm.value;
-    this.http.post('/api/auth/forgot-password', { email }).subscribe({
+    this.http.post(environment.apiUrl + '/auth/forgot-password', { email }).subscribe({
       next: () => { this.forgotLoading = false; this.forgotSent = true; },
       error: () => { this.forgotLoading = false; this.forgotSent = true; }
     });

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { tap, catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 export interface User {
   email: string;
@@ -113,7 +114,7 @@ export class AuthService {
     this.isLoadingSubject.next(true);
     this.errorSubject.next(null);
 
-    return this.http.post<AuthResponse>('/api/auth/login', credentials).pipe(
+    return this.http.post<AuthResponse>(environment.apiUrl + '/auth/login', credentials).pipe(
       tap(response => {
         console.log('Login response:', response);
         if (response.success && response.data) {
@@ -141,7 +142,7 @@ export class AuthService {
     this.isLoadingSubject.next(true);
     this.errorSubject.next(null);
 
-    return this.http.post<AuthResponse>('/api/auth/register', userData).pipe(
+    return this.http.post<AuthResponse>(environment.apiUrl + '/auth/register', userData).pipe(
       tap(response => {
         console.log('Register response:', response);
         if (response.success && response.data) {

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Employee } from '../types/index';
+import { environment } from '../../environments/environment';
 
 // Backend employee model - matches C# JSON serialization (camelCase)
 interface BackendEmployee {
@@ -41,7 +42,7 @@ interface EmployeeRequest {
   providedIn: 'root'
 })
 export class EmployeeService {
-  private apiUrl = '/api/employees';
+  private apiUrl = environment.apiUrl + '/employees';
 
   constructor(private http: HttpClient) {}
 
