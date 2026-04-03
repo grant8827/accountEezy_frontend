@@ -72,6 +72,10 @@ import { AuthService, User } from '../../services/auth.service';
               <mat-icon>account_balance</mat-icon>
               <span>Reports</span>
             </a>
+            <a class="nav-link" routerLink="/dashboard/leaves" routerLinkActive="active">
+              <mat-icon>event_available</mat-icon>
+              <span>Leaves</span>
+            </a>
             <a class="nav-link" routerLink="/dashboard/notices" routerLinkActive="active">
               <mat-icon>notifications</mat-icon>
               <span>Notices</span>

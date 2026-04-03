@@ -919,8 +919,13 @@ export class EmployeeDashboardComponent implements OnInit {
   }
 
   loadLeaveRequests() {
-    // Mock data for now
-    this.leaveRequests = [];
+    const token = localStorage.getItem('employeeToken');
+    if (!token) return;
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    this.http.get<any[]>(environment.apiUrl + '/employee-portal/leaves', { headers }).subscribe({
+      next: data => { this.leaveRequests = data; this.cdr.detectChanges(); },
+      error: () => {}
+    });
   }
 
   loadPayslips() {
@@ -1042,9 +1047,15 @@ export class EmployeeDashboardComponent implements OnInit {
   }
 
   submitLeaveRequest(request: LeaveRequestDto) {
-    // Submit leave request via API
-    console.log('Submitting leave request:', request);
-    // Add API call here
+    const token = localStorage.getItem('employeeToken');
+    if (!token) return;
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    this.http.post(environment.apiUrl + '/leaverequests', request, { headers }).subscribe({
+      next: () => {
+        this.loadLeaveRequests();
+      },
+      error: err => console.error('Leave request failed:', err)
+    });
   }
 
   logout() {

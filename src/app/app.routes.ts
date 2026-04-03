@@ -19,6 +19,7 @@ import { TaxModuleComponent } from './components/tax/tax-module.component';
 import { ApiTestComponent } from './components/debug/api-test.component';
 import { NoticesComponent } from './components/notices/notices.component';
 import { EmployeeRecordsComponent } from './components/employees/employee-records.component';
+import { LeaveRequestsComponent } from './components/leaves/leave-requests.component';
 import { EmployeeLoginComponent } from './components/auth/employee-login.component';
 import { EmployeeDashboardComponent } from './components/employee-portal/employee-dashboard.component';
 
@@ -101,6 +102,10 @@ export const routes: Routes = [
       {
         path: 'notices',
         component: NoticesComponent
+      },
+      {
+        path: 'leaves',
+        component: LeaveRequestsComponent
       },
       {
         path: 'businesses',
