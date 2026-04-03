@@ -92,7 +92,7 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
           <div class="paper-row dates-row">
             <span class="paper-label">{{ leaveType === 'Vacation' ? 'Vacation' : 'Leave' }} Dates Requested:</span>
             <div class="dates-inline">
-              <mat-form-field appearance="standard" class="paper-date-field">
+              <mat-form-field appearance="outline" class="paper-date-field">
                 <mat-label>From</mat-label>
                 <input matInput [matDatepicker]="fromPicker" formControlName="startDate"
                        placeholder="MM/DD/YYYY">
@@ -100,7 +100,7 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
                 <mat-datepicker #fromPicker></mat-datepicker>
               </mat-form-field>
               <span class="date-sep">through</span>
-              <mat-form-field appearance="standard" class="paper-date-field">
+              <mat-form-field appearance="outline" class="paper-date-field">
                 <mat-label>To</mat-label>
                 <input matInput [matDatepicker]="throughPicker" formControlName="endDate"
                        placeholder="MM/DD/YYYY">
@@ -285,11 +285,12 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
     }
 
     .paper-date-field {
-      width: 155px;
+      width: 160px;
       font-family: 'Times New Roman', Times, serif;
       font-size: 13px;
     }
 
+    /* Remove extra bottom spacing under the date fields */
     .paper-date-field .mat-mdc-form-field-subscript-wrapper { display: none; }
 
     .date-sep {
