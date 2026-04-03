@@ -27,6 +27,7 @@ interface LeaveRequest {
   adminNotes?: string;
   requestedOn: string;
   employee?: { name: string };
+  _notes?: string;
 }
 
 @Component({
@@ -446,7 +447,7 @@ export class LeaveRequestsComponent implements OnInit {
   }
 
   private updateStatus(leave: LeaveRequest, status: string) {
-    const notes = (leave as any)['_notes'] || '';
+    const notes = leave._notes || '';
     this.http.put(`${this.apiUrl}/${leave.id}/status`, { status, adminNotes: notes }).subscribe({
       next: () => {
         leave.status = status;
