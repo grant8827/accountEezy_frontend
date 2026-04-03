@@ -944,7 +944,46 @@ export class EmployeeDashboardComponent implements OnInit {
     this.showPayslipDetail = true;
   }
 
-  printPayslip() { window.print(); }
+  printPayslip() {
+    // Defer so Angular change detection renders the overlay before we query the DOM
+    setTimeout(() => {
+      const card = document.querySelector<HTMLElement>('.payslip-print-card');
+      if (!card) return;
+
+      const win = window.open('', '_blank', 'width=700,height=900');
+      if (!win) return;
+
+      win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <title>Payslip</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Courier New', monospace; margin: 2rem; color: #111; }
+    .ps-actions { display: none !important; }
+    .payslip-header { text-align: center; margin-bottom: 1rem; }
+    .payslip-header h2 { font-size: 1.5rem; letter-spacing: 0.2em; margin: 0 0 0.5rem; }
+    .payslip-meta { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.85rem; color: #555; }
+    .ps-section { margin: 1rem 0; }
+    .ps-section h4 { font-size: 0.75rem; letter-spacing: 0.15em; color: #888; border-bottom: 1px dashed #ddd; padding-bottom: 0.3rem; margin-bottom: 0.5rem; }
+    .ps-row { display: flex; justify-content: space-between; padding: 0.2rem 0; font-size: 0.9rem; }
+    .ps-row.gross { border-top: 1px solid #ddd; padding-top: 0.4rem; margin-top: 0.2rem; }
+    .ps-row.deductions { border-top: 1px solid #ddd; padding-top: 0.4rem; margin-top: 0.2rem; color: #c62828; }
+    .ps-net { display: flex; justify-content: space-between; background: #000; color: white; padding: 0.75rem 0.5rem; font-size: 1.1rem; font-weight: 700; margin: 1rem 0; }
+    .net-amount { color: #C7AE6A; }
+    .ps-footer { text-align: center; font-size: 0.75rem; color: #999; margin: 1rem 0; }
+    hr { border: none; border-top: 1px solid #ddd; margin: 1rem 0; }
+  </style>
+</head>
+<body>${card.innerHTML}</body>
+</html>`);
+
+      win.document.close();
+      win.focus();
+      win.print();
+      setTimeout(() => win.close(), 1000);
+    }, 50);
+  }
 
   getPendingLeaveCount(): number {
     return this.leaveRequests.filter(l => l.status === 'Pending').length;
