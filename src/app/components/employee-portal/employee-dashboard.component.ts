@@ -73,15 +73,41 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
           <input matInput type="number" formControlName="daysRequested" min="1">
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Reason (Optional)</mat-label>
-          <textarea matInput rows="3" formControlName="reason" placeholder="Brief explanation for your leave request"></textarea>
-        </mat-form-field>
+        <!-- Reason field: Vacation and Personal only -->
+        @if (leaveType !== 'Sick') {
+          <mat-form-field appearance="outline">
+            <mat-label>Reason (Optional)</mat-label>
+            <textarea matInput rows="3" formControlName="reason"
+              placeholder="Brief explanation for your leave request"></textarea>
+          </mat-form-field>
+        }
+
+        <!-- Medical certificate upload: Sick Leave only -->
+        @if (leaveType === 'Sick') {
+          <div class="file-upload-section">
+            <p class="file-upload-label">
+              Medical Certificate <span class="required-star">*</span>
+            </p>
+            <div class="file-upload-area" [class.has-file]="selectedFile"
+                 [class.has-error]="fileError" (click)="fileInput.click()">
+              <mat-icon>{{ selectedFile ? 'check_circle' : 'upload_file' }}</mat-icon>
+              <span class="file-name">
+                {{ selectedFile ? selectedFile.name : 'Click to upload medical certificate' }}
+              </span>
+              <span class="file-hint">PDF, JPG, PNG — max 5 MB</span>
+              <input #fileInput type="file" hidden accept=".pdf,.jpg,.jpeg,.png"
+                     (change)="onFileSelected($event)">
+            </div>
+            @if (fileError) {
+              <p class="file-error">{{ fileError }}</p>
+            }
+          </div>
+        }
       </form>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close>Cancel</button>
-      <button mat-raised-button color="primary" [disabled]="leaveForm.invalid" (click)="submit()">
+      <button mat-raised-button color="primary" [disabled]="isSubmitDisabled" (click)="submit()">
         <mat-icon>send</mat-icon>
         Submit Request
       </button>
@@ -92,7 +118,7 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      min-width: 400px;
+      min-width: 420px;
     }
 
     .date-range {
@@ -107,19 +133,89 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
       gap: 0.5rem;
     }
 
-    @media (max-width: 640px) {
-      .leave-form {
-        min-width: 300px;
-      }
+    /* File upload */
+    .file-upload-section {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
 
-      .date-range {
-        grid-template-columns: 1fr;
-      }
+    .file-upload-label {
+      margin: 0;
+      font-size: 12px;
+      color: rgba(0,0,0,.6);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    .required-star { color: #f44336; }
+
+    .file-upload-area {
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+      color: #757575;
+    }
+
+    .file-upload-area:hover {
+      border-color: #1976d2;
+      background: #f0f7ff;
+      color: #1976d2;
+    }
+
+    .file-upload-area mat-icon {
+      font-size: 2.2rem;
+      height: 2.2rem;
+      width: 2.2rem;
+    }
+
+    .file-upload-area.has-file {
+      border-color: #43a047;
+      background: #f1f8f1;
+      color: #2e7d32;
+    }
+
+    .file-upload-area.has-error {
+      border-color: #f44336;
+      background: #fff5f5;
+    }
+
+    .file-name { font-size: 14px; font-weight: 500; word-break: break-all; }
+    .file-hint { font-size: 11px; color: #aaa; }
+
+    .file-error {
+      margin: 0;
+      font-size: 12px;
+      color: #f44336;
+    }
+
+    @media (max-width: 640px) {
+      .leave-form { min-width: 300px; }
+      .date-range { grid-template-columns: 1fr; }
     }
   `]
 })
 export class ApplyLeaveDialogComponent {
   leaveForm: FormGroup;
+  selectedFile: File | null = null;
+  fileError: string | null = null;
+
+  get leaveType(): string {
+    return this.leaveForm.get('leaveType')?.value ?? 'Vacation';
+  }
+
+  get isSubmitDisabled(): boolean {
+    if (this.leaveForm.invalid) return true;
+    if (this.leaveType === 'Sick' && !this.selectedFile) return true;
+    return false;
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -134,10 +230,22 @@ export class ApplyLeaveDialogComponent {
     });
   }
 
-  submit() {
-    if (this.leaveForm.valid) {
-      this.dialogRef.close(this.leaveForm.value);
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    if (file.size > 5 * 1024 * 1024) {
+      this.fileError = 'File size must not exceed 5 MB';
+      this.selectedFile = null;
+      return;
     }
+    this.fileError = null;
+    this.selectedFile = file;
+  }
+
+  submit() {
+    if (this.isSubmitDisabled) return;
+    this.dialogRef.close({ ...this.leaveForm.value, file: this.selectedFile });
   }
 }
 
@@ -1039,23 +1147,43 @@ export class EmployeeDashboardComponent implements OnInit {
       width: '500px'
     });
 
-    dialogRef.afterClosed().subscribe((result: LeaveRequestDto) => {
+    dialogRef.afterClosed().subscribe((result: LeaveRequestDto & { file?: File | null }) => {
       if (result) {
         this.submitLeaveRequest(result);
       }
     });
   }
 
-  submitLeaveRequest(request: LeaveRequestDto) {
+  submitLeaveRequest(request: LeaveRequestDto & { file?: File | null }) {
     const token = localStorage.getItem('employeeToken');
     if (!token) return;
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-    this.http.post(environment.apiUrl + '/leaverequests', request, { headers }).subscribe({
-      next: () => {
-        this.loadLeaveRequests();
-      },
-      error: err => console.error('Leave request failed:', err)
-    });
+
+    const { file, ...leaveDto } = request;
+
+    if (file) {
+      // Upload the medical certificate first, then submit the leave request
+      const formData = new FormData();
+      formData.append('document', file);
+      this.http.post<{ documentPath: string }>(
+        environment.apiUrl + '/leaverequests/upload-document',
+        formData,
+        { headers }
+      ).subscribe({
+        next: (res) => {
+          this.http.post(environment.apiUrl + '/leaverequests', { ...leaveDto, documentPath: res.documentPath }, { headers }).subscribe({
+            next: () => this.loadLeaveRequests(),
+            error: err => console.error('Leave request failed:', err)
+          });
+        },
+        error: err => console.error('Document upload failed:', err)
+      });
+    } else {
+      this.http.post(environment.apiUrl + '/leaverequests', leaveDto, { headers }).subscribe({
+        next: () => this.loadLeaveRequests(),
+        error: err => console.error('Leave request failed:', err)
+      });
+    }
   }
 
   logout() {
