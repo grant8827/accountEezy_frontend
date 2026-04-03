@@ -92,15 +92,21 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
           <div class="paper-row dates-row">
             <span class="paper-label">{{ leaveType === 'Vacation' ? 'Vacation' : 'Leave' }} Dates Requested:</span>
             <div class="dates-inline">
-              <input class="paper-input date-input" [matDatepicker]="fromPicker"
-                     formControlName="startDate" placeholder="MM/DD/YYYY" readonly
-                     (click)="fromPicker.open()" />
-              <mat-datepicker #fromPicker></mat-datepicker>
+              <mat-form-field appearance="standard" class="paper-date-field">
+                <mat-label>From</mat-label>
+                <input matInput [matDatepicker]="fromPicker" formControlName="startDate"
+                       placeholder="MM/DD/YYYY">
+                <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+                <mat-datepicker #fromPicker></mat-datepicker>
+              </mat-form-field>
               <span class="date-sep">through</span>
-              <input class="paper-input date-input" [matDatepicker]="throughPicker"
-                     formControlName="endDate" placeholder="MM/DD/YYYY" readonly
-                     (click)="throughPicker.open()" />
-              <mat-datepicker #throughPicker></mat-datepicker>
+              <mat-form-field appearance="standard" class="paper-date-field">
+                <mat-label>To</mat-label>
+                <input matInput [matDatepicker]="throughPicker" formControlName="endDate"
+                       placeholder="MM/DD/YYYY">
+                <mat-datepicker-toggle matSuffix [for]="throughPicker"></mat-datepicker-toggle>
+                <mat-datepicker #throughPicker></mat-datepicker>
+              </mat-form-field>
             </div>
           </div>
 
@@ -181,8 +187,8 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      min-width: 480px;
-      max-width: 560px;
+      min-width: 600px;
+      max-width: 700px;
     }
 
     .type-select { width: 100%; }
@@ -268,26 +274,29 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
 
     .short-input { max-width: 80px; }
 
-    .dates-row { align-items: center; flex-wrap: wrap; gap: 6px; }
+    .dates-row { align-items: flex-end; flex-wrap: wrap; gap: 4px; }
 
     .dates-inline {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      align-items: flex-end;
+      gap: 6px;
       flex: 1;
       flex-wrap: wrap;
     }
 
-    .date-input {
-      max-width: 110px;
-      cursor: pointer;
-      flex-shrink: 0;
+    .paper-date-field {
+      width: 155px;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 13px;
     }
+
+    .paper-date-field .mat-mdc-form-field-subscript-wrapper { display: none; }
 
     .date-sep {
       font-size: 13px;
       color: #555;
       white-space: nowrap;
+      padding-bottom: 8px;
     }
 
     /* ── Sick form ───────────────────────────────── */
@@ -329,11 +338,12 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
     .file-hint  { font-size: 11px; color: #aaa; }
     .file-error { margin: 0; font-size: 12px; color: #f44336; }
 
-    @media (max-width: 600px) {
-      .dialog-content { min-width: 300px; }
+    @media (max-width: 700px) {
+      .dialog-content { min-width: 90vw; max-width: 95vw; }
       .paper-form     { padding: 1rem; }
       .paper-label    { min-width: 130px; }
       .date-range     { grid-template-columns: 1fr; }
+      .paper-date-field { width: 120px; }
     }
   `]
 })
@@ -1332,7 +1342,8 @@ export class EmployeeDashboardComponent implements OnInit {
 
   openApplyLeaveDialog() {
     const dialogRef = this.dialog.open(ApplyLeaveDialogComponent, {
-      width: '580px',
+      width: '720px',
+      maxWidth: '95vw',
       data: { employeeName: this.employeeName }
     });
 
