@@ -1,0 +1,155 @@
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+/* Modern 2026 Color Palette - Professional & Contemporary */
+:root {
+  /* Primary Colors - Deep Indigo */
+  --primary-color: #4F46E5;          /* Vibrant Indigo */
+  --primary-dark: #3730A3;            /* Deep Indigo */
+  --primary-light: #6366F1;           /* Light Indigo */
+
+  /* Accent Colors - Cyan/Teal */
+  --accent-color: #06B6D4;            /* Bright Cyan */
+  --accent-dark: #0891B2;             /* Deep Cyan */
+  --accent-light: #22D3EE;            /* Light Cyan */
+
+  /* Neutral Colors */
+  --neutral-50: #F8FAFC;              /* Lightest */
+  --neutral-100: #F1F5F9;
+  --neutral-200: #E2E8F0;
+  --neutral-300: #CBD5E1;
+  --neutral-400: #94A3B8;
+  --neutral-500: #64748B;
+  --neutral-600: #475569;
+  --neutral-700: #334155;
+  --neutral-800: #1E293B;
+  --neutral-900: #0F172A;             /* Darkest */
+
+  /* Semantic Colors */
+  --success: #10B981;                 /* Emerald */
+  --warning: #F59E0B;                 /* Amber */
+  --error: #EF4444;                   /* Red */
+  --info: #3B82F6;                    /* Blue */
+
+  /* Backgrounds */
+  --background-primary: #FFFFFF;
+  --background-secondary: #F8FAFC;
+  --background-tertiary: #F1F5F9;
+
+  /* Text Colors */
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-tertiary: #94A3B8;
+
+  /* Legacy Support (for gradual migration) */
+  --primary-black: #0F172A;
+  --primary-gold: #4F46E5;
+  --light-gold: #6366F1;
+  --dark-gold: #3730A3;
+  --dark-gray: #1E293B;
+  --background-cream: #F8FAFC;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  font-weight: 800;
+}
+
+button {
+  font-family: 'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  font-weight: 600;
+  text-transform: none;
+}
+
+/* Modern Material Theme Customization */
+.mat-mdc-raised-button.mat-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light)) !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.mat-mdc-raised-button.mat-primary:hover {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-color)) !important;
+  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+.mat-mdc-raised-button.mat-accent {
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-light)) !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.25) !important;
+}
+
+.mat-mdc-raised-button.mat-accent:hover {
+  background: linear-gradient(135deg, var(--accent-dark), var(--accent-color)) !important;
+  box-shadow: 0 4px 16px rgba(6, 182, 212, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+.mat-toolbar.mat-primary {
+  background: linear-gradient(135deg, var(--neutral-900), var(--neutral-800)) !important;
+  color: white !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.mat-mdc-card {
+  border-radius: 12px !important;
+  border: 1px solid var(--neutral-200) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+  background: var(--background-primary) !important;
+  transition: box-shadow 0.3s ease !important;
+}
+
+.mat-mdc-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.12) !important;
+}
+
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+/* Utility Classes */
+.full-width {
+  width: 100%;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+
+.p-1 { padding: 0.5rem; }
+.p-2 { padding: 1rem; }
+.p-3 { padding: 1.5rem; }
+.p-4 { padding: 2rem; }

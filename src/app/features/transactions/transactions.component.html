@@ -1,0 +1,224 @@
+<div class="tx-shell">
+
+  <!-- Header -->
+  <header class="page-header">
+    <div class="page-header-inner">
+      <div>
+        <h1 class="page-title">Transactions</h1>
+        <p class="page-sub">Track income &amp; expenses — GCT automatically calculated at 15%</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-add-trigger" (click)="openModal()">
+          + Add Transaction
+        </button>
+        <button class="btn-export" (click)="exportCsv()" title="Export current view to CSV">
+          &#8595; Export CSV
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="tx-body">
+
+    <!-- Summary Cards -->
+    <div class="summary-row">
+      <div class="summary-card income-card">
+        <span class="summary-label">Total Income</span>
+        <span class="summary-amount">J$ {{ totalIncome() | number:'1.2-2' }}</span>
+      </div>
+      <div class="summary-card expense-card">
+        <span class="summary-label">Total Expenditure</span>
+        <span class="summary-amount">J$ {{ totalExpense() | number:'1.2-2' }}</span>
+      </div>
+      <div class="summary-card" [class.net-profit]="netBalance() >= 0" [class.net-loss]="netBalance() < 0">
+        <span class="summary-label">Net Balance</span>
+        <span class="summary-amount">J$ {{ netBalance() | number:'1.2-2' }}</span>
+        <span class="net-indicator">{{ netBalance() >= 0 ? 'Profit' : 'Loss' }}</span>
+      </div>
+    </div>
+
+    <!-- Add Transaction Modal -->
+    @if (showModal()) {
+      <div class="modal-backdrop" (click)="closeModal()">
+        <div class="modal-panel" (click)="$event.stopPropagation()">
+
+          <div class="modal-header">
+            <h2 class="modal-title">Add Transaction</h2>
+            <button class="modal-close" (click)="closeModal()" title="Close">&#215;</button>
+          </div>
+
+          <form [formGroup]="form" (ngSubmit)="submit()" class="tx-form" novalidate>
+
+            <!-- Type Toggle -->
+            <div class="type-toggle-row">
+              <button type="button" class="type-btn"
+                      [class.active-income]="currentType === 1"
+                      (click)="setType(1)">
+                &#8593; Income
+              </button>
+              <button type="button" class="type-btn"
+                      [class.active-expense]="currentType === 2"
+                      (click)="setType(2)">
+                &#8595; Expenditure
+              </button>
+            </div>
+
+            <div class="fields-row">
+              <div class="field-group">
+                <label class="field-label">Amount (J$)</label>
+                <input class="field-input" [class.field-error]="form.get('amount')?.invalid && form.get('amount')?.touched"
+                       type="number" formControlName="amount" placeholder="0.00" min="0.01" step="0.01" />
+                @if (form.get('amount')?.invalid && form.get('amount')?.touched) {
+                  <span class="hint-error">Enter a positive amount</span>
+                }
+              </div>
+              <div class="field-group">
+                <label class="field-label">Category</label>
+                <select class="field-input" [class.field-error]="form.get('category')?.invalid && form.get('category')?.touched"
+                        formControlName="category">
+                  <option value="" disabled>Select category…</option>
+                  @if (currentType === 1) {
+                    @for (cat of INCOME_CATEGORIES; track cat) {
+                      <option [value]="cat">{{ cat }}</option>
+                    }
+                  } @else {
+                    @for (group of EXPENSE_CATEGORY_GROUPS; track group.label) {
+                      <optgroup [label]="group.label">
+                        @for (cat of group.options; track cat) {
+                          <option [value]="cat">{{ cat }}</option>
+                        }
+                      </optgroup>
+                    }
+                  }
+                </select>
+                @if (form.get('category')?.invalid && form.get('category')?.touched) {
+                  <span class="hint-error">Please select a category</span>
+                }
+              </div>
+            </div>
+
+            <div class="fields-row">
+              <div class="field-group">
+                <label class="field-label">Description</label>
+                <input class="field-input" formControlName="description" placeholder="Optional note…" />
+              </div>
+              <div class="field-group">
+                <label class="field-label">Date</label>
+                <input class="field-input" type="date" formControlName="date" />
+              </div>
+            </div>
+
+            <div class="fields-row">
+              <div class="field-group">
+                <label class="field-label">Frequency</label>
+                <select class="field-input" formControlName="frequency">
+                  <option [value]="1">Daily</option>
+                  <option [value]="2">Weekly</option>
+                  <option [value]="3">Monthly</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Status</label>
+                <select class="field-input" formControlName="status">
+                  <option [value]="1">Pending</option>
+                  <option [value]="2">Cleared</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="gct-row">
+              <label class="toggle-label">
+                <input type="checkbox" formControlName="gctApplicable" class="toggle-input" />
+                <span class="toggle-text">
+                  <span class="toggle-icon">&#8679;</span>
+                  GCT Applicable (15%)
+                </span>
+              </label>
+            </div>
+
+            <div class="modal-footer">
+              @if (submitError()) {
+                <span class="submit-error">&#9888; {{ submitError() }}</span>
+              }
+              <button type="button" class="btn-cancel" (click)="closeModal()">Cancel</button>
+              <button class="btn-add" type="submit" [disabled]="submitting()">
+                {{ submitting() ? 'Saving…' : '+ Add Transaction' }}
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- Transactions List -->
+    <div class="list-card">
+      <div class="list-header">
+        <h2 class="card-title" style="margin:0">Transaction Ledger</h2>
+        <span class="count-badge">{{ filteredTransactions().length }} entries</span>
+      </div>
+
+      <!-- Frequency Filter Bar -->
+      <div class="filter-bar">
+        <button class="filter-btn" [class.active]="frequencyFilter() === 0" (click)="setFrequencyFilter(0)">All</button>
+        <button class="filter-btn" [class.active]="frequencyFilter() === 1" (click)="setFrequencyFilter(1)">Daily</button>
+        <button class="filter-btn" [class.active]="frequencyFilter() === 2" (click)="setFrequencyFilter(2)">Weekly</button>
+        <button class="filter-btn" [class.active]="frequencyFilter() === 3" (click)="setFrequencyFilter(3)">Monthly</button>
+      </div>
+
+      @if (loadError()) {
+        <div class="load-error">&#9888; {{ loadError() }}</div>
+      }
+
+      @if (loading()) {
+        <div class="loading-state">
+          <span class="loading-spinner">&#9696;</span> Loading transactions…
+        </div>
+      }
+
+      @if (!loading() && filteredTransactions().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">&#128196;</div>
+          <p>No transactions found. Try a different filter or add your first entry above.</p>
+        </div>
+      }
+
+      @for (tx of filteredTransactions(); track tx.id) {
+        <div class="tx-row" [class.income]="tx.type === 1" [class.expense]="tx.type === 2">
+
+          <div class="tx-type-badge" [class.income-badge]="tx.type === 1" [class.expense-badge]="tx.type === 2">
+            {{ tx.type === 1 ? '&#8593; Income' : '&#8595; Expense' }}
+          </div>
+
+          <div class="tx-meta">
+            <span class="tx-category">{{ tx.category }}</span>
+            @if (tx.description) {
+              <span class="tx-description">{{ tx.description }}</span>
+            }
+            <div class="tx-badges">
+              <span class="freq-badge freq-{{ tx.frequency }}">{{ FREQUENCY_LABELS[tx.frequency] }}</span>
+              <span class="status-badge" [class.status-cleared]="tx.status === 2" [class.status-pending]="tx.status === 1">
+                {{ STATUS_LABELS[tx.status] }}
+              </span>
+            </div>
+          </div>
+
+          <div class="tx-amounts">
+            <span class="tx-main-amount" [class.income-text]="tx.type === 1" [class.expense-text]="tx.type === 2">
+              J$ {{ tx.amount | number:'1.2-2' }}
+            </span>
+            @if (tx.gctAmount > 0) {
+              <span class="tx-gct-amount">+J$ {{ tx.gctAmount | number:'1.2-2' }} GCT</span>
+            }
+          </div>
+
+          <div class="tx-date">{{ tx.date | date:'mediumDate':'UTC' }}</div>
+
+          <button class="btn-delete" (click)="remove(tx.id)" title="Delete">&#215;</button>
+
+        </div>
+      }
+    </div>
+
+  </div>
+</div>

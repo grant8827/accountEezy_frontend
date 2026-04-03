@@ -1,0 +1,374 @@
+<div class="register-container">
+  <mat-card class="register-card">
+    <mat-card-header>
+      <div class="header-content">
+        <div class="header-icon">
+          <mat-icon>person_add</mat-icon>
+        </div>
+        <h1>Create Your Business Account</h1>
+        <p>Complete these steps to set up your AccountEezy account</p>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Selected Plan Display -->
+      @if (selectedPlan) {
+        <div class="selected-plan-card">
+          <h3>Selected Plan: {{ selectedPlan.name }}</h3>
+          <p class="plan-price">
+            {{ formatCurrency(selectedPlan.price) }}/{{ selectedPlan.billing === 'monthly' ? 'month' : 'year' }}
+          </p>
+        </div>
+      }
+
+      <!-- Error Display -->
+      @if (registrationError) {
+        <div class="error-alert">{{ registrationError }}</div>
+      }
+      @if (error$ | async; as error) {
+        <div class="error-alert">{{ error }}</div>
+      }
+
+      <!-- Multi-Step Form -->
+      <mat-stepper #stepper linear>
+        <!-- Step 1: Personal Information -->
+        <mat-step [stepControl]="personalForm" label="Personal Information">
+          <form [formGroup]="personalForm">
+            <h2>Personal Information</h2>
+            <p class="step-description">Tell us about yourself</p>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>First Name</mat-label>
+                <input matInput formControlName="firstName" required>
+                @if (personalForm.get('firstName')?.invalid && personalForm.get('firstName')?.touched) {
+                  <mat-error>First name is required</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Last Name</mat-label>
+                <input matInput formControlName="lastName" required>
+                @if (personalForm.get('lastName')?.invalid && personalForm.get('lastName')?.touched) {
+                  <mat-error>Last name is required</mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Email Address</mat-label>
+              <input matInput type="email" formControlName="email" required>
+              @if (personalForm.get('email')?.invalid && personalForm.get('email')?.touched) {
+                <mat-error>Please enter a valid email</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Phone Number (Optional)</mat-label>
+              <input matInput type="tel" formControlName="phone">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Password</mat-label>
+              <input matInput type="password" formControlName="password" required>
+              <mat-hint>Minimum 6 characters</mat-hint>
+              @if (personalForm.get('password')?.invalid && personalForm.get('password')?.touched) {
+                <mat-error>Password must be at least 6 characters</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Confirm Password</mat-label>
+              <input matInput type="password" formControlName="confirmPassword" required>
+              @if (passwordsMismatch() && personalForm.get('confirmPassword')?.touched) {
+                <mat-error>Passwords do not match</mat-error>
+              }
+            </mat-form-field>
+
+            <div class="stepper-buttons">
+              <button mat-button type="button" disabled>Back</button>
+              <button mat-raised-button color="primary" matStepperNext type="button">Next</button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 2: Business Information -->
+        <mat-step [stepControl]="businessForm" label="Business Information">
+          <form [formGroup]="businessForm">
+            <h2>Business Information</h2>
+            <p class="step-description">Provide your business details</p>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Business Name</mat-label>
+              <input matInput formControlName="business_name" required>
+              <mat-hint>Auto-populated from your name, but you can change it</mat-hint>
+              @if (businessForm.get('business_name')?.invalid && businessForm.get('business_name')?.touched) {
+                <mat-error>Business name is required</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Business Registration Number</mat-label>
+              <input matInput formControlName="registration_number" required>
+              @if (businessForm.get('registration_number')?.invalid && businessForm.get('registration_number')?.touched) {
+                <mat-error>Registration number is required</mat-error>
+              }
+            </mat-form-field>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>TRN (Tax Registration Number)</mat-label>
+                <input
+                  matInput
+                  formControlName="trn"
+                  maxlength="9"
+                  (keydown)="onlyDigits($event, 'trn', businessForm)"
+                  required>
+                <mat-hint>{{ businessForm.get('trn')?.value?.length || 0 }}/9 digits</mat-hint>
+                @if (businessForm.get('trn')?.invalid && businessForm.get('trn')?.touched) {
+                  <mat-error>TRN must be exactly 9 digits</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>NIS (National Insurance Scheme)</mat-label>
+                <input
+                  matInput
+                  formControlName="nis"
+                  maxlength="9"
+                  (keydown)="onlyDigits($event, 'nis', businessForm)">
+                <mat-hint>{{ businessForm.get('nis')?.value?.length || 0 }}/9 digits (Optional)</mat-hint>
+                @if (businessForm.get('nis')?.invalid && businessForm.get('nis')?.touched) {
+                  <mat-error>NIS must be 9 digits if provided</mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Business Type</mat-label>
+                <mat-select formControlName="business_type" required>
+                  @for (type of businessTypes; track type) {
+                    <mat-option [value]="type">{{ type }}</mat-option>
+                  }
+                </mat-select>
+                @if (businessForm.get('business_type')?.invalid && businessForm.get('business_type')?.touched) {
+                  <mat-error>Business type is required</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Industry</mat-label>
+                <mat-select formControlName="industry" required>
+                  @for (ind of industries; track ind) {
+                    <mat-option [value]="ind">{{ ind }}</mat-option>
+                  }
+                </mat-select>
+                @if (businessForm.get('industry')?.invalid && businessForm.get('industry')?.touched) {
+                  <mat-error>Industry is required</mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="stepper-buttons">
+              <button mat-button matStepperPrevious type="button">Back</button>
+              <button mat-raised-button color="primary" matStepperNext type="button">Next</button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 3: Business Address -->
+        <mat-step [stepControl]="addressForm" label="Business Address">
+          <form [formGroup]="addressForm">
+            <h2>Business Address</h2>
+            <p class="step-description">Where is your business located?</p>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Street Address</mat-label>
+              <input matInput formControlName="street" required>
+              @if (addressForm.get('street')?.invalid && addressForm.get('street')?.touched) {
+                <mat-error>Street address is required</mat-error>
+              }
+            </mat-form-field>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>City/Town</mat-label>
+                <input matInput formControlName="city" required>
+                @if (addressForm.get('city')?.invalid && addressForm.get('city')?.touched) {
+                  <mat-error>City is required</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Parish</mat-label>
+                <mat-select formControlName="parish" required>
+                  @for (parish of parishes; track parish) {
+                    <mat-option [value]="parish">{{ parish }}</mat-option>
+                  }
+                </mat-select>
+                @if (addressForm.get('parish')?.invalid && addressForm.get('parish')?.touched) {
+                  <mat-error>Parish is required</mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Postal Code (Optional)</mat-label>
+                <input matInput formControlName="postal_code">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Country</mat-label>
+                <input matInput formControlName="country" readonly>
+              </mat-form-field>
+            </div>
+
+            <div class="stepper-buttons">
+              <button mat-button matStepperPrevious type="button">Back</button>
+              <button mat-raised-button color="primary" matStepperNext type="button">Next</button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 4: Contact & Review -->
+        <mat-step [stepControl]="contactForm" label="Contact & Review">
+          <form [formGroup]="contactForm">
+            <h2>Contact Information</h2>
+            <p class="step-description">How can customers reach you?</p>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Business Phone</mat-label>
+              <input matInput type="tel" formControlName="business_phone" required>
+              @if (contactForm.get('business_phone')?.invalid && contactForm.get('business_phone')?.touched) {
+                <mat-error>Business phone is required</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Business Email</mat-label>
+              <input matInput type="email" formControlName="business_email" required>
+              <mat-hint>Auto-populated from your email</mat-hint>
+              @if (contactForm.get('business_email')?.invalid && contactForm.get('business_email')?.touched) {
+                <mat-error>Please enter a valid email</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Website (Optional)</mat-label>
+              <input matInput type="url" formControlName="website">
+            </mat-form-field>
+
+            <mat-divider class="my-3"></mat-divider>
+
+            <!-- Registration Summary -->
+            <h3>Registration Summary</h3>
+            <div class="summary-section">
+              <div class="summary-item">
+                <strong>Name:</strong>
+                <span>{{ personalForm.value.firstName }} {{ personalForm.value.lastName }}</span>
+              </div>
+              <div class="summary-item">
+                <strong>Email:</strong>
+                <span>{{ personalForm.value.email }}</span>
+              </div>
+              @if (personalForm.value.phone) {
+                <div class="summary-item">
+                  <strong>Phone:</strong>
+                  <span>{{ personalForm.value.phone }}</span>
+                </div>
+              }
+              <div class="summary-item">
+                <strong>Business Name:</strong>
+                <span>{{ businessForm.value.business_name }}</span>
+              </div>
+              <div class="summary-item">
+                <strong>Registration Number:</strong>
+                <span>{{ businessForm.value.registration_number }}</span>
+              </div>
+              <div class="summary-item">
+                <strong>TRN:</strong>
+                <span>{{ businessForm.value.trn }}</span>
+              </div>
+              @if (businessForm.value.nis) {
+                <div class="summary-item">
+                  <strong>NIS:</strong>
+                  <span>{{ businessForm.value.nis }}</span>
+                </div>
+              }
+              <div class="summary-item">
+                <strong>Business Type:</strong>
+                <span>{{ businessForm.value.business_type }}</span>
+              </div>
+              <div class="summary-item">
+                <strong>Industry:</strong>
+                <span>{{ businessForm.value.industry }}</span>
+              </div>
+              <div class="summary-item">
+                <strong>Address:</strong>
+                <span>{{ addressForm.value.street }}, {{ addressForm.value.city }}, {{ addressForm.value.parish }}</span>
+              </div>
+              <div class="summary-item">
+                <strong>Business Phone:</strong>
+                <span>{{ contactForm.value.business_phone }}</span>
+              </div>
+              <div class="summary-item">
+                <strong>Business Email:</strong>
+                <span>{{ contactForm.value.business_email }}</span>
+              </div>
+              @if (contactForm.value.website) {
+                <div class="summary-item">
+                  <strong>Website:</strong>
+                  <span>{{ contactForm.value.website }}</span>
+                </div>
+              }
+            </div>
+
+            @if (selectedPlan) {
+              <mat-divider class="my-3"></mat-divider>
+              <div class="selected-plan-summary">
+                <h3>Selected Plan</h3>
+                <div class="plan-details">
+                  <p class="plan-name">{{ selectedPlan.name }}</p>
+                  <p class="plan-price">
+                    {{ formatCurrency(selectedPlan.price) }}/{{ selectedPlan.billing === 'monthly' ? 'month' : 'year' }}
+                  </p>
+                  <div class="plan-features">
+                    @for (feature of selectedPlan.features; track feature) {
+                      <div class="feature-item">
+                        <mat-icon>check_circle</mat-icon>
+                        <span>{{ feature }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+
+            <div class="stepper-buttons">
+              <button mat-button matStepperPrevious type="button">Back</button>
+              <button
+                mat-raised-button
+                color="primary"
+                type="button"
+                (click)="onSubmit()"
+                [disabled]="loading"
+              >
+                @if (loading) {
+                  <mat-spinner diameter="24"></mat-spinner>
+                } @else {
+                  Complete Registration
+                }
+              </button>
+            </div>
+          </form>
+        </mat-step>
+      </mat-stepper>
+
+      <div class="footer-links">
+        <a routerLink="/login">Already have an account? Sign In</a>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

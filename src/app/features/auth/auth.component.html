@@ -1,0 +1,80 @@
+<div class="auth-shell">
+
+  <div class="auth-left">
+    <div class="auth-left-inner">
+      <div class="brand-mark">
+        <span class="brand-icon">AE</span>
+        <span class="brand-name">Account Eezy</span>
+      </div>
+      <h1 class="auth-headline">Smarter accounting<br>for Jamaican businesses</h1>
+      <p class="auth-tagline">Built for Jamaica's 2026 consolidated payroll tax model — NIS, NHT, Ed Tax, HEART, PAYE and GCT, all in one place.</p>
+
+      <ul class="feature-list">
+        <li><span class="feat-dot"></span> Automatic statutory calculations</li>
+        <li><span class="feat-dot"></span> SO1/SO2 report generation</li>
+        <li><span class="feat-dot"></span> GCT 15% on all applicable transactions</li>
+        <li><span class="feat-dot"></span> TAJ-ready payroll compliance</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-card">
+
+      <div class="auth-tabs">
+        <button class="tab-btn" [class.active]="activeTab() === 'login'" (click)="activeTab.set('login')">Sign In</button>
+        <button class="tab-btn" [class.active]="activeTab() === 'register'" (click)="activeTab.set('register')">Create Account</button>
+      </div>
+
+      <!-- Login Form -->
+      @if (activeTab() === 'login') {
+        <form [formGroup]="loginForm" (ngSubmit)="submitLogin()" class="auth-form" novalidate>
+          <div class="field-group">
+            <label class="field-label">Email address</label>
+            <input class="field-input" type="email" formControlName="email" placeholder="you@business.com" autocomplete="email" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Password</label>
+            <input class="field-input" type="password" formControlName="password" placeholder="••••••••" autocomplete="current-password" />
+          </div>
+          <button class="btn-primary" type="submit" [disabled]="loginForm.invalid">Sign In</button>
+        </form>
+      }
+
+      <!-- Register Form -->
+      @if (activeTab() === 'register') {
+        <form [formGroup]="registerForm" (ngSubmit)="submitRegister()" class="auth-form" novalidate>
+          <div class="field-group">
+            <label class="field-label">Company Name</label>
+            <input class="field-input" formControlName="companyName" placeholder="Acme Ltd." autocomplete="organization" />
+          </div>
+          <div class="fields-row">
+            <div class="field-group">
+              <label class="field-label">TRN</label>
+              <input class="field-input" formControlName="trn" placeholder="123-456-789" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Sector</label>
+              <input class="field-input" formControlName="sector" placeholder="Retail, Services…" />
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Email address</label>
+            <input class="field-input" type="email" formControlName="email" placeholder="you@business.com" autocomplete="email" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Password <span class="hint">(min 8 chars)</span></label>
+            <input class="field-input" type="password" formControlName="password" placeholder="••••••••" autocomplete="new-password" />
+          </div>
+          <button class="btn-primary" type="submit" [disabled]="registerForm.invalid">Create Account</button>
+        </form>
+      }
+
+      @if (error()) {
+        <div class="error-banner">{{ error() }}</div>
+      }
+
+    </div>
+  </div>
+
+</div>

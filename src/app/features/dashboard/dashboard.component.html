@@ -1,0 +1,161 @@
+<div class="dashboard-shell">
+
+  <!-- Page header -->
+  <header class="page-header">
+    <div class="page-header-inner">
+      <div>
+        <h1 class="page-title">Business Dashboard</h1>
+        <p class="page-sub">Real-time overview of your financials &amp; tax obligations</p>
+      </div>
+      <div class="header-badge">
+        <span class="badge-dot"></span>
+        Jamaica 2026 Tax Year
+      </div>
+    </div>
+  </header>
+
+  <!-- TAJ Deadline Alert -->
+  <div class="alert-banner">
+    <div class="alert-banner-inner">
+      <div class="alert-icon">&#9888;</div>
+      <div class="alert-text">
+        <strong>TAJ Reminder:</strong> Monthly payroll remittance (NIS, NHT, Ed Tax, HEART, PAYE) and GCT return are
+        due by the <strong>14th of each month</strong>. Ensure records are finalised before filing.
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <section class="kpi-grid">
+    <div class="kpi-card kpi-profit">
+      <div class="kpi-label">Net Profit</div>
+      <div class="kpi-value">J$ {{ (summary()?.netProfit ?? 0) | number:'1.2-2' }}</div>
+      <div class="kpi-sub">Income minus expenses</div>
+      <div class="kpi-bar"><div class="kpi-fill fill-profit"></div></div>
+    </div>
+
+    <div class="kpi-card kpi-tax">
+      <div class="kpi-label">Tax Liabilities</div>
+      <div class="kpi-value">J$ {{ (summary()?.totalTaxLiability ?? 0) | number:'1.2-2' }}</div>
+      <div class="kpi-sub">GCT + Payroll obligations</div>
+      <div class="kpi-bar"><div class="kpi-fill fill-tax"></div></div>
+    </div>
+
+    <div class="kpi-card kpi-cashflow">
+      <div class="kpi-label">Cash Flow</div>
+      <div class="kpi-value">J$ {{ (summary()?.cashFlow ?? 0) | number:'1.2-2' }}</div>
+      <div class="kpi-sub">Projected net liquidity</div>
+      <div class="kpi-bar"><div class="kpi-fill fill-cashflow"></div></div>
+    </div>
+
+    <div class="kpi-card kpi-gct">
+      <div class="kpi-label">GCT Liability</div>
+      <div class="kpi-value">J$ {{ (summary()?.gctLiability ?? 0) | number:'1.2-2' }}</div>
+      <div class="kpi-sub">15% on applicable transactions</div>
+      <div class="kpi-bar"><div class="kpi-fill fill-gct"></div></div>
+    </div>
+  </section>
+
+  <!-- Charts row -->
+  <section class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <h2 class="chart-title">Income vs Expenditure vs Balance</h2>
+        <span class="chart-badge">Last 6 Months</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas baseChart
+          [data]="revenueExpenseChartData()"
+          [type]="'line'"
+          [options]="lineChartOptions">
+        </canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <h2 class="chart-title">Tax Breakdown</h2>
+        <span class="chart-badge">Statutory Obligations</span>
+      </div>
+      <div class="chart-wrap chart-wrap--sm">
+        <canvas baseChart
+          [data]="taxChartData()"
+          [type]="'doughnut'"
+          [options]="doughnutChartOptions">
+        </canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- SO1 Preview + Compliance row -->
+  <section class="lower-grid">
+    <div class="so1-card">
+      <div class="so1-header">
+        <h2 class="so1-title">SO1 Payroll Summary</h2>
+        @if (so1()) {
+          <span class="status-badge status-pending">Pending Submission</span>
+        } @else {
+          <span class="status-badge status-empty">No Data</span>
+        }
+      </div>
+
+      <div class="so1-body">
+        @if (so1(); as report) {
+          <div class="so1-stat">
+            <span class="so1-stat-label">Period</span>
+            <span class="so1-stat-val">{{ report.month }}/{{ report.year }}</span>
+          </div>
+          <div class="so1-stat">
+            <span class="so1-stat-label">Total Remittance</span>
+            <span class="so1-stat-val highlight">J$ {{ report.totalRemittance | number:'1.2-2' }}</span>
+          </div>
+          <div class="so1-stat">
+            <span class="so1-stat-label">Payroll Remittance</span>
+            <span class="so1-stat-val">J$ {{ report.payrollRemittance | number:'1.2-2' }}</span>
+          </div>
+          <div class="so1-stat">
+            <span class="so1-stat-label">GCT Payable</span>
+            <span class="so1-stat-val">J$ {{ report.gctPayable | number:'1.2-2' }}</span>
+          </div>
+        } @else {
+          <p class="so1-empty">Run a payroll calculation to see your SO1 data here.</p>
+        }
+      </div>
+    </div>
+
+    <div class="compliance-card">
+      <h2 class="compliance-title">Compliance Checklist</h2>
+      <ul class="compliance-list">
+        <li class="compliance-item">
+          <span class="check">&#10003;</span>
+          <span>NIS — Employer 3% + Employee 3% (ceiling J$6M/yr)</span>
+        </li>
+        <li class="compliance-item">
+          <span class="check">&#10003;</span>
+          <span>NHT — Employer 3% + Employee 2%</span>
+        </li>
+        <li class="compliance-item">
+          <span class="check">&#10003;</span>
+          <span>Ed Tax — Employer 3.5% + Employee 2.25%</span>
+        </li>
+        <li class="compliance-item">
+          <span class="check">&#10003;</span>
+          <span>HEART — Employer 3% only</span>
+        </li>
+        <li class="compliance-item">
+          <span class="check">&#10003;</span>
+          <span>PAYE — 25% (threshold to J$6M) / 30% above</span>
+        </li>
+        <li class="compliance-item">
+          <span class="check">&#10003;</span>
+          <span>GCT — 15% on applicable transactions</span>
+        </li>
+        <li class="compliance-item">
+          <span class="check">&#10003;</span>
+          <span>Income threshold — J$1,902,360 annual</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+</div>

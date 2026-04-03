@@ -1,0 +1,125 @@
+<div class="payroll-shell">
+
+  <!-- Header -->
+  <header class="page-header">
+    <div class="page-header-inner">
+      <div>
+        <h1 class="page-title">Payroll Calculator</h1>
+        <p class="page-sub">Jamaica 2026 statutory rates — consolidated NIS, NHT, Ed Tax, HEART &amp; PAYE</p>
+      </div>
+      <div class="header-badge">
+        <span class="badge-dot"></span>
+        2026 Tax Year
+      </div>
+    </div>
+  </header>
+
+  <div class="payroll-body">
+
+    <!-- Input Card -->
+    <div class="input-card">
+      <h2 class="card-title">Employee Salary Input</h2>
+      <form [formGroup]="form" (ngSubmit)="calculate()" class="calc-form" novalidate>
+        <div class="field-group">
+          <label class="field-label">Gross Monthly Salary (J$)</label>
+          <input class="field-input" type="number" formControlName="grossMonthlySalary" placeholder="0.00" min="1" />
+        </div>
+        <button class="btn-calc" type="submit" [disabled]="form.invalid">
+          Calculate Deductions
+        </button>
+      </form>
+
+      <div class="rates-info">
+        <h3 class="rates-title">Statutory Rates Reference</h3>
+        <div class="rates-grid">
+          <div class="rate-row"><span class="rate-label">NIS</span><span class="rate-vals">EE 3% / ER 3%</span></div>
+          <div class="rate-row"><span class="rate-label">NHT</span><span class="rate-vals">EE 2% / ER 3%</span></div>
+          <div class="rate-row"><span class="rate-label">Ed Tax</span><span class="rate-vals">EE 2.25% / ER 3.5%</span></div>
+          <div class="rate-row"><span class="rate-label">HEART</span><span class="rate-vals">ER 3% only</span></div>
+          <div class="rate-row"><span class="rate-label">PAYE</span><span class="rate-vals">25% / 30%</span></div>
+          <div class="rate-row"><span class="rate-label">Threshold</span><span class="rate-vals">J$1,902,360/yr</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result Card -->
+    <div class="result-card" [class.has-result]="result()">
+      @if (result(); as r) {
+        <div class="result-header">
+          <h2 class="card-title">Payroll Breakdown</h2>
+          <span class="result-badge">Calculated</span>
+        </div>
+
+        <div class="result-section">
+          <div class="result-highlight">
+            <span class="rh-label">Net Monthly Salary</span>
+            <span class="rh-value">J$ {{ r.netMonthlySalary | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div class="result-section">
+          <h3 class="section-title">Employee Deductions</h3>
+          <div class="result-rows">
+            <div class="result-row">
+              <span>NIS (3%)</span>
+              <span>J$ {{ r.employeeNis | number:'1.2-2' }}</span>
+            </div>
+            <div class="result-row">
+              <span>NHT (2%)</span>
+              <span>J$ {{ r.employeeNht | number:'1.2-2' }}</span>
+            </div>
+            <div class="result-row">
+              <span>Ed Tax (2.25%)</span>
+              <span>J$ {{ r.employeeEducationTax | number:'1.2-2' }}</span>
+            </div>
+            <div class="result-row">
+              <span>PAYE</span>
+              <span>J$ {{ r.employeePaye | number:'1.2-2' }}</span>
+            </div>
+            <div class="result-row subtotal">
+              <span>Employee Total</span>
+              <span>J$ {{ r.consolidatedPayrollTaxEmployee | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-section">
+          <h3 class="section-title">Employer Contributions</h3>
+          <div class="result-rows">
+            <div class="result-row">
+              <span>NIS (3%)</span>
+              <span>J$ {{ r.employerNis | number:'1.2-2' }}</span>
+            </div>
+            <div class="result-row">
+              <span>NHT (3%)</span>
+              <span>J$ {{ r.employerNht | number:'1.2-2' }}</span>
+            </div>
+            <div class="result-row">
+              <span>Ed Tax (3.5%)</span>
+              <span>J$ {{ r.employerEducationTax | number:'1.2-2' }}</span>
+            </div>
+            <div class="result-row">
+              <span>HEART (3%)</span>
+              <span>J$ {{ r.employerHeart | number:'1.2-2' }}</span>
+            </div>
+            <div class="result-row subtotal">
+              <span>Employer Total</span>
+              <span>J$ {{ r.consolidatedPayrollTaxEmployer | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-total">
+          <span>Total Statutory Remittance</span>
+          <span class="total-val">J$ {{ r.totalStatutoryRemittance | number:'1.2-2' }}</span>
+        </div>
+      } @else {
+        <div class="empty-state">
+          <div class="empty-icon">&#9881;</div>
+          <p>Enter a gross salary and click <strong>Calculate Deductions</strong> to see the full breakdown.</p>
+        </div>
+      }
+    </div>
+
+  </div>
+</div>
