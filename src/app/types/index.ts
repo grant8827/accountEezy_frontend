@@ -68,12 +68,15 @@ export interface Transaction {
   businessId: number;
 }
 
-// Dashboard Summary
+// Dashboard Summary — matches DashboardSummaryResponse from DashboardController
 export interface DashboardSummary {
-  totalEmployees: number;
-  monthlyPayroll: number;
-  pendingTransactions: number;
-  businessStatus: string;
+  totalIncome: number;
+  totalExpenses: number;
+  netProfit: number;
+  gctLiability: number;
+  payrollTaxLiability: number;
+  totalTaxLiability: number;
+  cashFlow: number;
 }
 
 // API Response Types

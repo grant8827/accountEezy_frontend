@@ -474,11 +474,11 @@ export class NoticesComponent implements OnInit {
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
-    
-    return new Date(value).toLocaleDateString('en-JM', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+
+    return new Date(value).toLocaleDateString('en-JM', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
   }
 

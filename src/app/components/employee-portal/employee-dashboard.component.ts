@@ -16,6 +16,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { environment } from '../../../environments/environment';
@@ -388,28 +389,32 @@ export class ApplyLeaveDialogComponent {
   }
 
   employeeName: string;
+  private existingLeaveId: number | undefined;
 
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<ApplyLeaveDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) data: { employeeName: string }
+    @Inject(MAT_DIALOG_DATA) data: { employeeName: string, existingLeave?: any }
   ) {
     this.employeeName = data?.employeeName ?? '';
+    const existing = data?.existingLeave;
+    this.existingLeaveId = existing?.id;
 
-    this.leaveTypeForm = this.fb.group({ leaveType: ['Vacation'] });
+    this.leaveTypeForm = this.fb.group({ leaveType: [existing?.leaveType ?? 'Vacation'] });
 
+    const reasonParts = (existing?.reason ?? '').split(' | ');
     this.vacationForm = this.fb.group({
-      title:        [''],
-      department:   [''],
+      title:        [reasonParts[0] ?? ''],
+      department:   [reasonParts[1] ?? ''],
       daysEarned:   [null],
-      startDate:    ['', Validators.required],
-      endDate:      ['', Validators.required]
+      startDate:    [existing?.startDate ? new Date(existing.startDate) : '', Validators.required],
+      endDate:      [existing?.endDate ? new Date(existing.endDate) : '', Validators.required]
     });
 
     this.sickForm = this.fb.group({
-      startDate:      ['', Validators.required],
-      endDate:        ['', Validators.required],
-      daysRequested:  [1, [Validators.required, Validators.min(1)]]
+      startDate:      [existing?.startDate ? new Date(existing.startDate) : '', Validators.required],
+      endDate:        [existing?.endDate ? new Date(existing.endDate) : '', Validators.required],
+      daysRequested:  [existing?.daysRequested ?? 1, [Validators.required, Validators.min(1)]]
     });
   }
 
@@ -430,7 +435,7 @@ export class ApplyLeaveDialogComponent {
     if (this.isSubmitDisabled) return;
 
     if (this.leaveType === 'Sick') {
-      this.dialogRef.close({ ...this.sickForm.value, leaveType: 'Sick', file: this.selectedFile });
+      this.dialogRef.close({ ...this.sickForm.value, leaveType: 'Sick', file: this.selectedFile, leaveId: this.existingLeaveId });
       return;
     }
 
@@ -442,7 +447,8 @@ export class ApplyLeaveDialogComponent {
       endDate:        v.endDate,
       daysRequested:  this.totalDays,
       reason:         [v.title, v.department].filter(Boolean).join(' | ') || undefined,
-      file:           null
+      file:           null,
+      leaveId:        this.existingLeaveId
     };
     this.dialogRef.close(payload);
   }
@@ -461,6 +467,7 @@ export class ApplyLeaveDialogComponent {
     MatChipsModule,
     MatDialogModule,
     MatTooltipModule,
+    MatSnackBarModule,
     CurrencyPipe,
     DatePipe,
     RouterModule
@@ -575,7 +582,7 @@ export class ApplyLeaveDialogComponent {
           <div class="tab-content">
             <div class="tab-header">
               <h2>Pay History</h2>
-              <button mat-raised-button color="primary">
+              <button mat-raised-button color="primary" (click)="downloadAllPayslips()">
                 <mat-icon>download</mat-icon>
                 Download All
               </button>
@@ -682,6 +689,13 @@ export class ApplyLeaveDialogComponent {
                         @if (leave.adminNotes && leave.status !== 'Pending') {
                           <div class="admin-notes">
                             <strong>Admin Response:</strong> {{ leave.adminNotes }}
+                          </div>
+                        }
+                        @if (leave.status === 'Pending') {
+                          <div class="leave-edit-row">
+                            <button mat-stroked-button (click)="editLeave(leave)">
+                              <mat-icon>edit</mat-icon> Edit Request
+                            </button>
                           </div>
                         }
                       </div>
@@ -1028,6 +1042,10 @@ export class ApplyLeaveDialogComponent {
       color: #4b5563;
     }
 
+    .leave-edit-row {
+      margin-top: 0.75rem;
+    }
+
     .notices-list {
       display: flex;
       flex-direction: column;
@@ -1176,7 +1194,7 @@ export class EmployeeDashboardComponent implements OnInit {
   employeeName = '';
   employeeEmail = '';
   employeeId = '';
-  leaveBalance = 15;
+  leaveBalance = 0;
   leaveRequests: LeaveRequest[] = [];
   payslips: any[] = [];
   loadingPayslips = false;
@@ -1195,7 +1213,8 @@ export class EmployeeDashboardComponent implements OnInit {
     private router: Router,
     private http: HttpClient,
     private dialog: MatDialog,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private snackBar: MatSnackBar
   ) {
     this.router.events.pipe(
       filter(e => e instanceof NavigationEnd)
@@ -1230,7 +1249,16 @@ export class EmployeeDashboardComponent implements OnInit {
     if (!token) return;
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
     this.http.get<any[]>(environment.apiUrl + '/employee-portal/leaves', { headers }).subscribe({
-      next: data => { this.leaveRequests = data; this.cdr.detectChanges(); },
+      next: data => {
+        this.leaveRequests = data;
+        this.leaveBalance = Math.max(
+          0,
+          21 - data
+            .filter((l: any) => l.status === 'Approved')
+            .reduce((sum: number, l: any) => sum + (l.daysRequested ?? 0), 0)
+        );
+        this.cdr.detectChanges();
+      },
       error: () => {}
     });
   }
@@ -1257,6 +1285,42 @@ export class EmployeeDashboardComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  downloadAllPayslips() {
+    if (!this.payslips.length) return;
+
+    const rows = this.payslips.map(p => `
+      <tr>
+        <td>${p.period ?? p.payPeriod ?? ''}</td>
+        <td>$${(p.grossPay ?? 0).toFixed(2)}</td>
+        <td>$${(p.deductions ?? 0).toFixed(2)}</td>
+        <td>$${(p.netPay ?? 0).toFixed(2)}</td>
+      </tr>`).join('');
+
+    const html = `<!DOCTYPE html>
+<html><head><title>Pay History – ${this.employeeName}</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 24px; }
+  h2 { margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+  th { background: #f5f5f5; }
+</style></head>
+<body>
+  <h2>Pay History – ${this.employeeName}</h2>
+  <table>
+    <thead><tr><th>Period</th><th>Gross Pay</th><th>Deductions</th><th>Net Pay</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+</body></html>`;
+
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    win.print();
   }
 
   loadNotices() {
@@ -1355,12 +1419,31 @@ export class EmployeeDashboardComponent implements OnInit {
     });
   }
 
-  submitLeaveRequest(request: LeaveRequestDto & { file?: File | null }) {
+  editLeave(leave: any) {
+    const dialogRef = this.dialog.open(ApplyLeaveDialogComponent, {
+      width: '720px',
+      maxWidth: '95vw',
+      data: { employeeName: this.employeeName, existingLeave: leave }
+    });
+
+    dialogRef.afterClosed().subscribe((result: any) => {
+      if (result) {
+        this.submitLeaveRequest(result);
+      }
+    });
+  }
+
+  submitLeaveRequest(request: LeaveRequestDto & { file?: File | null, leaveId?: number }) {
     const token = localStorage.getItem('employeeToken');
     if (!token) return;
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
 
-    const { file, ...leaveDto } = request;
+    const { file, leaveId, ...leaveDto } = request as any;
+    const isEdit = !!leaveId;
+    const url = isEdit
+      ? environment.apiUrl + `/leaverequests/${leaveId}`
+      : environment.apiUrl + '/leaverequests';
+    const successMsg = isEdit ? 'Leave request updated!' : 'Leave request submitted successfully!';
 
     if (file) {
       // Upload the medical certificate first, then submit the leave request
@@ -1372,17 +1455,30 @@ export class EmployeeDashboardComponent implements OnInit {
         { headers }
       ).subscribe({
         next: (res) => {
-          this.http.post(environment.apiUrl + '/leaverequests', { ...leaveDto, documentPath: res.documentPath }, { headers }).subscribe({
-            next: () => this.loadLeaveRequests(),
-            error: err => console.error('Leave request failed:', err)
+          const body = { ...leaveDto, documentPath: res.documentPath };
+          (isEdit ? this.http.put(url, body, { headers }) : this.http.post(url, body, { headers })).subscribe({
+            next: () => {
+              this.snackBar.open(successMsg, 'Close', { duration: 3500 });
+              this.loadLeaveRequests();
+            },
+            error: err => {
+              console.error('Leave request failed:', err);
+              this.snackBar.open('Failed to submit leave request. Please try again.', 'Close', { duration: 4000 });
+            }
           });
         },
         error: err => console.error('Document upload failed:', err)
       });
     } else {
-      this.http.post(environment.apiUrl + '/leaverequests', leaveDto, { headers }).subscribe({
-        next: () => this.loadLeaveRequests(),
-        error: err => console.error('Leave request failed:', err)
+      (isEdit ? this.http.put(url, leaveDto, { headers }) : this.http.post(url, leaveDto, { headers })).subscribe({
+        next: () => {
+          this.snackBar.open(successMsg, 'Close', { duration: 3500 });
+          this.loadLeaveRequests();
+        },
+        error: err => {
+          console.error('Leave request failed:', err);
+          this.snackBar.open('Failed to submit leave request. Please try again.', 'Close', { duration: 4000 });
+        }
       });
     }
   }

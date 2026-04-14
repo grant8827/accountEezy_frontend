@@ -794,8 +794,12 @@ export class EmployeeListComponent implements OnInit {
   }
 
   viewEmployee(employee: Employee) {
-    console.log('Viewing employee:', employee);
-    // TODO: Navigate to employee details page
+    this.dialog.open(EmployeeFormDialogComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+      data: { employee, businessId: 1, viewOnly: true },
+      panelClass: 'employee-dialog'
+    });
   }
 
   editEmployee(employee: Employee) {

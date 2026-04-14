@@ -30,7 +30,7 @@ import { Employee } from '../../types/index';
   template: `
     <div class="dialog-container">
       <div class="dialog-header">
-        <h2 mat-dialog-title>{{ isEditMode ? 'Edit Employee' : 'Add New Employee' }}</h2>
+        <h2 mat-dialog-title>{{ viewOnly ? 'View Employee' : (isEditMode ? 'Edit Employee' : 'Add New Employee') }}</h2>
         <button mat-icon-button mat-dialog-close>
           <mat-icon>close</mat-icon>
         </button>
@@ -239,11 +239,15 @@ import { Employee } from '../../types/index';
       </mat-dialog-content>
 
       <mat-dialog-actions align="end">
-        <button mat-button mat-dialog-close>Cancel</button>
-        <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="employeeForm.invalid" class="submit-btn">
-          <mat-icon>{{ isEditMode ? 'save' : 'person_add' }}</mat-icon>
-          {{ isEditMode ? 'Update' : 'Add Employee' }}
-        </button>
+        @if (viewOnly) {
+          <button mat-raised-button mat-dialog-close color="primary">Close</button>
+        } @else {
+          <button mat-button mat-dialog-close>Cancel</button>
+          <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="employeeForm.invalid" class="submit-btn">
+            <mat-icon>{{ isEditMode ? 'save' : 'person_add' }}</mat-icon>
+            {{ isEditMode ? 'Update' : 'Add Employee' }}
+          </button>
+        }
       </mat-dialog-actions>
     </div>
   `,
@@ -346,13 +350,15 @@ import { Employee } from '../../types/index';
 export class EmployeeFormDialogComponent implements OnInit {
   employeeForm: FormGroup;
   isEditMode: boolean = false;
+  viewOnly: boolean = false;
 
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<EmployeeFormDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { employee?: Employee, businessId: number }
+    @Inject(MAT_DIALOG_DATA) public data: { employee?: Employee, businessId: number, viewOnly?: boolean }
   ) {
     this.isEditMode = !!data.employee;
+    this.viewOnly = !!data.viewOnly;
 
     const passwordValidators = this.isEditMode
       ? [] // Password optional for edit

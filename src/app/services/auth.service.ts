@@ -83,7 +83,7 @@ export class AuthService {
   }
 
   private checkExistingAuth(): void {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accounteezy_token');
     const userStr = localStorage.getItem('user');
 
     if (token && userStr && this.isTokenValid()) {
@@ -99,7 +99,7 @@ export class AuthService {
   }
 
   private isTokenValid(): boolean {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accounteezy_token');
     if (!token) return false;
 
     try {
@@ -118,7 +118,6 @@ export class AuthService {
       tap(response => {
         console.log('Login response:', response);
         if (response.success && response.data) {
-          localStorage.setItem('token', response.data.token);
           localStorage.setItem('accounteezy_token', response.data.token);
           localStorage.setItem('user', JSON.stringify(response.data.user));
           this.userSubject.next(response.data.user);
@@ -146,7 +145,6 @@ export class AuthService {
       tap(response => {
         console.log('Register response:', response);
         if (response.success && response.data) {
-          localStorage.setItem('token', response.data.token);
           localStorage.setItem('accounteezy_token', response.data.token);
           localStorage.setItem('user', JSON.stringify(response.data.user));
           this.userSubject.next(response.data.user);
@@ -167,8 +165,8 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem('token');
     localStorage.removeItem('accounteezy_token');
+    localStorage.removeItem('token'); // remove legacy key if present
     localStorage.removeItem('user');
     this.userSubject.next(null);
     this.isAuthenticatedSubject.next(false);
@@ -183,9 +181,8 @@ export class AuthService {
   }
 
   isTrialExpired(): boolean {
-    const user = this.userSubject.value;
-    if (!user?.trialExpiresAt) return false;
-    return new Date() > new Date(user.trialExpiresAt);
+    // Trial enforcement disabled during development
+    return false;
   }
 
   getDaysLeftInTrial(): number {

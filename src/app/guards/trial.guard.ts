@@ -25,11 +25,7 @@ export class TrialGuard implements CanActivate {
           return true;
         }
 
-        if (this.authService.isTrialExpired()) {
-          this.router.navigate(['/payment'], { queryParams: { reason: 'trial-expired' } });
-          return false;
-        }
-
+        // Trial enforcement disabled during development
         return true;
       })
     );

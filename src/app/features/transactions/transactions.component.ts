@@ -43,10 +43,10 @@ export class TransactionsComponent implements OnInit {
   });
 
   readonly totalIncome = computed(() =>
-    this.transactions().filter(t => t.type === 1).reduce((s, t) => s + t.amount + t.gctAmount, 0)
+    this.transactions().filter(t => t.type === 1).reduce((s, t) => s + t.amount, 0)
   );
   readonly totalExpense = computed(() =>
-    this.transactions().filter(t => t.type === 2).reduce((s, t) => s + t.amount + t.gctAmount, 0)
+    this.transactions().filter(t => t.type === 2).reduce((s, t) => s + t.amount, 0)
   );
   readonly netBalance = computed(() => this.totalIncome() - this.totalExpense());
 

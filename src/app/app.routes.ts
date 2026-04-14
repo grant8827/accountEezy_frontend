@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
 import { TrialGuard } from './guards/trial.guard';
+import { EmployeeAuthGuard } from './guards/employee-auth.guard';
 import { LoginComponent } from './components/auth/login.component';
 import { RegisterComponent } from './components/auth/register.component';
 import { LandingComponent } from './features/landing/landing.component';
@@ -40,6 +41,7 @@ export const routes: Routes = [
   {
     path: 'employee-dashboard',
     component: EmployeeDashboardLayoutComponent,
+    canActivate: [EmployeeAuthGuard],
     children: [
       {
         path: '',
