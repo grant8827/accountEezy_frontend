@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { TransactionItem, TransactionRequest } from '../models/transaction.models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class TransactionsService {
-  private readonly apiUrl = '/api/transactions';
+  private readonly apiUrl = `${environment.apiUrl}/transactions`;
 
   /** Emits whenever a transaction is created or deleted — lets other components react in real-time */
   private readonly _changed$ = new Subject<void>();
