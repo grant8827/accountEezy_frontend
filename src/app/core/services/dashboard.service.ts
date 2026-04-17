@@ -4,7 +4,7 @@ import { DashboardSummary, So1Report, So2Report } from '../models/dashboard.mode
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
-  private readonly baseUrl = 'http://localhost:5071/api';
+  private readonly baseUrl = '/api';
 
   constructor(private http: HttpClient) {}
 

@@ -5,7 +5,7 @@ import { AuthResponse, LoginRequest, RegisterRequest } from '../models/auth.mode
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly apiUrl = 'http://localhost:5071/api/auth';
+  private readonly apiUrl = '/api/auth';
   private readonly tokenKey = 'accounteezy_token';
   private readonly emailKey = 'accounteezy_email';
 

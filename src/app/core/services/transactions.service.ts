@@ -5,7 +5,7 @@ import { TransactionItem, TransactionRequest } from '../models/transaction.model
 
 @Injectable({ providedIn: 'root' })
 export class TransactionsService {
-  private readonly apiUrl = 'http://localhost:5071/api/transactions';
+  private readonly apiUrl = '/api/transactions';
 
   /** Emits whenever a transaction is created or deleted — lets other components react in real-time */
   private readonly _changed$ = new Subject<void>();

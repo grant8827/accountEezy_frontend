@@ -4,7 +4,7 @@ import { PayrollRequest, PayrollResponse } from '../models/payroll.models';
 
 @Injectable({ providedIn: 'root' })
 export class PayrollService {
-  private readonly apiUrl = 'http://localhost:5071/api/payroll/calculate';
+  private readonly apiUrl = '/api/payroll/calculate';
 
   constructor(private http: HttpClient) {}
 
