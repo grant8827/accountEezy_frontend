@@ -117,6 +117,20 @@
             <span class="so1-stat-label">GCT Payable</span>
             <span class="so1-stat-val">J$ {{ report.gctPayable | number:'1.2-2' }}</span>
           </div>
+
+          @if (report.financial && report.financial.totalIncome > 0) {
+            <div class="so1-divider"></div>
+            <div class="so1-stat so1-stat--income-header">
+              <span class="so1-stat-label">Total Income</span>
+              <span class="so1-stat-val highlight-green">J$ {{ report.financial.totalIncome | number:'1.2-2' }}</span>
+            </div>
+            @for (item of report.financial.incomeItems; track item.category) {
+              <div class="so1-stat so1-stat--indent">
+                <span class="so1-stat-label">{{ item.category }}</span>
+                <span class="so1-stat-val">J$ {{ item.totalAmount | number:'1.2-2' }}</span>
+              </div>
+            }
+          }
         } @else {
           <p class="so1-empty">Run a payroll calculation to see your SO1 data here.</p>
         }

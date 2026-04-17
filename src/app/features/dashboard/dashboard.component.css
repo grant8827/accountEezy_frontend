@@ -244,6 +244,14 @@
 .so1-stat-label { color: var(--text-secondary); font-weight: 500; }
 .so1-stat-val   { color: var(--text-main); font-weight: 600; }
 .so1-stat-val.highlight { color: var(--primary-brand); font-size: 1rem; }
+.so1-stat-val.highlight-green { color: #22c55e; font-size: 1rem; }
+.so1-stat--indent { opacity: 0.85; padding-left: 20px; }
+.so1-stat--income-header { background: rgba(34,197,94,0.08); }
+.so1-divider {
+  height: 1px;
+  background: var(--border-color, rgba(0,0,0,0.08));
+  margin: 4px 0;
+}
 .so1-empty {
   color: var(--text-tertiary);
   font-size: 0.875rem;
