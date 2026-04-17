@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -655,7 +655,7 @@ export class LeaveRequestsComponent implements OnInit {
   selectedLeave: LeaveRequest | null = null;
   private readonly apiUrl = environment.apiUrl + '/leaverequests';
 
-  constructor(private http: HttpClient, private snackBar: MatSnackBar, private sanitizer: DomSanitizer) {}
+  constructor(private http: HttpClient, private snackBar: MatSnackBar, private sanitizer: DomSanitizer, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.loadLeaves();
@@ -668,10 +668,12 @@ export class LeaveRequestsComponent implements OnInit {
         this.leaveRequests = data;
         this.applyFilter();
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
-        this.snackBar.open('Failed to load leave requests', 'Close', { duration: 3000 });
         this.loading = false;
+        this.cdr.detectChanges();
+        this.snackBar.open('Failed to load leave requests', 'Close', { duration: 3000 });
       }
     });
   }

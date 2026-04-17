@@ -17,6 +17,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { EmployeeService } from '../../services/employee.service';
+import { Employee as AppEmployee } from '../../types/index';
 
 // ── Interfaces ─────────────────────────────────────────────────────────────────
 
@@ -25,11 +27,6 @@ interface PayrollBatchSummary {
   startDate: string; endDate: string;
   status: number; createdAt: string;
   employeeCount: number; totalNet: number; totalRemittance: number;
-}
-
-interface Employee {
-  id: number; name: string; nisNumber: string;
-  grossSalary: number; payCycle: string; isActive: boolean;
 }
 
 interface BatchEntryInput {
@@ -744,7 +741,12 @@ export class PayrollModuleComponent implements OnInit {
   batchColumns = ['label','payCycle','employees','totalNet','totalRemittance','status','actions'];
   resultColumns = ['name','gross','nis','nht','edtax','paye','loan','net','payslip'];
 
-  constructor(private http: HttpClient, private snack: MatSnackBar, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private http: HttpClient,
+    private snack: MatSnackBar,
+    private cdr: ChangeDetectorRef,
+    private employeeService: EmployeeService
+  ) {}
 
   ngOnInit() {
     this.loadBatches();
@@ -830,10 +832,12 @@ export class PayrollModuleComponent implements OnInit {
 
   loadWorksheetEmployees() {
     this.loadingEmployees = true;
-    this.http.get<Employee[]>(environment.apiUrl + '/employees').subscribe({
+    this.employeeService.getAll().subscribe({
       next: employees => {
         this.worksheetEntries = employees.map(e => ({
-          employeeId: e.id, name: e.name, baseSalary: e.grossSalary,
+          employeeId: e.id,
+          name: this.getEmployeeDisplayName(e),
+          baseSalary: e.salary,
           holidayPay: 0, bonus: 0, loanDeduction: 0
         }));
         this.loadingEmployees = false;
@@ -879,6 +883,10 @@ export class PayrollModuleComponent implements OnInit {
   }
 
   recalcEstimate(_e: BatchEntryInput) { /* triggers change detection */ }
+
+  private getEmployeeDisplayName(employee: AppEmployee): string {
+    return `${employee.firstName} ${employee.lastName}`.trim() || employee.email || 'Employee';
+  }
 
   // ── Remittance ──────────────────────────────────────────────────────────────
 

@@ -1,13 +1,13 @@
 /* ── Shell ─────────────────────────────────────────────── */
 .dashboard-shell {
-  background: #f1f5f9;
+  background: var(--bg-light);
   min-height: 100vh;
   padding-bottom: 60px;
 }
 
 /* ── Page Header ─────────────────────────────────────────── */
 .page-header {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(135deg, var(--sidebar-bg) 0%, var(--primary-brand) 100%);
   padding: 40px 32px 36px;
 }
 .page-header-inner {
@@ -28,16 +28,16 @@
 }
 .page-sub {
   margin: 0;
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.82);
   font-size: 0.95rem;
 }
 .header-badge {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(99,102,241,0.18);
-  border: 1px solid rgba(99,102,241,0.4);
-  color: #a5b4fc;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
   padding: 8px 16px;
   border-radius: 20px;
   font-size: 0.85rem;
@@ -48,7 +48,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #6366f1;
+  background: #fff;
   animation: pulse-dot 2s infinite;
 }
 @keyframes pulse-dot {
@@ -58,8 +58,8 @@
 
 /* ── Alert Banner ─────────────────────────────────────────── */
 .alert-banner {
-  background: #fef3c7;
-  border-bottom: 2px solid #f59e0b;
+  background: color-mix(in srgb, var(--warning-amber) 16%, white);
+  border-bottom: 2px solid var(--warning-amber);
 }
 .alert-banner-inner {
   max-width: 1200px;
@@ -69,7 +69,7 @@
   gap: 12px;
   align-items: flex-start;
   font-size: 0.875rem;
-  color: #78350f;
+  color: var(--text-main);
 }
 .alert-icon {
   font-size: 1.1rem;
@@ -90,7 +90,7 @@
   gap: 20px;
 }
 .kpi-card {
-  background: #fff;
+  background: var(--background-primary);
   border-radius: 14px;
   padding: 24px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
@@ -103,34 +103,34 @@
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(0,0,0,0.1);
 }
-.kpi-profit { border-top-color: #10b981; }
-.kpi-tax    { border-top-color: #ef4444; }
-.kpi-cashflow { border-top-color: #6366f1; }
-.kpi-gct    { border-top-color: #f59e0b; }
+.kpi-profit { border-top-color: var(--success-money); }
+.kpi-tax    { border-top-color: var(--danger-red); }
+.kpi-cashflow { border-top-color: var(--primary-brand); }
+.kpi-gct    { border-top-color: var(--warning-amber); }
 
 .kpi-label {
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #64748b;
+  color: var(--text-secondary);
   margin-bottom: 8px;
 }
 .kpi-value {
   font-size: clamp(1.2rem, 2vw, 1.6rem);
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-main);
   margin-bottom: 4px;
   letter-spacing: -0.5px;
 }
 .kpi-sub {
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   margin-bottom: 16px;
 }
 .kpi-bar {
   height: 4px;
-  background: #f1f5f9;
+  background: var(--background-tertiary);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -139,10 +139,10 @@
   border-radius: 4px;
   width: 65%;
 }
-.fill-profit   { background: #10b981; }
-.fill-tax      { background: #ef4444; }
-.fill-cashflow { background: #6366f1; }
-.fill-gct      { background: #f59e0b; }
+.fill-profit   { background: var(--success-money); }
+.fill-tax      { background: var(--danger-red); }
+.fill-cashflow { background: var(--primary-brand); }
+.fill-gct      { background: var(--warning-amber); }
 
 /* ── Charts Row ──────────────────────────────────────────── */
 .charts-grid {
@@ -154,7 +154,7 @@
   gap: 20px;
 }
 .chart-card {
-  background: #fff;
+  background: var(--background-primary);
   border-radius: 14px;
   padding: 24px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
@@ -171,13 +171,13 @@
   margin: 0;
   font-size: 1rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-main);
 }
 .chart-badge {
   font-size: 0.75rem;
   font-weight: 600;
-  background: #ede9fe;
-  color: #6d28d9;
+  background: color-mix(in srgb, var(--primary-brand) 12%, white);
+  color: var(--primary-brand);
   padding: 3px 10px;
   border-radius: 12px;
 }
@@ -197,7 +197,7 @@
 
 /* SO1 Card */
 .so1-card {
-  background: #fff;
+  background: var(--background-primary);
   border-radius: 14px;
   padding: 24px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
@@ -214,7 +214,7 @@
   margin: 0;
   font-size: 1rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-main);
 }
 .status-badge {
   font-size: 0.75rem;
@@ -222,8 +222,14 @@
   padding: 3px 10px;
   border-radius: 12px;
 }
-.status-pending { background: #fef3c7; color: #b45309; }
-.status-empty   { background: #f1f5f9; color: #64748b; }
+.status-pending {
+  background: color-mix(in srgb, var(--warning-amber) 18%, white);
+  color: #7a4d00;
+}
+.status-empty {
+  background: var(--background-tertiary);
+  color: var(--text-secondary);
+}
 
 .so1-body { display: flex; flex-direction: column; gap: 10px; }
 .so1-stat {
@@ -231,15 +237,15 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: #f8fafc;
+  background: var(--bg-light);
   border-radius: 8px;
   font-size: 0.875rem;
 }
-.so1-stat-label { color: #64748b; font-weight: 500; }
-.so1-stat-val   { color: #0f172a; font-weight: 600; }
-.so1-stat-val.highlight { color: #6366f1; font-size: 1rem; }
+.so1-stat-label { color: var(--text-secondary); font-weight: 500; }
+.so1-stat-val   { color: var(--text-main); font-weight: 600; }
+.so1-stat-val.highlight { color: var(--primary-brand); font-size: 1rem; }
 .so1-empty {
-  color: #94a3b8;
+  color: var(--text-tertiary);
   font-size: 0.875rem;
   text-align: center;
   padding: 24px 0;
@@ -248,7 +254,7 @@
 
 /* Compliance Card */
 .compliance-card {
-  background: linear-gradient(160deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(160deg, var(--sidebar-bg) 0%, var(--primary-brand) 100%);
   border-radius: 14px;
   padding: 24px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
@@ -257,7 +263,7 @@
   margin: 0 0 16px;
   font-size: 1rem;
   font-weight: 700;
-  color: #e2e8f0;
+  color: #fff;
 }
 .compliance-list {
   list-style: none;
@@ -272,11 +278,11 @@
   align-items: flex-start;
   gap: 10px;
   font-size: 0.82rem;
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.84);
   line-height: 1.4;
 }
 .check {
-  color: #10b981;
+  color: #fff;
   font-size: 0.95rem;
   flex-shrink: 0;
   margin-top: 1px;

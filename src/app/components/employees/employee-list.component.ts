@@ -228,7 +228,7 @@ import { EmployeeService } from '../../services/employee.service';
           <div class="empty-state">
             <mat-icon>people_outline</mat-icon>
             <h3>No employees found</h3>
-            <p>{{ searchTerm ? 'Try adjusting your search' : 'Get started by adding your first employee' }}</p>
+            <p>{{ searchTerm ? 'Try adjusting your search' : (loadError ?? 'Get started by adding your first employee') }}</p>
             <button mat-raised-button class="add-btn" (click)="openAddDialog()">
               <mat-icon>person_add</mat-icon>
               Add Employee
@@ -685,6 +685,7 @@ export class EmployeeListComponent implements OnInit {
   statusFilter: string = 'all';
   displayedColumns: string[] = ['employee', 'email', 'department', 'hireDate', 'salary', 'status', 'actions'];
   loading: boolean = false;
+  loadError: string | null = null;
 
   constructor(
     private dialog: MatDialog,
@@ -700,6 +701,7 @@ export class EmployeeListComponent implements OnInit {
 
   loadEmployees() {
     this.loading = true;
+    this.loadError = null;
     this.employeeService.getAll().subscribe({
       next: (employees) => {
         this.employees = employees;
@@ -715,6 +717,7 @@ export class EmployeeListComponent implements OnInit {
         let msg = 'Failed to load employees.';
         if (error.status === 401) msg = 'Session expired. Please log in again.';
         else if (error.status === 0) msg = 'Cannot connect to server. Check backend is running.';
+        this.loadError = msg;
         this.snackBar.open(msg, 'Close', { duration: 5000 });
       }
     });

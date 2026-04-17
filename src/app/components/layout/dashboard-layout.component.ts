@@ -99,13 +99,13 @@ import { AuthService, User } from '../../services/auth.service';
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      background: #f8fafc;
+      background: var(--bg-light);
     }
 
     .app-bar {
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
       z-index: 1001;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      background: var(--primary-brand) !important;
     }
 
     .title {
@@ -133,9 +133,9 @@ import { AuthService, User } from '../../services/auth.service';
     /* Sidebar Styles */
     .sidebar {
       width: 260px;
-      background: #ffffff;
-      border-right: 1px solid #e5e7eb;
-      box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+      background: var(--sidebar-bg);
+      border-right: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 2px 0 8px rgba(7,71,166,0.18);
       overflow-y: auto;
       flex-shrink: 0;
     }
@@ -151,7 +151,7 @@ import { AuthService, User } from '../../services/auth.service';
       align-items: center;
       gap: 1rem;
       padding: 1rem 1.5rem;
-      color: #4b5563;
+      color: rgba(255, 255, 255, 0.92);
       text-decoration: none;
       font-size: 0.95rem;
       font-weight: 500;
@@ -160,14 +160,14 @@ import { AuthService, User } from '../../services/auth.service';
     }
 
     .nav-link:hover {
-      background: #f3f4f6;
-      color: #667eea;
+      background: var(--primary-brand);
+      color: #ffffff;
     }
 
     .nav-link.active {
-      background: #EEF2FF;
-      color: #667eea;
-      border-left-color: #667eea;
+      background: var(--primary-brand);
+      color: #ffffff;
+      border-left-color: #ffffff;
       font-weight: 600;
     }
 
@@ -181,7 +181,7 @@ import { AuthService, User } from '../../services/auth.service';
     .content {
       flex: 1;
       overflow-y: auto;
-      background: #f8fafc;
+      background: var(--bg-light);
     }
 
     @media (max-width: 768px) {

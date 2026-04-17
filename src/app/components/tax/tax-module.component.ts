@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -1262,7 +1262,7 @@ interface TaxRow { label: string; employee: number; employer: number; total: num
     }
   `]
 })
-export class TaxModuleComponent {
+export class TaxModuleComponent implements OnInit {
   private reportsService = inject(ReportsService);
 
   // Selectors - Monthly
@@ -1361,6 +1361,11 @@ export class TaxModuleComponent {
       { label: 'HEART',         employee: 0,                      employer: r.heartEmployer,        total: r.heartEmployer },
       { label: 'GCT',           employee: 0,                      employer: r.gctPayable,           total: r.gctPayable },
     ];
+  }
+
+  ngOnInit() {
+    this.loadSo1();
+    this.loadSo2();
   }
 
   loadMonthly() {

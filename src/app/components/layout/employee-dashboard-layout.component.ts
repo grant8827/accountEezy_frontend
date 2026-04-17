@@ -85,7 +85,7 @@ import { MatDividerModule } from '@angular/material/divider';
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      background: #f8fafc;
+      background: var(--bg-light);
     }
 
     .app-bar {
@@ -117,8 +117,8 @@ import { MatDividerModule } from '@angular/material/divider';
 
     .sidebar {
       width: 260px;
-      background: white;
-      border-right: 1px solid #e5e7eb;
+      background: var(--sidebar-bg);
+      border-right: 1px solid rgba(255,255,255,0.14);
       padding: 1.5rem 0;
       overflow-y: auto;
     }
@@ -136,7 +136,7 @@ import { MatDividerModule } from '@angular/material/divider';
       gap: 1rem;
       padding: 0.75rem 1rem;
       border-radius: 8px;
-      color: #6b7280;
+      color: rgba(255, 255, 255, 0.92);
       text-decoration: none;
       transition: all 0.2s;
       font-weight: 500;
@@ -149,12 +149,12 @@ import { MatDividerModule } from '@angular/material/divider';
     }
 
     .nav-link:hover {
-      background: #f3f4f6;
-      color: #667eea;
+      background: var(--primary-brand);
+      color: #ffffff;
     }
 
     .nav-link.active {
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      background: var(--primary-brand);
       color: white;
     }
 
@@ -186,7 +186,7 @@ import { MatDividerModule } from '@angular/material/divider';
       .sidebar {
         width: 100%;
         border-right: none;
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid rgba(255,255,255,0.14);
       }
 
       .sidebar-nav {

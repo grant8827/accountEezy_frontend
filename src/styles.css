@@ -1,52 +1,58 @@
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 
-/* Modern 2026 Color Palette - Professional & Contemporary */
+/* Trust & Growth brand palette */
 :root {
-  /* Primary Colors - Deep Indigo */
-  --primary-color: #4F46E5;          /* Vibrant Indigo */
-  --primary-dark: #3730A3;            /* Deep Indigo */
-  --primary-light: #6366F1;           /* Light Indigo */
+  --primary-brand: #0052CC;
+  --sidebar-bg: #0747A6;
+  --success-money: #00875A;
+  --warning-amber: #FFAB00;
+  --danger-red: #DE350B;
+  --bg-light: #F4F5F7;
+  --text-main: #172B4D;
 
-  /* Accent Colors - Cyan/Teal */
-  --accent-color: #06B6D4;            /* Bright Cyan */
-  --accent-dark: #0891B2;             /* Deep Cyan */
-  --accent-light: #22D3EE;            /* Light Cyan */
+  /* Shared theme aliases */
+  --primary-color: var(--primary-brand);
+  --primary-dark: #003A99;
+  --primary-light: #4C9AFF;
+  --accent-color: var(--primary-light);
+  --accent-dark: var(--primary-brand);
+  --accent-light: #B3D4FF;
 
   /* Neutral Colors */
-  --neutral-50: #F8FAFC;              /* Lightest */
-  --neutral-100: #F1F5F9;
-  --neutral-200: #E2E8F0;
-  --neutral-300: #CBD5E1;
-  --neutral-400: #94A3B8;
-  --neutral-500: #64748B;
-  --neutral-600: #475569;
-  --neutral-700: #334155;
-  --neutral-800: #1E293B;
-  --neutral-900: #0F172A;             /* Darkest */
+  --neutral-50: #FBFCFD;
+  --neutral-100: #F4F5F7;
+  --neutral-200: #DFE1E6;
+  --neutral-300: #C1C7D0;
+  --neutral-400: #97A0AF;
+  --neutral-500: #6B778C;
+  --neutral-600: #505F79;
+  --neutral-700: #344563;
+  --neutral-800: #253858;
+  --neutral-900: #172B4D;
 
   /* Semantic Colors */
-  --success: #10B981;                 /* Emerald */
-  --warning: #F59E0B;                 /* Amber */
-  --error: #EF4444;                   /* Red */
-  --info: #3B82F6;                    /* Blue */
+  --success: var(--success-money);
+  --warning: var(--warning-amber);
+  --error: var(--danger-red);
+  --info: var(--primary-brand);
 
   /* Backgrounds */
   --background-primary: #FFFFFF;
-  --background-secondary: #F8FAFC;
-  --background-tertiary: #F1F5F9;
+  --background-secondary: var(--bg-light);
+  --background-tertiary: #EBECF0;
 
   /* Text Colors */
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-tertiary: #94A3B8;
+  --text-primary: var(--text-main);
+  --text-secondary: #42526E;
+  --text-tertiary: #6B778C;
 
   /* Legacy Support (for gradual migration) */
-  --primary-black: #0F172A;
-  --primary-gold: #4F46E5;
-  --light-gold: #6366F1;
-  --dark-gold: #3730A3;
-  --dark-gray: #1E293B;
-  --background-cream: #F8FAFC;
+  --primary-black: var(--text-main);
+  --primary-gold: var(--primary-brand);
+  --light-gold: var(--primary-light);
+  --dark-gold: var(--primary-dark);
+  --dark-gray: var(--neutral-800);
+  --background-cream: var(--bg-light);
 }
 
 html,
@@ -84,34 +90,42 @@ button {
 
 /* Modern Material Theme Customization */
 .mat-mdc-raised-button.mat-primary {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-light)) !important;
+  background: var(--primary-brand) !important;
   color: white !important;
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25) !important;
+  box-shadow: 0 2px 8px rgba(0, 82, 204, 0.24) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .mat-mdc-raised-button.mat-primary:hover {
-  background: linear-gradient(135deg, var(--primary-dark), var(--primary-color)) !important;
-  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4) !important;
+  background: var(--primary-dark) !important;
+  box-shadow: 0 4px 16px rgba(0, 82, 204, 0.32) !important;
   transform: translateY(-1px);
 }
 
 .mat-mdc-raised-button.mat-accent {
-  background: linear-gradient(135deg, var(--accent-color), var(--accent-light)) !important;
+  background: var(--primary-light) !important;
   color: white !important;
-  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.25) !important;
+  box-shadow: 0 2px 8px rgba(76, 154, 255, 0.24) !important;
 }
 
 .mat-mdc-raised-button.mat-accent:hover {
-  background: linear-gradient(135deg, var(--accent-dark), var(--accent-color)) !important;
-  box-shadow: 0 4px 16px rgba(6, 182, 212, 0.4) !important;
+  background: var(--primary-brand) !important;
+  box-shadow: 0 4px 16px rgba(0, 82, 204, 0.28) !important;
   transform: translateY(-1px);
 }
 
 .mat-toolbar.mat-primary {
-  background: linear-gradient(135deg, var(--neutral-900), var(--neutral-800)) !important;
+  background: var(--primary-brand) !important;
   color: white !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+a {
+  color: var(--primary-brand);
+}
+
+a:hover {
+  color: var(--primary-dark);
 }
 
 .mat-mdc-card {
