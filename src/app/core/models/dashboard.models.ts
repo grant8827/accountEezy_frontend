@@ -39,3 +39,18 @@ export interface So2Report {
   totalGctPayable: number;
   totalAnnualRemittance: number;
 }
+
+export interface TaxConfig {
+  nisRateEmployee: number;
+  nisRateEmployer: number;
+  nhtRateEmployee: number;
+  nhtRateEmployer: number;
+  educationTaxRateEmployee: number;
+  educationTaxRateEmployer: number;
+  heartRateEmployer: number;
+  payeRateLower: number;
+  payeRateUpper: number;
+  incomeTaxThresholdAnnual: number;
+  payeUpperBandAnnual: number;
+  nisAnnualCeiling: number;
+}

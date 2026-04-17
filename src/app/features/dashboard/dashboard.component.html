@@ -139,36 +139,48 @@
 
     <div class="compliance-card">
       <h2 class="compliance-title">Compliance Checklist</h2>
-      <ul class="compliance-list">
-        <li class="compliance-item">
-          <span class="check">&#10003;</span>
-          <span>NIS — Employer 3% + Employee 3% (ceiling J$6M/yr)</span>
-        </li>
-        <li class="compliance-item">
-          <span class="check">&#10003;</span>
-          <span>NHT — Employer 3% + Employee 2%</span>
-        </li>
-        <li class="compliance-item">
-          <span class="check">&#10003;</span>
-          <span>Ed Tax — Employer 3.5% + Employee 2.25%</span>
-        </li>
-        <li class="compliance-item">
-          <span class="check">&#10003;</span>
-          <span>HEART — Employer 3% only</span>
-        </li>
-        <li class="compliance-item">
-          <span class="check">&#10003;</span>
-          <span>PAYE — 25% (threshold to J$6M) / 30% above</span>
-        </li>
-        <li class="compliance-item">
-          <span class="check">&#10003;</span>
-          <span>GCT — 15% on applicable transactions</span>
-        </li>
-        <li class="compliance-item">
-          <span class="check">&#10003;</span>
-          <span>Income threshold — J$1,902,360 annual</span>
-        </li>
-      </ul>
+      @if (taxConfig(); as tc) {
+        <ul class="compliance-list">
+          <li class="compliance-item">
+            <span class="check">&#10003;</span>
+            <span>NIS — Employer {{ tc.nisRateEmployer * 100 | number:'1.0-2' }}% + Employee {{ tc.nisRateEmployee * 100 | number:'1.0-2' }}% (ceiling J${{ tc.nisAnnualCeiling / 1000000 | number:'1.0-1' }}M/yr)</span>
+          </li>
+          <li class="compliance-item">
+            <span class="check">&#10003;</span>
+            <span>NHT — Employer {{ tc.nhtRateEmployer * 100 | number:'1.0-2' }}% + Employee {{ tc.nhtRateEmployee * 100 | number:'1.0-2' }}%</span>
+          </li>
+          <li class="compliance-item">
+            <span class="check">&#10003;</span>
+            <span>Ed Tax — Employer {{ tc.educationTaxRateEmployer * 100 | number:'1.0-2' }}% + Employee {{ tc.educationTaxRateEmployee * 100 | number:'1.0-2' }}%</span>
+          </li>
+          <li class="compliance-item">
+            <span class="check">&#10003;</span>
+            <span>HEART — Employer {{ tc.heartRateEmployer * 100 | number:'1.0-2' }}% only</span>
+          </li>
+          <li class="compliance-item">
+            <span class="check">&#10003;</span>
+            <span>PAYE — {{ tc.payeRateLower * 100 | number:'1.0-0' }}% (threshold to J${{ tc.payeUpperBandAnnual / 1000000 | number:'1.0-1' }}M) / {{ tc.payeRateUpper * 100 | number:'1.0-0' }}% above</span>
+          </li>
+          <li class="compliance-item">
+            <span class="check">&#10003;</span>
+            <span>GCT — 15% on applicable transactions</span>
+          </li>
+          <li class="compliance-item">
+            <span class="check">&#10003;</span>
+            <span>Income threshold — J${{ tc.incomeTaxThresholdAnnual | number:'1.0-0' }} annual</span>
+          </li>
+        </ul>
+      } @else {
+        <ul class="compliance-list">
+          <li class="compliance-item"><span class="check">&#10003;</span><span>NIS — Employer 3% + Employee 3% (ceiling J$6M/yr)</span></li>
+          <li class="compliance-item"><span class="check">&#10003;</span><span>NHT — Employer 3% + Employee 2%</span></li>
+          <li class="compliance-item"><span class="check">&#10003;</span><span>Ed Tax — Employer 3.5% + Employee 2.25%</span></li>
+          <li class="compliance-item"><span class="check">&#10003;</span><span>HEART — Employer 3% only</span></li>
+          <li class="compliance-item"><span class="check">&#10003;</span><span>PAYE — 25% (threshold to J$6M) / 30% above</span></li>
+          <li class="compliance-item"><span class="check">&#10003;</span><span>GCT — 15% on applicable transactions</span></li>
+          <li class="compliance-item"><span class="check">&#10003;</span><span>Income threshold — J$1,902,360 annual</span></li>
+        </ul>
+      }
     </div>
   </section>
 

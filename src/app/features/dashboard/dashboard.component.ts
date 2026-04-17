@@ -3,8 +3,9 @@ import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { Subscription } from 'rxjs';
-import { DashboardSummary, So1Report } from '../../core/models/dashboard.models';
+import { DashboardSummary, So1Report, TaxConfig } from '../../core/models/dashboard.models';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { TaxConfigService } from '../../core/services/tax-config.service';
 import { TransactionItem } from '../../core/models/transaction.models';
 import { TransactionsService } from '../../core/services/transactions.service';
 
@@ -18,11 +19,13 @@ import { TransactionsService } from '../../core/services/transactions.service';
 export class DashboardComponent implements OnInit, OnDestroy {
   private readonly dashboardService = inject(DashboardService);
   private readonly transactionsService = inject(TransactionsService);
+  private readonly taxConfigService = inject(TaxConfigService);
   private changedSub?: Subscription;
 
   readonly summary = signal<DashboardSummary | null>(null);
   readonly so1 = signal<So1Report | null>(null);
   readonly transactions = signal<TransactionItem[]>([]);
+  readonly taxConfig = signal<TaxConfig | null>(null);
 
   readonly lineChartOptions: ChartOptions<'line'> = {
     responsive: true,
@@ -146,6 +149,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.transactionsService.getAll().subscribe(data => this.transactions.set(data));
     const now = new Date();
     this.dashboardService.getSo1(now.getMonth() + 1, now.getFullYear()).subscribe(data => this.so1.set(data));
+    this.taxConfigService.get().subscribe(data => this.taxConfig.set(data));
   }
 
   ngOnInit(): void {
