@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatTabsModule, MatTabChangeEvent } from '@angular/material/tabs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
@@ -20,6 +20,8 @@ import {
   So2Report,
   FinancialSummary
 } from '../../services/reports.service';
+import { TaxConfigService } from '../../core/services/tax-config.service';
+import { TaxConfig } from '../../core/models/dashboard.models';
 
 interface TaxRow { label: string; employee: number; employer: number; total: number; }
 
@@ -41,7 +43,7 @@ interface TaxRow { label: string; employee: number; employer: number; total: num
         </div>
       </div>
 
-      <mat-tab-group animationDuration="200ms" class="report-tabs">
+      <mat-tab-group animationDuration="200ms" class="report-tabs" (selectedTabChange)="onTabChange($event)">
 
         <!-- ── MONTHLY TAB ── -->
         <mat-tab label="Monthly">
@@ -609,56 +611,39 @@ interface TaxRow { label: string; employee: number; employer: number; total: num
                   </div>
                 </div>
 
-                <div class="form-section-heading">PART A — PAYROLL STATUTORY DEDUCTIONS</div>
+                <div class="form-section-heading">PART A — EMPLOYEE STATUTORY DEDUCTIONS</div>
                 <table class="form-table">
                   <thead>
                     <tr>
                       <th class="col-desc">Description</th>
                       <th class="col-rate">Rate</th>
                       <th class="col-amt">Employee (J$)</th>
-                      <th class="col-amt">Employer (J$)</th>
-                      <th class="col-amt">Total (J$)</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td>National Insurance Scheme (NIS)</td>
-                      <td class="col-rate">3% / 3%</td>
+                      <td class="col-rate">{{ (taxConfig()?.nisRateEmployee ?? 0.03) * 100 | number:'1.0-2' }}%</td>
                       <td class="col-amt">{{ so1Report()!.nisEmployee | currency:'JMD':'symbol':'1.2-2' }}</td>
-                      <td class="col-amt">{{ so1Report()!.nisEmployer | currency:'JMD':'symbol':'1.2-2' }}</td>
-                      <td class="col-amt"><strong>{{ (so1Report()!.nisEmployee + so1Report()!.nisEmployer) | currency:'JMD':'symbol':'1.2-2' }}</strong></td>
                     </tr>
                     <tr>
                       <td>National Housing Trust (NHT)</td>
-                      <td class="col-rate">2% / 3%</td>
+                      <td class="col-rate">{{ (taxConfig()?.nhtRateEmployee ?? 0.02) * 100 | number:'1.0-2' }}%</td>
                       <td class="col-amt">{{ so1Report()!.nhtEmployee | currency:'JMD':'symbol':'1.2-2' }}</td>
-                      <td class="col-amt">{{ so1Report()!.nhtEmployer | currency:'JMD':'symbol':'1.2-2' }}</td>
-                      <td class="col-amt"><strong>{{ (so1Report()!.nhtEmployee + so1Report()!.nhtEmployer) | currency:'JMD':'symbol':'1.2-2' }}</strong></td>
                     </tr>
                     <tr>
                       <td>Education Tax</td>
-                      <td class="col-rate">2.25% / 3.5%</td>
+                      <td class="col-rate">{{ (taxConfig()?.educationTaxRateEmployee ?? 0.0225) * 100 | number:'1.0-2' }}%</td>
                       <td class="col-amt">{{ so1Report()!.educationTaxEmployee | currency:'JMD':'symbol':'1.2-2' }}</td>
-                      <td class="col-amt">{{ so1Report()!.educationTaxEmployer | currency:'JMD':'symbol':'1.2-2' }}</td>
-                      <td class="col-amt"><strong>{{ (so1Report()!.educationTaxEmployee + so1Report()!.educationTaxEmployer) | currency:'JMD':'symbol':'1.2-2' }}</strong></td>
                     </tr>
                     <tr>
                       <td>Income Tax (PAYE)</td>
-                      <td class="col-rate">25% / 30%</td>
+                      <td class="col-rate">{{ (taxConfig()?.payeRateLower ?? 0.25) * 100 | number:'1.0-0' }}% / {{ (taxConfig()?.payeRateUpper ?? 0.30) * 100 | number:'1.0-0' }}%</td>
                       <td class="col-amt">{{ so1Report()!.payeEmployee | currency:'JMD':'symbol':'1.2-2' }}</td>
-                      <td class="col-amt">—</td>
-                      <td class="col-amt"><strong>{{ so1Report()!.payeEmployee | currency:'JMD':'symbol':'1.2-2' }}</strong></td>
-                    </tr>
-                    <tr>
-                      <td>Human Employment &amp; Resource Training (HEART)</td>
-                      <td class="col-rate">— / 3%</td>
-                      <td class="col-amt">—</td>
-                      <td class="col-amt">{{ so1Report()!.heartEmployer | currency:'JMD':'symbol':'1.2-2' }}</td>
-                      <td class="col-amt"><strong>{{ so1Report()!.heartEmployer | currency:'JMD':'symbol':'1.2-2' }}</strong></td>
                     </tr>
                     <tr class="subtotal-row">
-                      <td colspan="4"><strong>Sub-total — Payroll Statutory Remittance</strong></td>
-                      <td class="col-amt"><strong>{{ so1Report()!.payrollRemittance | currency:'JMD':'symbol':'1.2-2' }}</strong></td>
+                      <td colspan="2"><strong>Sub-total — Employee Statutory Deductions</strong></td>
+                      <td class="col-amt"><strong>{{ (so1Report()!.nisEmployee + so1Report()!.nhtEmployee + so1Report()!.educationTaxEmployee + so1Report()!.payeEmployee) | currency:'JMD':'symbol':'1.2-2' }}</strong></td>
                     </tr>
                   </tbody>
                 </table>
@@ -814,59 +799,41 @@ interface TaxRow { label: string; employee: number; employer: number; total: num
                   </table>
                 </div>
 
-                <div class="form-section-heading">PART B — ANNUAL COMPONENT BREAKDOWN</div>
+                <div class="form-section-heading">PART B — ANNUAL EMPLOYER CONTRIBUTIONS</div>
                 <table class="form-table">
                   <thead>
                     <tr>
                       <th class="col-desc">Component</th>
-                      <th class="col-amt">Employee (J$)</th>
                       <th class="col-amt">Employer (J$)</th>
-                      <th class="col-amt">Total (J$)</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td>National Insurance Scheme (NIS)</td>
-                      <td class="col-amt">{{ so2Report()!.totalNisEmployee | currency:'JMD':'symbol':'1.2-2' }}</td>
                       <td class="col-amt">{{ so2Report()!.totalNisEmployer | currency:'JMD':'symbol':'1.2-2' }}</td>
-                      <td class="col-amt"><strong>{{ (so2Report()!.totalNisEmployee + so2Report()!.totalNisEmployer) | currency:'JMD':'symbol':'1.2-2' }}</strong></td>
                     </tr>
                     <tr>
                       <td>National Housing Trust (NHT)</td>
-                      <td class="col-amt">{{ so2Report()!.totalNhtEmployee | currency:'JMD':'symbol':'1.2-2' }}</td>
                       <td class="col-amt">{{ so2Report()!.totalNhtEmployer | currency:'JMD':'symbol':'1.2-2' }}</td>
-                      <td class="col-amt"><strong>{{ (so2Report()!.totalNhtEmployee + so2Report()!.totalNhtEmployer) | currency:'JMD':'symbol':'1.2-2' }}</strong></td>
                     </tr>
                     <tr>
                       <td>Education Tax</td>
-                      <td class="col-amt">{{ so2Report()!.totalEducationTaxEmployee | currency:'JMD':'symbol':'1.2-2' }}</td>
                       <td class="col-amt">{{ so2Report()!.totalEducationTaxEmployer | currency:'JMD':'symbol':'1.2-2' }}</td>
-                      <td class="col-amt"><strong>{{ (so2Report()!.totalEducationTaxEmployee + so2Report()!.totalEducationTaxEmployer) | currency:'JMD':'symbol':'1.2-2' }}</strong></td>
                     </tr>
                     <tr>
-                      <td>Income Tax (PAYE)</td>
-                      <td class="col-amt">{{ so2Report()!.totalPayeEmployee | currency:'JMD':'symbol':'1.2-2' }}</td>
-                      <td class="col-amt">—</td>
-                      <td class="col-amt"><strong>{{ so2Report()!.totalPayeEmployee | currency:'JMD':'symbol':'1.2-2' }}</strong></td>
-                    </tr>
-                    <tr>
-                      <td>HEART</td>
-                      <td class="col-amt">—</td>
+                      <td>Human Employment &amp; Resource Training (HEART)</td>
                       <td class="col-amt">{{ so2Report()!.totalHeartEmployer | currency:'JMD':'symbol':'1.2-2' }}</td>
-                      <td class="col-amt"><strong>{{ so2Report()!.totalHeartEmployer | currency:'JMD':'symbol':'1.2-2' }}</strong></td>
                     </tr>
                     <tr>
                       <td>General Consumption Tax (GCT)</td>
-                      <td class="col-amt">—</td>
                       <td class="col-amt">{{ so2Report()!.totalGctPayable | currency:'JMD':'symbol':'1.2-2' }}</td>
-                      <td class="col-amt"><strong>{{ so2Report()!.totalGctPayable | currency:'JMD':'symbol':'1.2-2' }}</strong></td>
                     </tr>
                   </tbody>
                 </table>
 
                 <div class="form-total-bar">
-                  <span>TOTAL ANNUAL REMITTANCE</span>
-                  <span class="form-total-amount">{{ so2Report()!.totalAnnualRemittance | currency:'JMD':'symbol':'1.2-2' }}</span>
+                  <span>TOTAL ANNUAL EMPLOYER REMITTANCE</span>
+                  <span class="form-total-amount">{{ (so2Report()!.totalNisEmployer + so2Report()!.totalNhtEmployer + so2Report()!.totalEducationTaxEmployer + so2Report()!.totalHeartEmployer + so2Report()!.totalGctPayable) | currency:'JMD':'symbol':'1.2-2' }}</span>
                 </div>
 
                 <div class="form-declaration">
@@ -1264,6 +1231,9 @@ interface TaxRow { label: string; employee: number; employer: number; total: num
 })
 export class TaxModuleComponent implements OnInit {
   private reportsService = inject(ReportsService);
+  private taxConfigService = inject(TaxConfigService);
+
+  taxConfig = signal<TaxConfig | null>(null);
 
   // Selectors - Monthly
   selectedMonth = new Date().getMonth() + 1;
@@ -1364,8 +1334,20 @@ export class TaxModuleComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.taxConfigService.get().subscribe({ next: cfg => this.taxConfig.set(cfg) });
+    this.loadMonthly();
     this.loadSo1();
     this.loadSo2();
+  }
+
+  onTabChange(event: MatTabChangeEvent) {
+    switch (event.index) {
+      case 0: this.loadMonthly(); break;
+      case 1: this.loadQuarterly(); break;
+      case 2: this.loadYearly(); break;
+      case 3: this.loadSo1(); break;
+      case 4: this.loadSo2(); break;
+    }
   }
 
   loadMonthly() {

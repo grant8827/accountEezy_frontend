@@ -252,6 +252,43 @@
   background: var(--border-color, rgba(0,0,0,0.08));
   margin: 4px 0;
 }
+
+/* Employee deductions table */
+.so1-deductions-table {
+  width: 100%;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border-color, rgba(0,0,0,0.08));
+}
+.so1-deductions-header,
+.so1-deductions-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 4px;
+  padding: 5px 8px;
+}
+.so1-deductions-header {
+  background: rgba(0,0,0,0.04);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.so1-deductions-row {
+  border-top: 1px solid var(--border-color, rgba(0,0,0,0.05));
+  color: var(--text-primary);
+}
+.so1-deductions-row:nth-child(even) {
+  background: rgba(0,0,0,0.02);
+}
+.so1-deductions-total {
+  font-weight: 600;
+  color: var(--accent-color, #2563eb);
+}
+
 .so1-empty {
   color: var(--text-tertiary);
   font-size: 0.875rem;

@@ -15,15 +15,6 @@
   </header>
 
   <!-- TAJ Deadline Alert -->
-  <div class="alert-banner">
-    <div class="alert-banner-inner">
-      <div class="alert-icon">&#9888;</div>
-      <div class="alert-text">
-        <strong>TAJ Reminder:</strong> Monthly payroll remittance (NIS, NHT, Ed Tax, HEART, PAYE) and GCT return are
-        due by the <strong>14th of each month</strong>. Ensure records are finalised before filing.
-      </div>
-    </div>
-  </div>
 
   <!-- KPI Cards -->
   <section class="kpi-grid">
@@ -106,33 +97,39 @@
             <span class="so1-stat-val">{{ report.month }}/{{ report.year }}</span>
           </div>
           <div class="so1-stat">
-            <span class="so1-stat-label">Total Remittance</span>
-            <span class="so1-stat-val highlight">J$ {{ report.totalRemittance | number:'1.2-2' }}</span>
-          </div>
-          <div class="so1-stat">
-            <span class="so1-stat-label">Payroll Remittance</span>
-            <span class="so1-stat-val">J$ {{ report.payrollRemittance | number:'1.2-2' }}</span>
-          </div>
-          <div class="so1-stat">
             <span class="so1-stat-label">GCT Payable</span>
             <span class="so1-stat-val">J$ {{ report.gctPayable | number:'1.2-2' }}</span>
           </div>
 
-          @if (report.financial && report.financial.totalIncome > 0) {
+          @if (report.employeeDeductions && report.employeeDeductions.length > 0) {
             <div class="so1-divider"></div>
-            <div class="so1-stat so1-stat--income-header">
-              <span class="so1-stat-label">Total Income</span>
-              <span class="so1-stat-val highlight-green">J$ {{ report.financial.totalIncome | number:'1.2-2' }}</span>
-            </div>
-            @for (item of report.financial.incomeItems; track item.category) {
-              <div class="so1-stat so1-stat--indent">
-                <span class="so1-stat-label">{{ item.category }}</span>
-                <span class="so1-stat-val">J$ {{ item.totalAmount | number:'1.2-2' }}</span>
+            <div class="so1-deductions-table">
+              <div class="so1-deductions-header">
+                <span>Employee</span>
+                <span>NIS</span>
+                <span>NHT</span>
+                <span>Ed Tax</span>
+                <span>PAYE</span>
+                <span>Loan</span>
+                <span>Total</span>
               </div>
-            }
+              @for (row of report.employeeDeductions; track row.employeeName) {
+                <div class="so1-deductions-row">
+                  <span>{{ row.employeeName }}</span>
+                  <span>J$ {{ row.nis | number:'1.2-2' }}</span>
+                  <span>J$ {{ row.nht | number:'1.2-2' }}</span>
+                  <span>J$ {{ row.educationTax | number:'1.2-2' }}</span>
+                  <span>J$ {{ row.paye | number:'1.2-2' }}</span>
+                  <span>J$ {{ row.loanDeduction | number:'1.2-2' }}</span>
+                  <span class="so1-deductions-total">J$ {{ row.totalDeductions | number:'1.2-2' }}</span>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="so1-empty">Run a payroll to see employee deductions here.</p>
           }
         } @else {
-          <p class="so1-empty">Run a payroll calculation to see your SO1 data here.</p>
+          <p class="so1-empty">No data available.</p>
         }
       </div>
     </div>

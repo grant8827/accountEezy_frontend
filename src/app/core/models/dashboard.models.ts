@@ -3,6 +3,16 @@ export interface FinancialLineItem {
   totalAmount: number;
 }
 
+export interface EmployeeDeductionRow {
+  employeeName: string;
+  nis: number;
+  nht: number;
+  educationTax: number;
+  paye: number;
+  loanDeduction: number;
+  totalDeductions: number;
+}
+
 export interface FinancialSummary {
   incomeItems: FinancialLineItem[];
   expenseItems: FinancialLineItem[];
@@ -30,6 +40,7 @@ export interface So1Report {
   gctPayable: number;
   totalRemittance: number;
   financial?: FinancialSummary;
+  employeeDeductions?: EmployeeDeductionRow[];
 }
 
 export interface So2Report {
