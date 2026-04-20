@@ -187,7 +187,7 @@ import { Employee } from '../../types/index';
               <mat-icon matPrefix>schedule</mat-icon>
               <mat-select formControlName="payCycle">
                 <mat-option value="Weekly">Weekly</mat-option>
-                <mat-option value="Bi-Weekly">Bi-Weekly</mat-option>
+                <mat-option value="Fortnightly">Bi-Weekly</mat-option>
                 <mat-option value="Monthly">Monthly</mat-option>
               </mat-select>
             </mat-form-field>

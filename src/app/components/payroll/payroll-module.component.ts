@@ -855,7 +855,9 @@ export class PayrollModuleComponent implements OnInit {
     this.loadingEmployees = true;
     this.employeeService.getAll().subscribe({
       next: employees => {
-        this.worksheetEntries = employees.map(e => ({
+        const active = employees.filter(e => e.status !== 'inactive');
+
+        this.worksheetEntries = active.map(e => ({
           employeeId: e.id,
           name: this.getEmployeeDisplayName(e),
           baseSalary: e.salary,
@@ -869,6 +871,14 @@ export class PayrollModuleComponent implements OnInit {
       },
       error: () => { this.loadingEmployees = false; this.cdr.detectChanges(); this.snack.open('Failed to load employees', 'Close', { duration: 3000 }); }
     });
+  }
+
+  private normalizePayCycle(payCycle?: string | null): string {
+    switch ((payCycle ?? '').trim().toLowerCase()) {
+      case 'bi-weekly': case 'biweekly': case 'fortnightly': return 'fortnightly';
+      case 'weekly': return 'weekly';
+      default: return 'monthly';
+    }
   }
 
   processBatch() {

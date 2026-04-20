@@ -41,6 +41,7 @@ interface EmployeeRequest {
   address?: string;
   email?: string;
   password?: string;
+  isActive?: boolean;
   employmentType?: string;
   vacationDaysBalance?: number;
   position?: string;
@@ -80,7 +81,7 @@ export class EmployeeService {
       bankName: backendEmp.bankName,
       dateOfBirth: backendEmp.dateOfBirth,
       address: backendEmp.address,
-      payCycle: backendEmp.payCycle,
+      payCycle: this.mapPayCycleToFrontend(backendEmp.payCycle),
       employmentType: (backendEmp.employmentType as 'Salary' | 'Hourly') || 'Salary',
       vacationDaysBalance: backendEmp.vacationDaysBalance ?? 0
     };
@@ -92,7 +93,7 @@ export class EmployeeService {
       name: `${employee.firstName} ${employee.lastName}`.trim(),
       nisNumber: employee.nisNumber || 'N/A',
       grossSalary: employee.salary,
-      payCycle: employee.payCycle || 'Monthly',
+      payCycle: this.mapPayCycleToBackend(employee.payCycle),
       trn: employee.trn,
       employeeIdNumber: employee.employeeIdNumber,
       bankAccountNumber: employee.bankAccountNumber,
@@ -101,12 +102,29 @@ export class EmployeeService {
       address: employee.address,
       email: employee.email,
       password: employee.password,
+      isActive: employee.status !== 'inactive',
       employmentType: employee.employmentType || 'Salary',
       vacationDaysBalance: employee.vacationDaysBalance ?? 0,
       position: employee.position,
       department: employee.department,
       hireDate: employee.hireDate
     };
+  }
+
+  private mapPayCycleToFrontend(payCycle?: string): string {
+    if (!payCycle) {
+      return 'Monthly';
+    }
+
+    return payCycle === 'Bi-Weekly' ? 'Fortnightly' : payCycle;
+  }
+
+  private mapPayCycleToBackend(payCycle?: string): string {
+    if (!payCycle) {
+      return 'Monthly';
+    }
+
+    return payCycle === 'Bi-Weekly' ? 'Fortnightly' : payCycle;
   }
 
   getAll(): Observable<Employee[]> {
