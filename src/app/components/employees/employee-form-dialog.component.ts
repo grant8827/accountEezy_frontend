@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { Employee } from '../../types/index';
 
 @Component({
@@ -25,7 +26,8 @@ import { Employee } from '../../types/index';
     MatSelectModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    MatIconModule
+    MatIconModule,
+    MatButtonToggleModule
   ],
   template: `
     <div class="dialog-container">
@@ -124,6 +126,23 @@ import { Employee } from '../../types/index';
             <h3>Employment Information</h3>
           </div>
 
+          <!-- Employment Type Toggle -->
+          <div class="form-row" style="align-items: center; margin-bottom: 8px;">
+            <div class="full-width">
+              <p style="font-size: 12px; color: rgba(0,0,0,0.6); margin: 0 0 6px 0;">Employment Type</p>
+              <mat-button-toggle-group formControlName="employmentType" style="margin-bottom: 12px;">
+                <mat-button-toggle value="Salary">
+                  <mat-icon style="margin-right: 4px; font-size: 18px; height: 18px; width: 18px;">person</mat-icon>
+                  Salary
+                </mat-button-toggle>
+                <mat-button-toggle value="Hourly">
+                  <mat-icon style="margin-right: 4px; font-size: 18px; height: 18px; width: 18px;">schedule</mat-icon>
+                  Hourly
+                </mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+          </div>
+
           <div class="form-row">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Position</mat-label>
@@ -152,14 +171,14 @@ import { Employee } from '../../types/index';
 
           <div class="form-row">
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Gross Salary (J$)</mat-label>
+              <mat-label>{{ employeeForm.get('employmentType')?.value === 'Hourly' ? 'Hourly Rate (J$)' : 'Gross Salary (J$)' }}</mat-label>
               <mat-icon matPrefix>payments</mat-icon>
               <input matInput type="number" formControlName="salary" placeholder="0">
               @if (employeeForm.get('salary')?.hasError('required') && employeeForm.get('salary')?.touched) {
-                <mat-error>Salary is required</mat-error>
+                <mat-error>{{ employeeForm.get('employmentType')?.value === 'Hourly' ? 'Hourly rate' : 'Salary' }} is required</mat-error>
               }
               @if (employeeForm.get('salary')?.hasError('min') && employeeForm.get('salary')?.touched) {
-                <mat-error>Salary must be greater than 0</mat-error>
+                <mat-error>Value must be greater than 0</mat-error>
               }
             </mat-form-field>
 
@@ -171,6 +190,14 @@ import { Employee } from '../../types/index';
                 <mat-option value="Bi-Weekly">Bi-Weekly</mat-option>
                 <mat-option value="Monthly">Monthly</mat-option>
               </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Vacation Days Entitled</mat-label>
+              <mat-icon matPrefix>beach_access</mat-icon>
+              <input matInput type="number" formControlName="vacationDaysBalance" placeholder="0" min="0">
             </mat-form-field>
           </div>
 
@@ -377,6 +404,8 @@ export class EmployeeFormDialogComponent implements OnInit {
       department: [data.employee?.department || 'Engineering'],
       salary: [data.employee?.salary || 0, [Validators.required, Validators.min(1)]],
       payCycle: [data.employee?.payCycle || 'Monthly'],
+      employmentType: [data.employee?.employmentType || 'Salary'],
+      vacationDaysBalance: [data.employee?.vacationDaysBalance ?? 0],
       hireDate: [data.employee?.hireDate ? new Date(data.employee.hireDate) : new Date(), Validators.required],
       status: [data.employee?.status || 'active'],
       bankName: [data.employee?.bankName || ''],
@@ -410,6 +439,8 @@ export class EmployeeFormDialogComponent implements OnInit {
         dateOfBirth: formValue.dateOfBirth ? formValue.dateOfBirth.toISOString().split('T')[0] : undefined,
         address: formValue.address || undefined,
         payCycle: formValue.payCycle || 'Monthly',
+        employmentType: formValue.employmentType || 'Salary',
+        vacationDaysBalance: Number(formValue.vacationDaysBalance) || 0,
         password: formValue.password || undefined // Only include if provided
       };
 

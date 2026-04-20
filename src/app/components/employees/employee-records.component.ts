@@ -205,12 +205,20 @@ import { EmployeeService } from '../../services/employee.service';
                           <p>{{ employee.hireDate }}</p>
                         </div>
                         <div class="detail-item">
-                          <label>Gross Salary</label>
+                          <label>Employment Type</label>
+                          <p>{{ employee.employmentType || 'Salary' }}</p>
+                        </div>
+                        <div class="detail-item">
+                          <label>{{ employee.employmentType === 'Hourly' ? 'Hourly Rate' : 'Gross Salary' }}</label>
                           <p>J$ {{ employee.salary | number:'1.2-2' }}</p>
                         </div>
                         <div class="detail-item">
                           <label>Pay Cycle</label>
                           <p>{{ employee.payCycle || 'Monthly' }}</p>
+                        </div>
+                        <div class="detail-item">
+                          <label>Vacation Days Balance</label>
+                          <p>{{ employee.vacationDaysBalance ?? 0 }} days</p>
                         </div>
                         <div class="detail-item">
                           <label>Status</label>

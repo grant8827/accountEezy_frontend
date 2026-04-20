@@ -189,7 +189,11 @@ import { EmployeeService } from '../../services/employee.service';
             <ng-container matColumnDef="salary">
               <th mat-header-cell *matHeaderCellDef>Salary</th>
               <td mat-cell *matCellDef="let employee">
-                <div class="salary-amount">{{ formatCurrency(employee.salary) }}/mo</div>
+                @if (employee.employmentType === 'Hourly') {
+                  <div class="salary-amount">{{ formatCurrency(employee.salary) }}/hr</div>
+                } @else {
+                  <div class="salary-amount">{{ formatCurrency(employee.salary) }}/mo</div>
+                }
               </td>
             </ng-container>
 
@@ -734,14 +738,14 @@ export class EmployeeListComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.employeeService.create(result).subscribe({
-          next: (newEmployee) => {
-            this.employees = [...this.employees, newEmployee];
-            this.filterEmployees();
+          next: () => {
+            this.loadEmployees();
             this.snackBar.open('Employee added successfully!', 'Close', { duration: 3000 });
           },
           error: (error) => {
             console.error('Error adding employee:', error);
-            this.snackBar.open('Failed to add employee', 'Close', { duration: 3000 });
+            const msg = error?.error?.message || error?.message || `Failed to add employee (${error?.status ?? 'unknown error'})`;
+            this.snackBar.open(msg, 'Close', { duration: 5000 });
           }
         });
       }

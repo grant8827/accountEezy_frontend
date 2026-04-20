@@ -85,10 +85,15 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
           </div>
 
           <div class="paper-row">
-            <span class="paper-label">{{ leaveType === 'Vacation' ? 'Vacation' : 'Leave' }} Days Earned:</span>
-            <input class="paper-input short-input" formControlName="daysEarned"
-                   type="number" min="0" placeholder="0" />
+            <span class="paper-label">{{ leaveType === 'Vacation' ? 'Vacation' : 'Leave' }} Days Balance:</span>
+            <span class="paper-value readonly-val">{{ leaveBalance }} days</span>
           </div>
+
+          @if (leaveType === 'Vacation' && totalDays > 0 && totalDays > leaveBalance) {
+            <div style="color: #d32f2f; font-size: 13px; background: #fff3e0; border-left: 3px solid #ff9800; padding: 8px 12px; border-radius: 4px;">
+              &#9888; Insufficient vacation days. You are requesting {{ totalDays }} day(s) but only have {{ leaveBalance }} available.
+            </div>
+          }
 
           <div class="paper-row dates-row">
             <span class="paper-label">{{ leaveType === 'Vacation' ? 'Vacation' : 'Leave' }} Dates Requested:</span>
@@ -385,18 +390,23 @@ export class ApplyLeaveDialogComponent {
     }
     const s = this.vacationForm.get('startDate')?.value;
     const e = this.vacationForm.get('endDate')?.value;
-    return !s || !e || this.totalDays < 1;
+    if (!s || !e || this.totalDays < 1) return true;
+    // Block vacation submission when balance is insufficient
+    if (this.leaveType === 'Vacation' && this.totalDays > this.leaveBalance) return true;
+    return false;
   }
 
   employeeName: string;
+  leaveBalance: number;
   private existingLeaveId: number | undefined;
 
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<ApplyLeaveDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) data: { employeeName: string, existingLeave?: any }
+    @Inject(MAT_DIALOG_DATA) data: { employeeName: string, existingLeave?: any, leaveBalance?: number }
   ) {
     this.employeeName = data?.employeeName ?? '';
+    this.leaveBalance = data?.leaveBalance ?? 0;
     const existing = data?.existingLeave;
     this.existingLeaveId = existing?.id;
 
@@ -406,7 +416,6 @@ export class ApplyLeaveDialogComponent {
     this.vacationForm = this.fb.group({
       title:        [reasonParts[0] ?? ''],
       department:   [reasonParts[1] ?? ''],
-      daysEarned:   [null],
       startDate:    [existing?.startDate ? new Date(existing.startDate) : '', Validators.required],
       endDate:      [existing?.endDate ? new Date(existing.endDate) : '', Validators.required]
     });
@@ -1248,15 +1257,10 @@ export class EmployeeDashboardComponent implements OnInit {
     const token = localStorage.getItem('employeeToken');
     if (!token) return;
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-    this.http.get<any[]>(environment.apiUrl + '/employee-portal/leaves', { headers }).subscribe({
+    this.http.get<any>(environment.apiUrl + '/employee-portal/leaves', { headers }).subscribe({
       next: data => {
-        this.leaveRequests = data;
-        this.leaveBalance = Math.max(
-          0,
-          21 - data
-            .filter((l: any) => l.status === 'Approved')
-            .reduce((sum: number, l: any) => sum + (l.daysRequested ?? 0), 0)
-        );
+        this.leaveRequests = data.leaves ?? data;
+        this.leaveBalance = data.vacationDaysBalance ?? 0;
         this.cdr.detectChanges();
       },
       error: () => {}
@@ -1409,7 +1413,7 @@ export class EmployeeDashboardComponent implements OnInit {
     const dialogRef = this.dialog.open(ApplyLeaveDialogComponent, {
       width: '720px',
       maxWidth: '95vw',
-      data: { employeeName: this.employeeName }
+      data: { employeeName: this.employeeName, leaveBalance: this.leaveBalance }
     });
 
     dialogRef.afterClosed().subscribe((result: LeaveRequestDto & { file?: File | null }) => {
@@ -1423,7 +1427,7 @@ export class EmployeeDashboardComponent implements OnInit {
     const dialogRef = this.dialog.open(ApplyLeaveDialogComponent, {
       width: '720px',
       maxWidth: '95vw',
-      data: { employeeName: this.employeeName, existingLeave: leave }
+      data: { employeeName: this.employeeName, existingLeave: leave, leaveBalance: this.leaveBalance }
     });
 
     dialogRef.afterClosed().subscribe((result: any) => {

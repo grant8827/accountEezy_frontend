@@ -43,6 +43,8 @@ export interface Employee {
   address?: string;
   payCycle?: string;
   password?: string; // Only used when creating/updating
+  employmentType?: 'Salary' | 'Hourly';
+  vacationDaysBalance?: number;
 }
 
 // Payroll Types

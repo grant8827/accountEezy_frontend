@@ -21,6 +21,11 @@ interface BackendEmployee {
   address?: string;
   email?: string;
   isActive: boolean;
+  employmentType?: string;
+  vacationDaysBalance?: number;
+  position?: string;
+  department?: string;
+  hireDate?: string;
 }
 
 interface EmployeeRequest {
@@ -36,6 +41,11 @@ interface EmployeeRequest {
   address?: string;
   email?: string;
   password?: string;
+  employmentType?: string;
+  vacationDaysBalance?: number;
+  position?: string;
+  department?: string;
+  hireDate?: string;
 }
 
 @Injectable({
@@ -57,11 +67,11 @@ export class EmployeeService {
       firstName: firstName,
       lastName: lastName,
       email: backendEmp.email || `${backendEmp.name.toLowerCase().replace(/\s+/g, '.')}@company.com`,
-      position: 'Employee', // Default position
+      position: backendEmp.position || 'Employee',
       salary: backendEmp.grossSalary,
-      hireDate: new Date().toISOString().split('T')[0], // Default to today
+      hireDate: backendEmp.hireDate ? backendEmp.hireDate.split('T')[0] : new Date().toISOString().split('T')[0],
       businessId: backendEmp.businessId,
-      department: 'General',
+      department: backendEmp.department || 'General',
       status: backendEmp.isActive ? 'active' : 'inactive',
       nisNumber: backendEmp.nisNumber,
       trn: backendEmp.trn,
@@ -70,7 +80,9 @@ export class EmployeeService {
       bankName: backendEmp.bankName,
       dateOfBirth: backendEmp.dateOfBirth,
       address: backendEmp.address,
-      payCycle: backendEmp.payCycle
+      payCycle: backendEmp.payCycle,
+      employmentType: (backendEmp.employmentType as 'Salary' | 'Hourly') || 'Salary',
+      vacationDaysBalance: backendEmp.vacationDaysBalance ?? 0
     };
   }
 
@@ -88,7 +100,12 @@ export class EmployeeService {
       dateOfBirth: employee.dateOfBirth,
       address: employee.address,
       email: employee.email,
-      password: employee.password
+      password: employee.password,
+      employmentType: employee.employmentType || 'Salary',
+      vacationDaysBalance: employee.vacationDaysBalance ?? 0,
+      position: employee.position,
+      department: employee.department,
+      hireDate: employee.hireDate
     };
   }
 

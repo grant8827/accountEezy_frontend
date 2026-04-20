@@ -32,6 +32,7 @@ interface PayrollBatchSummary {
 interface BatchEntryInput {
   employeeId: number; name: string; baseSalary: number;
   holidayPay: number; bonus: number; loanDeduction: number;
+  employmentType: string; hourlyRate: number; hours: number;
 }
 
 interface PayrollEntry {
@@ -307,6 +308,8 @@ const DEFAULT_TAX: TaxConfig = {
                 <thead>
                   <tr>
                     <th>Employee</th>
+                    <th class="num-col">Type</th>
+                    <th class="num-col">Hours</th>
                     <th class="num-col">Base Salary (J$)</th>
                     <th class="num-col">Holiday Pay (J$)</th>
                     <th class="num-col">Bonus (J$)</th>
@@ -317,7 +320,25 @@ const DEFAULT_TAX: TaxConfig = {
                 <tbody>
                   <tr *ngFor="let e of worksheetEntries">
                     <td><strong>{{ e.name }}</strong></td>
-                    <td class="num-col">{{ e.baseSalary | currency:'JMD':'symbol':'1.2-2' }}</td>
+                    <td class="num-col">
+                      <span [style.color]="e.employmentType === 'Hourly' ? '#e65100' : '#1565c0'" style="font-size:12px; font-weight:600;">
+                        {{ e.employmentType === 'Hourly' ? 'Hourly' : 'Salary' }}
+                      </span>
+                    </td>
+                    <td class="num-col">
+                      <ng-container *ngIf="e.employmentType === 'Hourly'; else noHours">
+                        <input type="number" class="ws-input" [(ngModel)]="e.hours" min="0"
+                               (ngModelChange)="recalcEstimate(e)" placeholder="0">
+                      </ng-container>
+                      <ng-template #noHours><span style="color:#aaa;">—</span></ng-template>
+                    </td>
+                    <td class="num-col">
+                      <ng-container *ngIf="e.employmentType === 'Hourly'; else showBase">
+                        {{ (e.hours || 0) * e.hourlyRate | currency:'JMD':'symbol':'1.2-2' }}
+                        <span style="display:block; font-size:10px; color:#888;">{{ e.hours || 0 }}h x J&#36;{{ e.hourlyRate.toFixed(2) }}/hr</span>
+                      </ng-container>
+                      <ng-template #showBase>{{ e.baseSalary | currency:'JMD':'symbol':'1.2-2' }}</ng-template>
+                    </td>
                     <td class="num-col">
                       <input type="number" class="ws-input" [(ngModel)]="e.holidayPay" min="0"
                              (ngModelChange)="recalcEstimate(e)" placeholder="0">
@@ -838,6 +859,9 @@ export class PayrollModuleComponent implements OnInit {
           employeeId: e.id,
           name: this.getEmployeeDisplayName(e),
           baseSalary: e.salary,
+          employmentType: e.employmentType || 'Salary',
+          hourlyRate: e.salary,
+          hours: 0,
           holidayPay: 0, bonus: 0, loanDeduction: 0
         }));
         this.loadingEmployees = false;
@@ -855,7 +879,8 @@ export class PayrollModuleComponent implements OnInit {
         employeeId: e.employeeId,
         holidayPay: e.holidayPay || 0,
         bonus: e.bonus || 0,
-        loanDeduction: e.loanDeduction || 0
+        loanDeduction: e.loanDeduction || 0,
+        ...(e.employmentType === 'Hourly' ? { hours: e.hours || 0 } : {})
       }))
     };
     this.http.post<PayrollBatchDetail>(`${environment.apiUrl}/payroll-batches/${this.activeBatch.id}/process`, body).subscribe({
@@ -877,7 +902,8 @@ export class PayrollModuleComponent implements OnInit {
 
   // Rough net estimate before official calculation
   estimateNetPay(e: BatchEntryInput): number {
-    const gross = e.baseSalary + (e.holidayPay || 0) + (e.bonus || 0);
+    const base = e.employmentType === 'Hourly' ? (e.hours || 0) * e.hourlyRate : e.baseSalary;
+    const gross = base + (e.holidayPay || 0) + (e.bonus || 0);
     const approxDeductions = gross * 0.235; // ~23.5% combined statutory estimate
     return Math.max(0, gross - approxDeductions - (e.loanDeduction || 0));
   }
