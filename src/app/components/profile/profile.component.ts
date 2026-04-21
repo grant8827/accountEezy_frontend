@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -378,7 +378,8 @@ export class ProfileComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -395,10 +396,12 @@ export class ProfileComponent implements OnInit {
           }
           this.profile = data;
           this.loading = false;
+          this.cdr.detectChanges();
         },
         error: () => {
-          this.snackBar.open('Failed to load profile', 'Close', { duration: 4000 });
           this.loading = false;
+          this.cdr.detectChanges();
+          this.snackBar.open('Failed to load profile', 'Close', { duration: 4000 });
         }
       });
   }
@@ -414,10 +417,12 @@ export class ProfileComponent implements OnInit {
           }
           this.profile = data;
           this.saving = false;
+          this.cdr.detectChanges();
           this.snackBar.open('Profile saved successfully', 'Close', { duration: 3000 });
         },
         error: () => {
           this.saving = false;
+          this.cdr.detectChanges();
           this.snackBar.open('Failed to save profile', 'Close', { duration: 4000 });
         }
       });
@@ -435,6 +440,7 @@ export class ProfileComponent implements OnInit {
     ).subscribe({
       next: (res) => {
         this.changingPassword = false;
+        this.cdr.detectChanges();
         if (res.success) {
           this.snackBar.open('Password changed successfully', 'Close', { duration: 3000 });
           this.currentPassword = '';
@@ -446,6 +452,7 @@ export class ProfileComponent implements OnInit {
       },
       error: () => {
         this.changingPassword = false;
+        this.cdr.detectChanges();
         this.snackBar.open('Failed to change password', 'Close', { duration: 4000 });
       }
     });
