@@ -409,7 +409,8 @@ export class ProfileComponent implements OnInit {
   saveProfile() {
     if (!this.profile) return;
     this.saving = true;
-    this.http.put<ProfileData>(`${this.apiUrl}/auth/profile`, this.profile)
+    const payload = { ...this.profile, fiscalYearEnd: this.profile.fiscalYearEnd || null };
+    this.http.put<ProfileData>(`${this.apiUrl}/auth/profile`, payload)
       .subscribe({
         next: (data) => {
           if (data.fiscalYearEnd) {
