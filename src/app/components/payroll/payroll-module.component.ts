@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -250,6 +251,9 @@ const DEFAULT_TAX: TaxConfig = {
                 <button mat-icon-button matTooltip="Run Payroll" *ngIf="b.status === 0" (click)="selectBatchForProcessing(b)">
                   <mat-icon>play_circle</mat-icon>
                 </button>
+                <button mat-icon-button matTooltip="Edit / Reprocess" *ngIf="b.status === 1" (click)="selectBatchForEditing(b)">
+                  <mat-icon>edit</mat-icon>
+                </button>
                 <button mat-icon-button matTooltip="View Payslips" *ngIf="b.status > 0" (click)="loadBatchDetail(b.id, true)">
                   <mat-icon>visibility</mat-icon>
                 </button>
@@ -287,7 +291,7 @@ const DEFAULT_TAX: TaxConfig = {
               <span><mat-icon>event</mat-icon> <strong>{{ activeBatch.label }}</strong></span>
               <span class="muted">{{ activeBatch.startDate | date:'dd MMM yyyy' }} – {{ activeBatch.endDate | date:'dd MMM yyyy' }}</span>
               <span><mat-icon>sync</mat-icon> {{ activeBatch.payCycle }}</span>
-              <span class="status-chip status-0">Draft</span>
+              <span class="status-chip" [class]="'status-' + activeBatch.status">{{ statusLabel(activeBatch.status) }}</span>
             </div>
           </mat-card-content>
         </mat-card>
@@ -362,7 +366,7 @@ const DEFAULT_TAX: TaxConfig = {
             <button mat-raised-button class="gold-btn run-btn" (click)="processBatch()" [disabled]="processing">
               <mat-spinner *ngIf="processing" diameter="20"></mat-spinner>
               <mat-icon *ngIf="!processing">rocket_launch</mat-icon>
-              {{ processing ? 'Processing…' : 'Run Payroll for ' + worksheetEntries.length + ' Employees' }}
+              {{ processing ? 'Processing…' : (activeBatch.status === 1 ? 'Reprocess' : 'Run') + ' Payroll for ' + worksheetEntries.length + ' Employees' }}
             </button>
           </mat-card-actions>
         </mat-card>
@@ -821,6 +825,48 @@ export class PayrollModuleComponent implements OnInit {
     this.cdr.detectChanges();
     setTimeout(() => { this.activeTab = 1; });
     this.loadWorksheetEmployees();
+  }
+
+  selectBatchForEditing(batch: PayrollBatchSummary) {
+    this.activeBatch = batch;
+    this.processedBatch = null;
+    this.loadingEmployees = true;
+    this.cdr.detectChanges();
+    setTimeout(() => { this.activeTab = 1; });
+
+    forkJoin({
+      detail: this.http.get<PayrollBatchDetail>(`${environment.apiUrl}/payroll-batches/${batch.id}`),
+      employees: this.employeeService.getAll()
+    }).subscribe({
+      next: ({ detail, employees }) => {
+        const active = employees.filter(e => e.status !== 'inactive');
+        this.worksheetEntries = active.map(emp => {
+          const existing = detail.entries.find(e => e.employeeId === emp.id);
+          const isHourly = (emp.employmentType || '').toLowerCase() === 'hourly';
+          const hours = isHourly && existing && emp.salary > 0
+            ? +(existing.baseSalary / emp.salary).toFixed(2)
+            : 0;
+          return {
+            employeeId: emp.id,
+            name: this.getEmployeeDisplayName(emp),
+            baseSalary: emp.salary,
+            employmentType: emp.employmentType || 'Salary',
+            hourlyRate: emp.salary,
+            hours,
+            holidayPay: existing?.holidayPay ?? 0,
+            bonus: existing?.bonus ?? 0,
+            loanDeduction: existing?.loanDeduction ?? 0
+          };
+        });
+        this.loadingEmployees = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadingEmployees = false;
+        this.cdr.detectChanges();
+        this.snack.open('Failed to load batch for editing', 'Close', { duration: 3000 });
+      }
+    });
   }
 
   markPaid(id: number) {
