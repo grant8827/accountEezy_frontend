@@ -23,6 +23,7 @@ import { EmployeeRecordsComponent } from './components/employees/employee-record
 import { LeaveRequestsComponent } from './components/leaves/leave-requests.component';
 import { EmployeeLoginComponent } from './components/auth/employee-login.component';
 import { EmployeeDashboardComponent } from './components/employee-portal/employee-dashboard.component';
+import { ProfileComponent } from './components/profile/profile.component';
 
 export const routes: Routes = [
   // Home Page
@@ -116,6 +117,10 @@ export const routes: Routes = [
       {
         path: 'admin',
         component: AdminPanelComponent
+      },
+      {
+        path: 'profile',
+        component: ProfileComponent
       }
     ]
   },

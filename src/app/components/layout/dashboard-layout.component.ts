@@ -37,6 +37,10 @@ import { AuthService, User } from '../../services/auth.service';
       </mat-toolbar>
 
       <mat-menu #userMenu="matMenu">
+        <button mat-menu-item (click)="navigate('/dashboard/profile')">
+          <mat-icon>manage_accounts</mat-icon>
+          <span>My Profile</span>
+        </button>
         <button mat-menu-item (click)="navigate('/')">
           <mat-icon>home</mat-icon>
           <span>Home</span>
