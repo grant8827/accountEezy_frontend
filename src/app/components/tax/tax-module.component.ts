@@ -611,13 +611,15 @@ interface TaxRow { label: string; employee: number; employer: number; total: num
                   </div>
                 </div>
 
-                <div class="form-section-heading">PART A — EMPLOYEE STATUTORY DEDUCTIONS</div>
+                <div class="form-section-heading">PART A — STATUTORY DEDUCTIONS &amp; CONTRIBUTIONS</div>
                 <table class="form-table">
                   <thead>
                     <tr>
                       <th class="col-desc">Description</th>
-                      <th class="col-rate">Rate</th>
+                      <th class="col-rate">Emp Rate</th>
                       <th class="col-amt">Employee (J$)</th>
+                      <th class="col-rate">Er Rate</th>
+                      <th class="col-amt">Employer (J$)</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -625,25 +627,42 @@ interface TaxRow { label: string; employee: number; employer: number; total: num
                       <td>National Insurance Scheme (NIS)</td>
                       <td class="col-rate">{{ (taxConfig()?.nisRateEmployee ?? 0.03) * 100 | number:'1.0-2' }}%</td>
                       <td class="col-amt">{{ so1Report()!.nisEmployee | currency:'JMD':'symbol':'1.2-2' }}</td>
+                      <td class="col-rate">{{ (taxConfig()?.nisRateEmployer ?? 0.03) * 100 | number:'1.0-2' }}%</td>
+                      <td class="col-amt">{{ so1Report()!.nisEmployer | currency:'JMD':'symbol':'1.2-2' }}</td>
                     </tr>
                     <tr>
                       <td>National Housing Trust (NHT)</td>
                       <td class="col-rate">{{ (taxConfig()?.nhtRateEmployee ?? 0.02) * 100 | number:'1.0-2' }}%</td>
                       <td class="col-amt">{{ so1Report()!.nhtEmployee | currency:'JMD':'symbol':'1.2-2' }}</td>
+                      <td class="col-rate">{{ (taxConfig()?.nhtRateEmployer ?? 0.03) * 100 | number:'1.0-2' }}%</td>
+                      <td class="col-amt">{{ so1Report()!.nhtEmployer | currency:'JMD':'symbol':'1.2-2' }}</td>
                     </tr>
                     <tr>
                       <td>Education Tax</td>
                       <td class="col-rate">{{ (taxConfig()?.educationTaxRateEmployee ?? 0.0225) * 100 | number:'1.0-2' }}%</td>
                       <td class="col-amt">{{ so1Report()!.educationTaxEmployee | currency:'JMD':'symbol':'1.2-2' }}</td>
+                      <td class="col-rate">{{ (taxConfig()?.educationTaxRateEmployer ?? 0.035) * 100 | number:'1.0-2' }}%</td>
+                      <td class="col-amt">{{ so1Report()!.educationTaxEmployer | currency:'JMD':'symbol':'1.2-2' }}</td>
                     </tr>
                     <tr>
                       <td>Income Tax (PAYE)</td>
                       <td class="col-rate">{{ (taxConfig()?.payeRateLower ?? 0.25) * 100 | number:'1.0-0' }}% / {{ (taxConfig()?.payeRateUpper ?? 0.30) * 100 | number:'1.0-0' }}%</td>
                       <td class="col-amt">{{ so1Report()!.payeEmployee | currency:'JMD':'symbol':'1.2-2' }}</td>
+                      <td class="col-rate">—</td>
+                      <td class="col-amt">—</td>
+                    </tr>
+                    <tr>
+                      <td>Human Employment &amp; Resource Training (HEART)</td>
+                      <td class="col-rate">—</td>
+                      <td class="col-amt">—</td>
+                      <td class="col-rate">{{ (taxConfig()?.heartRateEmployer ?? 0.03) * 100 | number:'1.0-2' }}%</td>
+                      <td class="col-amt">{{ so1Report()!.heartEmployer | currency:'JMD':'symbol':'1.2-2' }}</td>
                     </tr>
                     <tr class="subtotal-row">
-                      <td colspan="2"><strong>Sub-total — Employee Statutory Deductions</strong></td>
+                      <td colspan="2"><strong>Sub-total</strong></td>
                       <td class="col-amt"><strong>{{ (so1Report()!.nisEmployee + so1Report()!.nhtEmployee + so1Report()!.educationTaxEmployee + so1Report()!.payeEmployee) | currency:'JMD':'symbol':'1.2-2' }}</strong></td>
+                      <td></td>
+                      <td class="col-amt"><strong>{{ (so1Report()!.nisEmployer + so1Report()!.nhtEmployer + so1Report()!.educationTaxEmployer + so1Report()!.heartEmployer) | currency:'JMD':'symbol':'1.2-2' }}</strong></td>
                     </tr>
                   </tbody>
                 </table>
