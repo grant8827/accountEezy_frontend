@@ -45,6 +45,13 @@ export interface Employee {
   password?: string; // Only used when creating/updating
   employmentType?: 'Salary' | 'Hourly';
   vacationDaysBalance?: number;
+  // YTD accumulators
+  ytdGross?: number;
+  ytdNis?: number;
+  ytdNht?: number;
+  ytdEducationTax?: number;
+  ytdPaye?: number;
+  ytdTotalDeductions?: number;
 }
 
 // Payroll Types

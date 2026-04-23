@@ -262,6 +262,57 @@ import { Employee } from '../../types/index';
               <mat-error>Password must be at least 6 characters</mat-error>
             }
           </mat-form-field>
+
+          <!-- YTD Balances Section -->
+          <div class="section-header">
+            <mat-icon>trending_up</mat-icon>
+            <h3>YTD Balances</h3>
+          </div>
+          <p style="font-size: 12px; color: rgba(0,0,0,0.55); margin: -0.5rem 0 1rem 0;">
+            Enter opening balances for employees joining mid-year, or leave at 0 for new hires. These values accumulate with each paid payroll run.
+          </p>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>YTD Gross (J$)</mat-label>
+              <mat-icon matPrefix>payments</mat-icon>
+              <input matInput type="number" formControlName="ytdGross" placeholder="0" min="0">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>YTD NIS (J$)</mat-label>
+              <mat-icon matPrefix>account_balance</mat-icon>
+              <input matInput type="number" formControlName="ytdNis" placeholder="0" min="0">
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>YTD NHT (J$)</mat-label>
+              <mat-icon matPrefix>home</mat-icon>
+              <input matInput type="number" formControlName="ytdNht" placeholder="0" min="0">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>YTD Education Tax (J$)</mat-label>
+              <mat-icon matPrefix>school</mat-icon>
+              <input matInput type="number" formControlName="ytdEducationTax" placeholder="0" min="0">
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>YTD PAYE (J$)</mat-label>
+              <mat-icon matPrefix>receipt</mat-icon>
+              <input matInput type="number" formControlName="ytdPaye" placeholder="0" min="0">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>YTD Total Deductions (J$)</mat-label>
+              <mat-icon matPrefix>remove_circle_outline</mat-icon>
+              <input matInput type="number" formControlName="ytdTotalDeductions" placeholder="0" min="0">
+            </mat-form-field>
+          </div>
         </form>
       </mat-dialog-content>
 
@@ -410,7 +461,13 @@ export class EmployeeFormDialogComponent implements OnInit {
       status: [data.employee?.status || 'active'],
       bankName: [data.employee?.bankName || ''],
       bankAccountNumber: [data.employee?.bankAccountNumber || ''],
-      password: ['', passwordValidators]
+      password: ['', passwordValidators],
+      ytdGross: [data.employee?.ytdGross ?? 0],
+      ytdNis: [data.employee?.ytdNis ?? 0],
+      ytdNht: [data.employee?.ytdNht ?? 0],
+      ytdEducationTax: [data.employee?.ytdEducationTax ?? 0],
+      ytdPaye: [data.employee?.ytdPaye ?? 0],
+      ytdTotalDeductions: [data.employee?.ytdTotalDeductions ?? 0]
     });
   }
 
@@ -441,7 +498,13 @@ export class EmployeeFormDialogComponent implements OnInit {
         payCycle: formValue.payCycle || 'Monthly',
         employmentType: formValue.employmentType || 'Salary',
         vacationDaysBalance: Number(formValue.vacationDaysBalance) || 0,
-        password: formValue.password || undefined // Only include if provided
+        password: formValue.password || undefined, // Only include if provided
+        ytdGross: Number(formValue.ytdGross) || 0,
+        ytdNis: Number(formValue.ytdNis) || 0,
+        ytdNht: Number(formValue.ytdNht) || 0,
+        ytdEducationTax: Number(formValue.ytdEducationTax) || 0,
+        ytdPaye: Number(formValue.ytdPaye) || 0,
+        ytdTotalDeductions: Number(formValue.ytdTotalDeductions) || 0
       };
 
       this.dialogRef.close(employee);
