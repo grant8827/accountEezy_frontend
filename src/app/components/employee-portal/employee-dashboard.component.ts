@@ -485,16 +485,27 @@ export class ApplyLeaveDialogComponent {
     <!-- Payslip Detail Overlay -->
     <div *ngIf="showPayslipDetail && selectedPayslip" class="payslip-overlay" id="payslip-print-area">
       <div class="payslip-print-card">
-        <div class="payslip-header">
-          <h2>PAYSLIP</h2>
-          <div class="payslip-meta">
-            <span><strong>Period:</strong> {{ selectedPayslip.period }}</span>
-            <span><strong>Employee:</strong> {{ employeeName }}</span>
-            <span><strong>Pay Cycle:</strong> {{ selectedPayslip.payCycle }}</span>
-            <span><strong>Pay Date:</strong> {{ selectedPayslip.endDate | date:'dd MMM yyyy':'UTC' }}</span>
+        <div class="payslip-biz-header">
+          <div class="payslip-logo-box">
+            <img *ngIf="selectedPayslip.businessLogoUrl" [src]="selectedPayslip.businessLogoUrl" alt="logo">
+            <span *ngIf="!selectedPayslip.businessLogoUrl">{{ getInitials(selectedPayslip.businessName) }}</span>
+          </div>
+          <div class="payslip-biz-info">
+            <div class="payslip-biz-name">{{ selectedPayslip.businessName }}</div>
+            <div class="payslip-biz-detail" *ngIf="selectedPayslip.businessAddress">{{ selectedPayslip.businessAddress }}</div>
+            <div class="payslip-biz-detail" *ngIf="selectedPayslip.businessEmail">{{ selectedPayslip.businessEmail }}</div>
+            <div class="payslip-biz-detail" *ngIf="selectedPayslip.businessPhone">{{ selectedPayslip.businessPhone }}</div>
           </div>
         </div>
-        <hr style="margin:1rem 0">
+        <div class="payslip-title-section">
+          <h2>Payslip</h2>
+          <div class="payslip-period"><strong>Pay Period:</strong> {{ selectedPayslip.period }}</div>
+        </div>
+        <div class="payslip-emp-section">
+          <div><span class="payslip-emp-label">Employee Name:</span> {{ employeeName }}</div>
+          <div><span class="payslip-emp-label">Position:</span> {{ selectedPayslip.position || '—' }}</div>
+        </div>
+        <hr style="margin:0.75rem 0">
         <div class="ps-section">
           <h4>EARNINGS</h4>
           <div class="ps-row"><span>Basic Salary</span><span>{{ selectedPayslip.baseSalary | currency:'JMD':'symbol':'1.2-2' }}</span></div>
@@ -510,6 +521,22 @@ export class ApplyLeaveDialogComponent {
           <div class="ps-row"><span>PAYE</span><span>{{ selectedPayslip.employeePaye | currency:'JMD':'symbol':'1.2-2' }}</span></div>
           <div class="ps-row" *ngIf="selectedPayslip.loanDeduction > 0"><span>Loan Deduction</span><span>{{ selectedPayslip.loanDeduction | currency:'JMD':'symbol':'1.2-2' }}</span></div>
           <div class="ps-row deductions"><span><strong>TOTAL DEDUCTIONS</strong></span><span><strong>{{ selectedPayslip.deductions | currency:'JMD':'symbol':'1.2-2' }}</strong></span></div>
+          <div class="ytd-table">
+            <div class="ytd-label">Y.T.D.</div>
+            <hr class="ytd-divider">
+            <div class="ytd-row ytd-header">
+              <span>GROSS</span><span>EDTAX</span><span>NHT</span><span>NIS</span><span>PAYE</span><span>TOT. DEDUCTIONS</span>
+            </div>
+            <div class="ytd-row ytd-data">
+              <span>{{ selectedPayslip.ytdGross | currency:'JMD':'symbol':'1.2-2' }}</span>
+              <span>{{ selectedPayslip.ytdEdTax | currency:'JMD':'symbol':'1.2-2' }}</span>
+              <span>{{ selectedPayslip.ytdNht | currency:'JMD':'symbol':'1.2-2' }}</span>
+              <span>{{ selectedPayslip.ytdNis | currency:'JMD':'symbol':'1.2-2' }}</span>
+              <span>{{ selectedPayslip.ytdPaye | currency:'JMD':'symbol':'1.2-2' }}</span>
+              <span>{{ selectedPayslip.ytdTotalDeductions | currency:'JMD':'symbol':'1.2-2' }}</span>
+            </div>
+            <hr class="ytd-divider">
+          </div>
         </div>
         <div class="ps-net">
           <span>NET PAY</span><span class="net-amount">{{ selectedPayslip.netPay | currency:'JMD':'symbol':'1.2-2' }}</span>
@@ -920,9 +947,18 @@ export class ApplyLeaveDialogComponent {
     /* Payslip overlay */
     .payslip-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999;}
     .payslip-print-card{background:white;width:520px;max-height:90vh;overflow-y:auto;border-radius:8px;padding:2rem;font-family:'Courier New',monospace;}
-    .payslip-header{text-align:center;margin-bottom:1rem;}
-    .payslip-header h2{font-size:1.5rem;letter-spacing:0.2em;margin:0 0 0.5rem;}
-    .payslip-meta{display:flex;flex-direction:column;gap:0.2rem;font-size:0.85rem;color:#555;}
+    .payslip-biz-header{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.5rem;}
+    .payslip-logo-box{width:64px;height:64px;min-width:64px;background:#222;border-radius:4px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:1.3rem;overflow:hidden;letter-spacing:0.05em;}
+    .payslip-logo-box img{width:100%;height:100%;object-fit:contain;}
+    .payslip-biz-info{flex:1;}
+    .payslip-biz-name{font-size:1.3rem;font-weight:700;line-height:1.2;}
+    .payslip-biz-detail{font-size:0.78rem;color:#555;line-height:1.4;}
+    .payslip-title-section{text-align:center;margin:1.25rem 0 0.75rem;}
+    .payslip-title-section h2{font-size:1.4rem;letter-spacing:0.12em;margin:0 0 0.25rem;font-weight:700;}
+    .payslip-period{font-size:0.85rem;font-weight:600;}
+    .payslip-emp-section{border-left:3px solid #ddd;padding-left:0.75rem;margin:0.75rem 0;font-size:0.85rem;}
+    .payslip-emp-section div{padding:0.1rem 0;}
+    .payslip-emp-label{font-weight:700;}
     .ps-section{margin:1rem 0;}
     .ps-section h4{font-size:0.75rem;letter-spacing:0.15em;color:#888;border-bottom:1px dashed #ddd;padding-bottom:0.3rem;margin-bottom:0.5rem;}
     .ps-row{display:flex;justify-content:space-between;padding:0.2rem 0;font-size:0.9rem;}
@@ -934,6 +970,12 @@ export class ApplyLeaveDialogComponent {
     .employer-section .ps-row{color:#777;font-size:0.82rem;}
     .ps-footer{text-align:center;font-size:0.75rem;color:#999;margin:1rem 0;}
     .ps-actions{display:flex;gap:1rem;justify-content:flex-end;margin-top:1rem;}
+    .ytd-table{margin:0.75rem 0;font-size:0.72rem;}
+    .ytd-label{font-size:0.7rem;font-weight:700;color:#888;letter-spacing:0.06em;margin-bottom:0.2rem;}
+    .ytd-divider{border:none;border-top:1px solid #ddd;margin:0 0 0.3rem 0;}
+    .ytd-row{display:grid;grid-template-columns:repeat(6,1fr);}
+    .ytd-row span{padding:0.25rem 0.25rem;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .ytd-header{font-weight:700;font-size:0.68rem;color:#888;letter-spacing:0.04em;}
     @media print{.no-print{display:none !important;}.dashboard-container{display:none !important;}.payslip-overlay{position:static;background:none;}.payslip-print-card{box-shadow:none;border-radius:0;max-height:none;}}
 
     table {
@@ -1359,9 +1401,18 @@ export class EmployeeDashboardComponent implements OnInit {
     * { box-sizing: border-box; }
     body { font-family: 'Courier New', monospace; margin: 2rem; color: #111; }
     .ps-actions { display: none !important; }
-    .payslip-header { text-align: center; margin-bottom: 1rem; }
-    .payslip-header h2 { font-size: 1.5rem; letter-spacing: 0.2em; margin: 0 0 0.5rem; }
-    .payslip-meta { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.85rem; color: #555; }
+    .payslip-biz-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; }
+    .payslip-logo-box { width: 64px; height: 64px; min-width: 64px; background: #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.3rem; overflow: hidden; letter-spacing: 0.05em; }
+    .payslip-logo-box img { width: 100%; height: 100%; object-fit: contain; }
+    .payslip-biz-info { flex: 1; }
+    .payslip-biz-name { font-size: 1.3rem; font-weight: 700; line-height: 1.2; }
+    .payslip-biz-detail { font-size: 0.78rem; color: #555; line-height: 1.4; }
+    .payslip-title-section { text-align: center; margin: 1.25rem 0 0.75rem; }
+    .payslip-title-section h2 { font-size: 1.4rem; letter-spacing: 0.12em; margin: 0 0 0.25rem; font-weight: 700; }
+    .payslip-period { font-size: 0.85rem; font-weight: 600; }
+    .payslip-emp-section { border-left: 3px solid #ddd; padding-left: 0.75rem; margin: 0.75rem 0; font-size: 0.85rem; }
+    .payslip-emp-section div { padding: 0.1rem 0; }
+    .payslip-emp-label { font-weight: 700; }
     .ps-section { margin: 1rem 0; }
     .ps-section h4 { font-size: 0.75rem; letter-spacing: 0.15em; color: #888; border-bottom: 1px dashed #ddd; padding-bottom: 0.3rem; margin-bottom: 0.5rem; }
     .ps-row { display: flex; justify-content: space-between; padding: 0.2rem 0; font-size: 0.9rem; }
@@ -1381,6 +1432,14 @@ export class EmployeeDashboardComponent implements OnInit {
       win.print();
       setTimeout(() => win.close(), 1000);
     }, 50);
+  }
+
+  getInitials(name: string | null | undefined): string {
+    if (!name) return '?';
+    const words = name.trim().split(/\s+/);
+    return words.length === 1
+      ? words[0][0].toUpperCase()
+      : (words[0][0] + words[1][0]).toUpperCase();
   }
 
   getPendingLeaveCount(): number {

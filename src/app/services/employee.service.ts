@@ -26,6 +26,12 @@ interface BackendEmployee {
   position?: string;
   department?: string;
   hireDate?: string;
+  ytdGross?: number;
+  ytdNis?: number;
+  ytdNht?: number;
+  ytdEducationTax?: number;
+  ytdPaye?: number;
+  ytdTotalDeductions?: number;
 }
 
 interface EmployeeRequest {
@@ -47,6 +53,12 @@ interface EmployeeRequest {
   position?: string;
   department?: string;
   hireDate?: string;
+  ytdGross?: number;
+  ytdNis?: number;
+  ytdNht?: number;
+  ytdEducationTax?: number;
+  ytdPaye?: number;
+  ytdTotalDeductions?: number;
 }
 
 @Injectable({
@@ -83,7 +95,13 @@ export class EmployeeService {
       address: backendEmp.address,
       payCycle: this.mapPayCycleToFrontend(backendEmp.payCycle),
       employmentType: (backendEmp.employmentType as 'Salary' | 'Hourly') || 'Salary',
-      vacationDaysBalance: backendEmp.vacationDaysBalance ?? 0
+      vacationDaysBalance: backendEmp.vacationDaysBalance ?? 0,
+      ytdGross: backendEmp.ytdGross ?? 0,
+      ytdNis: backendEmp.ytdNis ?? 0,
+      ytdNht: backendEmp.ytdNht ?? 0,
+      ytdEducationTax: backendEmp.ytdEducationTax ?? 0,
+      ytdPaye: backendEmp.ytdPaye ?? 0,
+      ytdTotalDeductions: backendEmp.ytdTotalDeductions ?? 0
     };
   }
 
@@ -107,7 +125,13 @@ export class EmployeeService {
       vacationDaysBalance: employee.vacationDaysBalance ?? 0,
       position: employee.position,
       department: employee.department,
-      hireDate: employee.hireDate
+      hireDate: employee.hireDate,
+      ytdGross: employee.ytdGross ?? 0,
+      ytdNis: employee.ytdNis ?? 0,
+      ytdNht: employee.ytdNht ?? 0,
+      ytdEducationTax: employee.ytdEducationTax ?? 0,
+      ytdPaye: employee.ytdPaye ?? 0,
+      ytdTotalDeductions: employee.ytdTotalDeductions ?? 0
     };
   }
 

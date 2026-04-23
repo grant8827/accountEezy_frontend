@@ -38,7 +38,7 @@ interface BatchEntryInput {
 
 interface PayrollEntry {
   id: number; employeeId: number;
-  employee: { id: number; name: string; nisNumber: string };
+  employee: { id: number; name: string; nisNumber: string; position: string | null; ytdGross: number; ytdNis: number; ytdNht: number; ytdEducationTax: number; ytdPaye: number; ytdTotalDeductions: number; };
   baseSalary: number; holidayPay: number; bonus: number; grossPay: number;
   employeeNis: number; employeeNht: number; employeeEducationTax: number; employeePaye: number;
   loanDeduction: number;
@@ -49,6 +49,7 @@ interface PayrollEntry {
 interface PayrollBatchDetail {
   id: number; label: string; payCycle: string;
   startDate: string; endDate: string; status: number;
+  business: { companyName: string; address: string; businessEmail: string | null; businessPhone: string | null; logoUrl: string | null; } | null;
   entries: PayrollEntry[];
 }
 
@@ -97,13 +98,25 @@ const DEFAULT_TAX: TaxConfig = {
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <div *ngIf="showPayslip && payslipEntry" class="payslip-overlay" id="payslip-print-area">
   <div class="payslip-card">
-    <div class="payslip-header">
-      <h2>PAYSLIP</h2>
-      <div class="payslip-meta">
-        <span><strong>Period:</strong> {{ payslipBatch?.label }}</span>
-        <span><strong>Employee:</strong> {{ payslipEntry.employee.name }}</span>
-        <span><strong>NIS #:</strong> {{ payslipEntry.employee.nisNumber }}</span>
+    <div class="payslip-biz-header">
+      <div class="payslip-logo-box">
+        <img *ngIf="payslipBatch?.business?.logoUrl" [src]="payslipBatch?.business?.logoUrl" alt="logo">
+        <span *ngIf="!payslipBatch?.business?.logoUrl">{{ getInitials(payslipBatch?.business?.companyName) }}</span>
       </div>
+      <div class="payslip-biz-info">
+        <div class="payslip-biz-name">{{ payslipBatch?.business?.companyName }}</div>
+        <div class="payslip-biz-detail" *ngIf="payslipBatch?.business?.address">{{ payslipBatch?.business?.address }}</div>
+        <div class="payslip-biz-detail" *ngIf="payslipBatch?.business?.businessEmail">{{ payslipBatch?.business?.businessEmail }}</div>
+        <div class="payslip-biz-detail" *ngIf="payslipBatch?.business?.businessPhone">{{ payslipBatch?.business?.businessPhone }}</div>
+      </div>
+    </div>
+    <div class="payslip-title-section">
+      <h2>Payslip</h2>
+      <div class="payslip-period"><strong>Pay Period:</strong> {{ payslipBatch?.label }}</div>
+    </div>
+    <div class="payslip-emp-section">
+      <div><span class="payslip-emp-label">Employee Name:</span> {{ payslipEntry.employee.name }}</div>
+      <div><span class="payslip-emp-label">Position:</span> {{ payslipEntry.employee.position || '—' }}</div>
     </div>
     <mat-divider></mat-divider>
     <div class="payslip-body">
@@ -122,6 +135,22 @@ const DEFAULT_TAX: TaxConfig = {
         <div class="payslip-row"><span>PAYE</span><span>{{ payslipEntry.employeePaye | currency:'JMD':'symbol':'1.2-2' }}</span></div>
         <div class="payslip-row" *ngIf="payslipEntry.loanDeduction > 0"><span>Loan Deduction</span><span>{{ payslipEntry.loanDeduction | currency:'JMD':'symbol':'1.2-2' }}</span></div>
         <div class="payslip-row deductions-row"><span><strong>TOTAL DEDUCTIONS</strong></span><span><strong>{{ payslipEntry.totalDeductions | currency:'JMD':'symbol':'1.2-2' }}</strong></span></div>
+        <div class="ytd-table">
+          <div class="ytd-label">Y.T.D.</div>
+          <hr class="ytd-divider">
+          <div class="ytd-row ytd-header">
+            <span>GROSS</span><span>EDTAX</span><span>NHT</span><span>NIS</span><span>PAYE</span><span>TOT. DEDUCTIONS</span>
+          </div>
+          <div class="ytd-row ytd-data">
+            <span>{{ payslipEntry.employee.ytdGross | currency:'JMD':'symbol':'1.2-2' }}</span>
+            <span>{{ payslipEntry.employee.ytdEducationTax | currency:'JMD':'symbol':'1.2-2' }}</span>
+            <span>{{ payslipEntry.employee.ytdNht | currency:'JMD':'symbol':'1.2-2' }}</span>
+            <span>{{ payslipEntry.employee.ytdNis | currency:'JMD':'symbol':'1.2-2' }}</span>
+            <span>{{ payslipEntry.employee.ytdPaye | currency:'JMD':'symbol':'1.2-2' }}</span>
+            <span>{{ payslipEntry.employee.ytdTotalDeductions | currency:'JMD':'symbol':'1.2-2' }}</span>
+          </div>
+          <hr class="ytd-divider">
+        </div>
       </div>
       <div class="payslip-net">
         <span>NET PAY</span>
@@ -705,9 +734,18 @@ const DEFAULT_TAX: TaxConfig = {
     /* ── Payslip overlay ── */
     .payslip-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 9999; }
     .payslip-card { background: white; width: 520px; max-height: 90vh; overflow-y: auto; border-radius: 8px; padding: 2rem; font-family: 'Courier New', monospace; }
-    .payslip-header { text-align: center; margin-bottom: 1rem; }
-    .payslip-header h2 { font-size: 1.5rem; letter-spacing: 0.2em; margin: 0 0 0.5rem; }
-    .payslip-meta { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.85rem; color: #555; }
+    .payslip-biz-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; }
+    .payslip-logo-box { width: 64px; height: 64px; min-width: 64px; background: #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.3rem; overflow: hidden; letter-spacing: 0.05em; }
+    .payslip-logo-box img { width: 100%; height: 100%; object-fit: contain; }
+    .payslip-biz-info { flex: 1; }
+    .payslip-biz-name { font-size: 1.3rem; font-weight: 700; line-height: 1.2; }
+    .payslip-biz-detail { font-size: 0.78rem; color: #555; line-height: 1.4; }
+    .payslip-title-section { text-align: center; margin: 1.25rem 0 0.75rem; }
+    .payslip-title-section h2 { font-size: 1.4rem; letter-spacing: 0.12em; margin: 0 0 0.25rem; font-weight: 700; }
+    .payslip-period { font-size: 0.85rem; font-weight: 600; }
+    .payslip-emp-section { border-left: 3px solid #ddd; padding-left: 0.75rem; margin: 0.75rem 0; font-size: 0.85rem; }
+    .payslip-emp-section div { padding: 0.1rem 0; }
+    .payslip-emp-label { font-weight: 700; }
     .payslip-body { margin: 1rem 0; }
     .payslip-section { margin-bottom: 1rem; }
     .payslip-section h4 { font-size: 0.75rem; letter-spacing: 0.15em; color: #888; border-bottom: 1px dashed #ddd; padding-bottom: 0.3rem; margin-bottom: 0.5rem; }
@@ -720,6 +758,12 @@ const DEFAULT_TAX: TaxConfig = {
     .employer-section .payslip-row { color: #777; font-size: 0.82rem; }
     .payslip-footer { text-align: center; font-size: 0.75rem; color: #999; margin: 1rem 0; }
     .payslip-actions { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem; }
+    .ytd-table { margin: 0.75rem 0; font-size: 0.72rem; }
+    .ytd-label { font-size: 0.7rem; font-weight: 700; color: #888; letter-spacing: 0.06em; margin-bottom: 0.2rem; }
+    .ytd-divider { border: none; border-top: 1px solid #ddd; margin: 0 0 0.3rem 0; }
+    .ytd-row { display: grid; grid-template-columns: repeat(6, 1fr); }
+    .ytd-row span { padding: 0.25rem 0.25rem; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ytd-header { font-weight: 700; font-size: 0.68rem; color: #888; letter-spacing: 0.04em; }
 
     /* ── Print ── */
     @media print {
@@ -1047,6 +1091,14 @@ export class PayrollModuleComponent implements OnInit {
   closePayslip() { this.showPayslip = false; this.payslipEntry = null; }
 
   printPayslip() { window.print(); }
+
+  getInitials(name: string | null | undefined): string {
+    if (!name) return '?';
+    const words = name.trim().split(/\s+/);
+    return words.length === 1
+      ? words[0][0].toUpperCase()
+      : (words[0][0] + words[1][0]).toUpperCase();
+  }
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
 
