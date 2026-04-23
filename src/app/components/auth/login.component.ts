@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -52,6 +52,13 @@ import { environment } from '../../../environments/environment';
           <div class="view-login">
             <h1>Welcome back</h1>
             <p class="subtitle">Sign in to your business account</p>
+
+            @if (registeredPending) {
+              <div class="alert alert-pending">
+                <mat-icon>hourglass_empty</mat-icon>
+                Registration received! Your account is pending approval. You will be able to log in once activated.
+              </div>
+            }
 
             @if (error$ | async; as err) {
               <div class="alert alert-error">
@@ -298,6 +305,7 @@ import { environment } from '../../../environments/environment';
     }
     .alert mat-icon { font-size: 16px; width: 16px; height: 16px; flex-shrink: 0; }
     .alert-error { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.3); color: #FCA5A5; }
+    .alert-pending { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); color: #FBBF24; }
 
     /* ── Primary button ── */
     .btn-primary {
@@ -410,12 +418,14 @@ export class LoginComponent {
   forgotError: string | null = null;
   isLoading$;
   error$;
+  registeredPending = false;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private route: ActivatedRoute
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -426,6 +436,9 @@ export class LoginComponent {
     });
     this.isLoading$ = this.authService.isLoading$;
     this.error$ = this.authService.error$;
+    this.route.queryParams.subscribe(params => {
+      this.registeredPending = params['registered'] === '1';
+    });
   }
 
   onSubmit(): void {
@@ -436,7 +449,10 @@ export class LoginComponent {
         next: (response) => {
           if (response.success && response.data) {
             const user = response.data.user;
-            if (user.isAdmin) {
+            if (user.isSuperAdmin) {
+              // Platform super-admin → super-admin dashboard
+              this.router.navigate(['/super-admin']);
+            } else if (user.isAdmin) {
               // Business owner/admin → main dashboard
               this.router.navigate(['/dashboard']);
             } else {

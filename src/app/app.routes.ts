@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
 import { TrialGuard } from './guards/trial.guard';
 import { EmployeeAuthGuard } from './guards/employee-auth.guard';
+import { SuperAdminGuard } from './guards/super-admin.guard';
 import { LoginComponent } from './components/auth/login.component';
 import { RegisterComponent } from './components/auth/register.component';
 import { LandingComponent } from './features/landing/landing.component';
@@ -24,6 +25,7 @@ import { LeaveRequestsComponent } from './components/leaves/leave-requests.compo
 import { EmployeeLoginComponent } from './components/auth/employee-login.component';
 import { EmployeeDashboardComponent } from './components/employee-portal/employee-dashboard.component';
 import { ProfileComponent } from './components/profile/profile.component';
+import { SuperAdminDashboardComponent } from './components/super-admin/super-admin-dashboard.component';
 
 export const routes: Routes = [
   // Home Page
@@ -37,6 +39,9 @@ export const routes: Routes = [
   { path: 'payment', component: PaymentPageComponent },
   { path: 'debug-env', component: DebugEnvPageComponent },
   { path: 'api-test', component: ApiTestComponent },
+
+  // Super Admin Dashboard
+  { path: 'super-admin', component: SuperAdminDashboardComponent, canActivate: [SuperAdminGuard] },
 
   // Employee Dashboard with Sidebar Layout
   {

@@ -16,6 +16,7 @@ export interface User {
   employeeId?: number | null;
   employeeName?: string | null;
   isAdmin?: boolean;
+  isSuperAdmin?: boolean;
   // retained for display compatibility
   role?: string;
 }
@@ -200,5 +201,9 @@ export class AuthService {
 
   clearError(): void {
     this.errorSubject.next(null);
+  }
+
+  isSuperAdmin(): boolean {
+    return this.userSubject.value?.isSuperAdmin === true;
   }
 }

@@ -321,16 +321,10 @@ export class RegisterComponent implements OnInit {
         if (response.success) {
           localStorage.removeItem('registrationData');
           localStorage.removeItem('selectedPlan');
-          if (this.logoFile) {
-            const formData = new FormData();
-            formData.append('logo', this.logoFile);
-            this.http.post(`${this.apiUrl}/auth/upload-logo`, formData).subscribe({
-              next: () => this.router.navigate(['/dashboard']),
-              error: () => this.router.navigate(['/dashboard'])
-            });
-          } else {
-            this.router.navigate(['/dashboard']);
-          }
+          // Account is pending approval — redirect to login with message
+          this.router.navigate(['/login'], {
+            queryParams: { registered: '1' }
+          });
         } else {
           this.registrationError = response.message || 'Registration failed. Please try again.';
           this.loading = false;
