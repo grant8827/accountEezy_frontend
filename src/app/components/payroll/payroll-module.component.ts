@@ -100,8 +100,8 @@ const DEFAULT_TAX: TaxConfig = {
   <div class="payslip-card">
     <div class="payslip-biz-header">
       <div class="payslip-logo-box">
-        <img *ngIf="payslipBatch?.business?.logoUrl" [src]="payslipBatch?.business?.logoUrl" alt="logo">
-        <span *ngIf="!payslipBatch?.business?.logoUrl">{{ getInitials(payslipBatch?.business?.companyName) }}</span>
+        <img *ngIf="payslipBatch?.business?.logoUrl && !payslipLogoError" [src]="payslipBatch?.business?.logoUrl" alt="logo" (error)="payslipLogoError = true">
+        <span *ngIf="!payslipBatch?.business?.logoUrl || payslipLogoError">{{ getInitials(payslipBatch?.business?.companyName) }}</span>
       </div>
       <div class="payslip-biz-info">
         <div class="payslip-biz-name">{{ payslipBatch?.business?.companyName }}</div>
@@ -816,6 +816,7 @@ export class PayrollModuleComponent implements OnInit {
 
   // Payslip
   showPayslip = false;
+  payslipLogoError = false;
   payslipEntry: PayrollEntry | null = null;
   payslipBatch: PayrollBatchDetail | null = null;
 
@@ -1098,6 +1099,7 @@ export class PayrollModuleComponent implements OnInit {
   openPayslip(entry: PayrollEntry) {
     this.payslipEntry = entry;
     this.payslipBatch = this.processedBatch;
+    this.payslipLogoError = false;
     this.showPayslip = true;
   }
 

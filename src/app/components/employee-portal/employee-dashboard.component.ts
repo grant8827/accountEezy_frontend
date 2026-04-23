@@ -487,8 +487,8 @@ export class ApplyLeaveDialogComponent {
       <div class="payslip-print-card">
         <div class="payslip-biz-header">
           <div class="payslip-logo-box">
-            <img *ngIf="selectedPayslip.businessLogoUrl" [src]="selectedPayslip.businessLogoUrl" alt="logo">
-            <span *ngIf="!selectedPayslip.businessLogoUrl">{{ getInitials(selectedPayslip.businessName) }}</span>
+            <img *ngIf="selectedPayslip.businessLogoUrl && !payslipLogoError" [src]="selectedPayslip.businessLogoUrl" alt="logo" (error)="payslipLogoError = true">
+            <span *ngIf="!selectedPayslip.businessLogoUrl || payslipLogoError">{{ getInitials(selectedPayslip.businessName) }}</span>
           </div>
           <div class="payslip-biz-info">
             <div class="payslip-biz-name">{{ selectedPayslip.businessName }}</div>
@@ -1269,6 +1269,7 @@ export class EmployeeDashboardComponent implements OnInit {
   };
   private readonly tabToRoute: string[] = ['overview', 'payslips', 'leaves', 'notices', 'profile'];
   showPayslipDetail = false;
+  payslipLogoError = false;
   selectedPayslip: any = null;
   notices: any[] = [];
   payslipColumns = ['period', 'grossPay', 'deductions', 'netPay', 'actions'];
@@ -1394,6 +1395,7 @@ export class EmployeeDashboardComponent implements OnInit {
 
   viewPayslip(payslip: any) {
     this.selectedPayslip = payslip;
+    this.payslipLogoError = false;
     this.showPayslipDetail = true;
   }
 
