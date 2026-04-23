@@ -524,15 +524,25 @@ export class ApplyLeaveDialogComponent {
           <div class="ytd-table">
             <div class="ytd-label">Y.T.D.</div>
             <hr class="ytd-divider">
-            <div class="ytd-row ytd-header">
-              <span>GROSS</span><span>EDTAX</span><span>NHT</span><span>NIS</span><span>PAYE</span><span>TOT. DEDUCTIONS</span>
+            <div class="ytd-row ytd-header ytd-gross-row">
+              <span>GROSS</span>
             </div>
-            <div class="ytd-row ytd-data">
+            <div class="ytd-row ytd-data ytd-gross-row">
               <span>{{ selectedPayslip.ytdGross | currency:'JMD':'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="ytd-row ytd-header ytd-ded-row">
+              <span>EDTAX</span><span>NHT</span><span>NIS</span><span>PAYE</span>
+            </div>
+            <div class="ytd-row ytd-data ytd-ded-row">
               <span>{{ selectedPayslip.ytdEdTax | currency:'JMD':'symbol':'1.2-2' }}</span>
               <span>{{ selectedPayslip.ytdNht | currency:'JMD':'symbol':'1.2-2' }}</span>
               <span>{{ selectedPayslip.ytdNis | currency:'JMD':'symbol':'1.2-2' }}</span>
               <span>{{ selectedPayslip.ytdPaye | currency:'JMD':'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="ytd-row ytd-header ytd-gross-row">
+              <span>TOT. DEDUCTIONS</span>
+            </div>
+            <div class="ytd-row ytd-data ytd-gross-row">
               <span>{{ selectedPayslip.ytdTotalDeductions | currency:'JMD':'symbol':'1.2-2' }}</span>
             </div>
             <hr class="ytd-divider">
@@ -973,8 +983,11 @@ export class ApplyLeaveDialogComponent {
     .ytd-table{margin:0.75rem 0;font-size:0.72rem;}
     .ytd-label{font-size:0.7rem;font-weight:700;color:#888;letter-spacing:0.06em;margin-bottom:0.2rem;}
     .ytd-divider{border:none;border-top:1px solid #ddd;margin:0 0 0.3rem 0;}
-    .ytd-row{display:grid;grid-template-columns:repeat(6,1fr);}
-    .ytd-row span{padding:0.25rem 0.25rem;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .ytd-row{display:grid;}
+    .ytd-gross-row{grid-template-columns:1fr;}
+    .ytd-ded-row{grid-template-columns:repeat(4,1fr);}
+    .ytd-row span{padding:0.25rem 0.25rem;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .ytd-gross-row span{text-align:left;font-size:0.82rem;}
     .ytd-header{font-weight:700;font-size:0.68rem;color:#888;letter-spacing:0.04em;}
     @media print{.no-print{display:none !important;}.dashboard-container{display:none !important;}.payslip-overlay{position:static;background:none;}.payslip-print-card{box-shadow:none;border-radius:0;max-height:none;}}
 

@@ -138,15 +138,25 @@ const DEFAULT_TAX: TaxConfig = {
         <div class="ytd-table">
           <div class="ytd-label">Y.T.D.</div>
           <hr class="ytd-divider">
-          <div class="ytd-row ytd-header">
-            <span>GROSS</span><span>EDTAX</span><span>NHT</span><span>NIS</span><span>PAYE</span><span>TOT. DEDUCTIONS</span>
+          <div class="ytd-row ytd-header ytd-gross-row">
+            <span>GROSS</span>
           </div>
-          <div class="ytd-row ytd-data">
+          <div class="ytd-row ytd-data ytd-gross-row">
             <span>{{ payslipEntry.employee.ytdGross | currency:'JMD':'symbol':'1.2-2' }}</span>
+          </div>
+          <div class="ytd-row ytd-header ytd-ded-row">
+            <span>EDTAX</span><span>NHT</span><span>NIS</span><span>PAYE</span>
+          </div>
+          <div class="ytd-row ytd-data ytd-ded-row">
             <span>{{ payslipEntry.employee.ytdEducationTax | currency:'JMD':'symbol':'1.2-2' }}</span>
             <span>{{ payslipEntry.employee.ytdNht | currency:'JMD':'symbol':'1.2-2' }}</span>
             <span>{{ payslipEntry.employee.ytdNis | currency:'JMD':'symbol':'1.2-2' }}</span>
             <span>{{ payslipEntry.employee.ytdPaye | currency:'JMD':'symbol':'1.2-2' }}</span>
+          </div>
+          <div class="ytd-row ytd-header ytd-gross-row">
+            <span>TOT. DEDUCTIONS</span>
+          </div>
+          <div class="ytd-row ytd-data ytd-gross-row">
             <span>{{ payslipEntry.employee.ytdTotalDeductions | currency:'JMD':'symbol':'1.2-2' }}</span>
           </div>
           <hr class="ytd-divider">
@@ -761,8 +771,11 @@ const DEFAULT_TAX: TaxConfig = {
     .ytd-table { margin: 0.75rem 0; font-size: 0.72rem; }
     .ytd-label { font-size: 0.7rem; font-weight: 700; color: #888; letter-spacing: 0.06em; margin-bottom: 0.2rem; }
     .ytd-divider { border: none; border-top: 1px solid #ddd; margin: 0 0 0.3rem 0; }
-    .ytd-row { display: grid; grid-template-columns: repeat(6, 1fr); }
-    .ytd-row span { padding: 0.25rem 0.25rem; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ytd-row { display: grid; }
+    .ytd-gross-row { grid-template-columns: 1fr; }
+    .ytd-ded-row { grid-template-columns: repeat(4, 1fr); }
+    .ytd-row span { padding: 0.25rem 0.25rem; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ytd-gross-row span { text-align: left; font-size: 0.82rem; }
     .ytd-header { font-weight: 700; font-size: 0.68rem; color: #888; letter-spacing: 0.04em; }
 
     /* ── Print ── */
