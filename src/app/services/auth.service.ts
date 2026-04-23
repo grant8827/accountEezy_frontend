@@ -119,10 +119,13 @@ export class AuthService {
       tap(response => {
         console.log('Login response:', response);
         if (response.success && response.data) {
-          localStorage.setItem('accounteezy_token', response.data.token);
-          localStorage.setItem('user', JSON.stringify(response.data.user));
-          this.userSubject.next(response.data.user);
-          this.isAuthenticatedSubject.next(true);
+          // Only store accounteezy_token for admin/super-admin logins, not for employees
+          if (!response.data.user.isEmployee || response.data.user.isAdmin || response.data.user.isSuperAdmin) {
+            localStorage.setItem('accounteezy_token', response.data.token);
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+            this.userSubject.next(response.data.user);
+            this.isAuthenticatedSubject.next(true);
+          }
         } else {
           this.errorSubject.next(response.message || 'Login failed');
         }
