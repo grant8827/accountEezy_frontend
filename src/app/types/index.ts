@@ -40,6 +40,7 @@ export interface Employee {
   bankAccountNumber?: string;
   bankName?: string;
   dateOfBirth?: string;
+  phoneNumber?: string;
   address?: string;
   payCycle?: string;
   password?: string; // Only used when creating/updating

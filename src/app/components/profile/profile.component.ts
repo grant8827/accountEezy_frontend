@@ -31,6 +31,7 @@ interface ProfileData {
   businessPhone?: string;
   businessEmail?: string;
   website?: string;
+  logoUrl?: string;
 }
 
 @Component({
@@ -207,6 +208,48 @@ interface ProfileData {
           </mat-card-actions>
         </mat-card>
 
+        <!-- Business Logo Section -->
+        <mat-card class="profile-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>image</mat-icon>
+            <mat-card-title>Business Logo</mat-card-title>
+            <mat-card-subtitle>Shown on payslips and reports</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="logo-section">
+              <div class="logo-current">
+                @if (profile.logoUrl) {
+                  <img [src]="profile.logoUrl" alt="Business logo" class="logo-current-img">
+                } @else {
+                  <div class="logo-placeholder-box">
+                    <mat-icon>business</mat-icon>
+                    <span>No logo</span>
+                  </div>
+                }
+              </div>
+              <div class="logo-upload-controls">
+                <button mat-stroked-button type="button" (click)="profileLogoInput.click()">
+                  <mat-icon>upload</mat-icon> {{ profile.logoUrl ? 'Replace Logo' : 'Upload Logo' }}
+                </button>
+                <p class="logo-hint">JPEG, PNG or WebP · Max 2 MB</p>
+                @if (logoFile) {
+                  <p class="logo-filename">{{ logoFile.name }}</p>
+                }
+                @if (logoPreviewUrl) {
+                  <img [src]="logoPreviewUrl" alt="Preview" class="logo-preview-new">
+                }
+                <input #profileLogoInput type="file" accept="image/jpeg,image/png,image/webp" style="display:none" (change)="onLogoSelected($event)">
+              </div>
+            </div>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-raised-button color="primary" (click)="uploadLogo()" [disabled]="uploadingLogo || !logoFile">
+              <mat-icon>save</mat-icon>
+              {{ uploadingLogo ? 'Uploading...' : 'Save Logo' }}
+            </button>
+          </mat-card-actions>
+        </mat-card>
+
         <!-- Change Password Section -->
         <mat-card class="profile-card">
           <mat-card-header>
@@ -362,6 +405,78 @@ interface ProfileData {
         grid-column: 1;
       }
     }
+
+    .logo-section {
+      display: flex;
+      align-items: flex-start;
+      gap: 2rem;
+    }
+
+    .logo-current-img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      background: #fafafa;
+      padding: 4px;
+      flex-shrink: 0;
+    }
+
+    .logo-placeholder-box {
+      width: 100px;
+      height: 100px;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #fafafa;
+      color: #aaa;
+      gap: 0.25rem;
+      flex-shrink: 0;
+    }
+
+    .logo-placeholder-box mat-icon {
+      font-size: 2rem;
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .logo-placeholder-box span {
+      font-size: 0.7rem;
+    }
+
+    .logo-upload-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .logo-hint {
+      margin: 0;
+      font-size: 0.75rem;
+      color: #888;
+    }
+
+    .logo-filename {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--primary-color, #1565c0);
+      font-weight: 500;
+    }
+
+    .logo-preview-new {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      background: #fafafa;
+      padding: 4px;
+    }
   `]
 })
 export class ProfileComponent implements OnInit {
@@ -373,6 +488,11 @@ export class ProfileComponent implements OnInit {
   newPassword = '';
   confirmPassword = '';
   changingPassword = false;
+
+  // Logo upload state
+  logoFile: File | null = null;
+  logoPreviewUrl: string | null = null;
+  uploadingLogo = false;
 
   private apiUrl = environment.apiUrl;
 
@@ -455,6 +575,46 @@ export class ProfileComponent implements OnInit {
         this.changingPassword = false;
         this.cdr.detectChanges();
         this.snackBar.open('Failed to change password', 'Close', { duration: 4000 });
+      }
+    });
+  }
+
+  onLogoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      if (file.size > 2 * 1024 * 1024) {
+        this.snackBar.open('Logo file must be 2 MB or less.', 'Close', { duration: 4000 });
+        return;
+      }
+      this.logoFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.logoPreviewUrl = e.target?.result as string;
+        this.cdr.detectChanges();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  uploadLogo(): void {
+    if (!this.logoFile) return;
+    this.uploadingLogo = true;
+    const formData = new FormData();
+    formData.append('logo', this.logoFile);
+    this.http.post<{ logoUrl: string }>(`${this.apiUrl}/auth/upload-logo`, formData).subscribe({
+      next: (res) => {
+        if (this.profile) this.profile.logoUrl = res.logoUrl;
+        this.logoFile = null;
+        this.logoPreviewUrl = null;
+        this.uploadingLogo = false;
+        this.cdr.detectChanges();
+        this.snackBar.open('Logo uploaded successfully', 'Close', { duration: 3000 });
+      },
+      error: (err) => {
+        this.uploadingLogo = false;
+        this.cdr.detectChanges();
+        this.snackBar.open(err.error?.message || 'Failed to upload logo', 'Close', { duration: 4000 });
       }
     });
   }

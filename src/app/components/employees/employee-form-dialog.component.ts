@@ -88,11 +88,19 @@ import { Employee } from '../../types/index';
             </mat-form-field>
           </div>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Address</mat-label>
-            <mat-icon matPrefix>home</mat-icon>
-            <textarea matInput formControlName="address" placeholder="Enter full address" rows="2"></textarea>
-          </mat-form-field>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Phone Number</mat-label>
+              <mat-icon matPrefix>phone</mat-icon>
+              <input matInput type="tel" formControlName="phoneNumber" placeholder="e.g. 876-555-0100">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Address</mat-label>
+              <mat-icon matPrefix>home</mat-icon>
+              <textarea matInput formControlName="address" placeholder="Enter full address" rows="1"></textarea>
+            </mat-form-field>
+          </div>
 
           <!-- Tax & Government IDs Section -->
           <div class="section-header">
@@ -448,6 +456,7 @@ export class EmployeeFormDialogComponent implements OnInit {
       email: [data.employee?.email || '', [Validators.required, Validators.email]],
       dateOfBirth: [data.employee?.dateOfBirth ? new Date(data.employee.dateOfBirth) : null],
       address: [data.employee?.address || ''],
+      phoneNumber: [data.employee?.phoneNumber || ''],
       trn: [data.employee?.trn || ''],
       nisNumber: [data.employee?.nisNumber || ''],
       employeeIdNumber: [data.employee?.employeeIdNumber || ''],
@@ -495,6 +504,7 @@ export class EmployeeFormDialogComponent implements OnInit {
         bankAccountNumber: formValue.bankAccountNumber || undefined,
         dateOfBirth: formValue.dateOfBirth ? formValue.dateOfBirth.toISOString().split('T')[0] : undefined,
         address: formValue.address || undefined,
+        phoneNumber: formValue.phoneNumber || undefined,
         payCycle: formValue.payCycle || 'Monthly',
         employmentType: formValue.employmentType || 'Salary',
         vacationDaysBalance: Number(formValue.vacationDaysBalance) || 0,

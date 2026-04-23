@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -106,11 +108,17 @@ export class RegisterComponent implements OnInit {
   selectedPlan: SelectedPlan | null = null;
   error$;
 
+  // Logo upload state
+  logoFile: File | null = null;
+  logoPreviewUrl: string | null = null;
+  private apiUrl = environment.apiUrl;
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private http: HttpClient
   ) {
     this.error$ = this.authService.error$;
 
@@ -222,6 +230,21 @@ export class RegisterComponent implements OnInit {
     }).format(price);
   }
 
+  onLogoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      if (file.size > 2 * 1024 * 1024) {
+        this.registrationError = 'Logo file must be 2 MB or less.';
+        return;
+      }
+      this.logoFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => { this.logoPreviewUrl = e.target?.result as string; };
+      reader.readAsDataURL(file);
+    }
+  }
+
   onSubmit(): void {
     if (this.personalForm.invalid || this.businessForm.invalid ||
         this.addressForm.invalid || this.contactForm.invalid) {
@@ -298,7 +321,16 @@ export class RegisterComponent implements OnInit {
         if (response.success) {
           localStorage.removeItem('registrationData');
           localStorage.removeItem('selectedPlan');
-          this.router.navigate(['/dashboard']);
+          if (this.logoFile) {
+            const formData = new FormData();
+            formData.append('logo', this.logoFile);
+            this.http.post(`${this.apiUrl}/auth/upload-logo`, formData).subscribe({
+              next: () => this.router.navigate(['/dashboard']),
+              error: () => this.router.navigate(['/dashboard'])
+            });
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
         } else {
           this.registrationError = response.message || 'Registration failed. Please try again.';
           this.loading = false;

@@ -271,3 +271,77 @@
     text-align: left;
   }
 }
+
+/* Logo Upload */
+.logo-upload-section {
+  margin: 1.5rem 0 1rem;
+}
+
+.logo-upload-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+.logo-optional {
+  font-weight: 400;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.logo-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.logo-preview-img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border: 2px solid var(--neutral-200);
+  border-radius: 8px;
+  background: var(--neutral-50);
+  padding: 4px;
+}
+
+.logo-placeholder {
+  width: 80px;
+  height: 80px;
+  border: 2px dashed var(--neutral-300);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--neutral-50);
+  color: var(--neutral-400);
+  flex-shrink: 0;
+}
+
+.logo-placeholder mat-icon {
+  font-size: 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.logo-upload-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.logo-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.logo-filename {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--primary-color);
+  font-weight: 500;
+}

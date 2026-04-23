@@ -170,6 +170,28 @@
               </mat-form-field>
             </div>
 
+            <!-- Business Logo (Optional) -->
+            <div class="logo-upload-section">
+              <label class="logo-upload-label">Business Logo <span class="logo-optional">(Optional — used on payslips)</span></label>
+              <div class="logo-preview-row">
+                @if (logoPreviewUrl) {
+                  <img [src]="logoPreviewUrl" alt="Logo preview" class="logo-preview-img">
+                } @else {
+                  <div class="logo-placeholder"><mat-icon>business</mat-icon></div>
+                }
+                <div class="logo-upload-actions">
+                  <button mat-stroked-button type="button" (click)="logoInput.click()">
+                    <mat-icon>upload</mat-icon> Choose Image
+                  </button>
+                  <p class="logo-hint">JPEG, PNG or WebP · Max 2 MB</p>
+                  @if (logoFile) {
+                    <p class="logo-filename">{{ logoFile.name }}</p>
+                  }
+                </div>
+              </div>
+              <input #logoInput type="file" accept="image/jpeg,image/png,image/webp" style="display:none" (change)="onLogoSelected($event)">
+            </div>
+
             <div class="stepper-buttons">
               <button mat-button matStepperPrevious type="button">Back</button>
               <button mat-raised-button color="primary" matStepperNext type="button">Next</button>
