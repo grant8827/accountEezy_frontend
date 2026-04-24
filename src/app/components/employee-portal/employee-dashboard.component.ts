@@ -115,12 +115,19 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
               </div>
               <span class="cb-label">Others</span>
               <em class="pl-specify">&nbsp;Pl.specify</em>
-              <input class="paper-input other-input" formControlName="otherSpecify"
-                     [attr.disabled]="selectedLeaveType !== 'Personal' ? '' : null" />
             </div>
 
           </div>
         </div>
+
+        <!-- ── Others description ─────────────────────────────────── -->
+        @if (selectedLeaveType === 'Personal') {
+          <div class="others-description-section">
+            <label class="dates-label">Description <span class="required-star">*</span></label>
+            <textarea class="others-description-input" formControlName="otherSpecify"
+                      rows="3" placeholder="Please describe the reason for this leave..."></textarea>
+          </div>
+        }
 
         <!-- ── Annual Leave balance banner ──────────────────────────── -->
         @if (selectedLeaveType === 'Vacation') {
@@ -525,6 +532,30 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
       text-align: right;
     }
 
+    /* ── Others description ────────────────────────────── */
+    .others-description-section {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px 0 4px;
+    }
+
+    .others-description-input {
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #1a1a1a;
+      background: #fff;
+      resize: vertical;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .others-description-input:focus { border-color: #1976d2; }
+
     @media (max-width: 700px) {
       .dialog-content   { min-width: 90vw; max-width: 95vw; }
       .paper-form       { padding: 1rem; }
@@ -562,10 +593,11 @@ export class ApplyLeaveDialogComponent {
   }
 
   get matPatTotal(): number {
+    const days     = this.totalDays > 0 ? this.totalDays : 0;
     const sick     = +(this.vacationForm.get('sickDaysToUse')?.value    ?? 0);
     const personal = +(this.vacationForm.get('personalDaysToUse')?.value ?? 0);
     const unpaid   = +(this.vacationForm.get('daysWithoutPay')?.value    ?? 0);
-    return sick + personal + unpaid;
+    return days + sick + personal + unpaid;
   }
 
   get isSubmitDisabled(): boolean {
