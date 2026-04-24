@@ -247,7 +247,7 @@ interface LeaveRequest {
                 @if (leave.status === 'Pending') {
                   <mat-form-field appearance="outline" class="notes-field">
                     <mat-label>Notes (optional)</mat-label>
-                    <input matInput [(ngModel)]="leave['_notes']" placeholder="Add a reason or note...">
+                    <input matInput [(ngModel)]="leave._notes" placeholder="Add a reason or note...">
                   </mat-form-field>
                   <div class="action-btns">
                     <button mat-raised-button color="primary" (click)="approve(leave)">

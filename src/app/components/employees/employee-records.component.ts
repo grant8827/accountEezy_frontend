@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,6 +13,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 import { Employee, LeaveRequest } from '../../types/index';
 import { EmployeeService } from '../../services/employee.service';
@@ -32,6 +35,8 @@ import { environment } from '../../../environments/environment';
     MatBadgeModule,
     MatFormFieldModule,
     MatInputModule,
+    MatTooltipModule,
+    MatSnackBarModule,
     FormsModule
   ],
   template: `
@@ -251,46 +256,69 @@ import { environment } from '../../../environments/environment';
                       @if (getEmployeeLeaveRequests(employee.id).length === 0) {
                         <p class="no-records">No leave requests found</p>
                       } @else {
-                        <div class="leave-requests">
+                        <div class="leave-list">
                           @for (leave of getEmployeeLeaveRequests(employee.id); track leave.id) {
-                            <div class="leave-card" [class]="'leave-' + leave.status.toLowerCase()">
-                              <div class="leave-header">
-                                <div class="leave-type">
+                            <mat-card class="leave-card" [class]="'leave-' + leave.status.toLowerCase()">
+                              <div class="leave-card-header">
+                                <span class="leave-type-chip">
                                   <mat-icon>{{ getLeaveIcon(leave.leaveType) }}</mat-icon>
-                                  <span>{{ leave.leaveType }}</span>
-                                </div>
-                                <mat-chip [class]="'status-' + leave.status.toLowerCase()">
+                                  {{ leave.leaveType }}
+                                </span>
+                                <mat-chip [class]="'status-chip status-' + leave.status.toLowerCase()">
                                   {{ leave.status }}
                                 </mat-chip>
                               </div>
                               <div class="leave-details">
-                                <div class="leave-dates">
+                                <div class="detail-item">
                                   <mat-icon>calendar_today</mat-icon>
-                                  <span>{{ leave.startDate }} to {{ leave.endDate }}</span>
-                                  <span class="days-badge">{{ leave.daysRequested }} days</span>
+                                  <span>{{ leave.startDate | date:'dd MMM yyyy':'UTC' }} → {{ leave.endDate | date:'dd MMM yyyy':'UTC' }}</span>
                                 </div>
-                                @if (leave.reason) {
-                                  <div class="leave-reason">
-                                    <strong>Reason:</strong> {{ leave.reason }}
-                                  </div>
-                                }
-                                @if (leave.adminNotes) {
-                                  <div class="admin-notes">
-                                    <strong>Admin Notes:</strong> {{ leave.adminNotes }}
+                                <div class="detail-item">
+                                  <mat-icon>timelapse</mat-icon>
+                                  <span>{{ leave.daysRequested }} day{{ leave.daysRequested !== 1 ? 's' : '' }}</span>
+                                </div>
+                                @if (leave.requestedOn) {
+                                  <div class="detail-item">
+                                    <mat-icon>schedule</mat-icon>
+                                    <span>Requested {{ leave.requestedOn | date:'dd MMM yyyy' }}</span>
                                   </div>
                                 }
                               </div>
-                              @if (leave.status === 'Pending') {
-                                <div class="leave-actions">
-                                  <button mat-button color="primary" (click)="approveLeave(leave.id!)">
-                                    <mat-icon>check</mat-icon> Approve
-                                  </button>
-                                  <button mat-button color="warn" (click)="rejectLeave(leave.id!)">
-                                    <mat-icon>close</mat-icon> Reject
-                                  </button>
+                              @if (leave.reason) {
+                                <div class="leave-reason">
+                                  <strong>Reason:</strong> {{ leave.reason }}
                                 </div>
                               }
-                            </div>
+                              @if (leave.adminNotes) {
+                                <div class="admin-notes">
+                                  <strong>Admin Notes:</strong> {{ leave.adminNotes }}
+                                </div>
+                              }
+                              <div class="leave-actions">
+                                <div class="view-print-btns">
+                                  <button mat-stroked-button (click)="openLeaveView(leave, employee)" matTooltip="View full form">
+                                    <mat-icon>visibility</mat-icon> View
+                                  </button>
+                                  <button mat-stroked-button (click)="openLeaveView(leave, employee); printLeave()" matTooltip="Print leave form">
+                                    <mat-icon>print</mat-icon> Print
+                                  </button>
+                                </div>
+                                @if (leave.status === 'Pending') {
+                                  <mat-form-field appearance="outline" class="notes-field">
+                                    <mat-label>Notes (optional)</mat-label>
+                                    <input matInput [(ngModel)]="leave._notes" placeholder="Add a reason or note...">
+                                  </mat-form-field>
+                                  <div class="action-btns">
+                                    <button mat-raised-button color="primary" (click)="approveLeave(leave)">
+                                      <mat-icon>check</mat-icon> Approve
+                                    </button>
+                                    <button mat-stroked-button color="warn" (click)="rejectLeave(leave)">
+                                      <mat-icon>close</mat-icon> Reject
+                                    </button>
+                                  </div>
+                                }
+                              </div>
+                            </mat-card>
                           }
                         </div>
                       }
@@ -303,6 +331,95 @@ import { environment } from '../../../environments/environment';
         </mat-card-content>
       </mat-card>
     </div>
+
+    <!-- ── Leave View Overlay (matches leave-requests style) ── -->
+    @if (showLeaveDetail && selectedLeave) {
+      <div class="leave-overlay" (click)="showLeaveDetail = false">
+        <div class="leave-print-card" id="leave-print-area" (click)="$event.stopPropagation()">
+          <div class="lp-header">
+            <h2>LEAVE REQUEST FORM</h2>
+            <p class="lp-company">AccountEezy HR Management</p>
+          </div>
+          <hr>
+          @if (selectedEmployee) {
+            <div class="lp-row">
+              <span class="lp-label">Employee Name:</span>
+              <span class="lp-value">{{ selectedEmployee.firstName }} {{ selectedEmployee.lastName }}</span>
+            </div>
+            <div class="lp-row">
+              <span class="lp-label">Position:</span>
+              <span class="lp-value">{{ selectedEmployee.position }}</span>
+            </div>
+            <div class="lp-row">
+              <span class="lp-label">Department:</span>
+              <span class="lp-value">{{ selectedEmployee.department }}</span>
+            </div>
+          }
+          <div class="lp-row">
+            <span class="lp-label">Leave Type:</span>
+            <span class="lp-value">{{ selectedLeave.leaveType }}</span>
+          </div>
+          <div class="lp-row">
+            <span class="lp-label">From:</span>
+            <span class="lp-value">{{ selectedLeave.startDate | date:'dd MMMM yyyy':'UTC' }}</span>
+          </div>
+          <div class="lp-row">
+            <span class="lp-label">To:</span>
+            <span class="lp-value">{{ selectedLeave.endDate | date:'dd MMMM yyyy':'UTC' }}</span>
+          </div>
+          <div class="lp-row">
+            <span class="lp-label">Days Requested:</span>
+            <span class="lp-value">{{ selectedLeave.daysRequested }}</span>
+          </div>
+          <div class="lp-row">
+            <span class="lp-label">Submitted On:</span>
+            <span class="lp-value">{{ selectedLeave.requestedOn | date:'dd MMMM yyyy' }}</span>
+          </div>
+          @if (selectedLeave.reason) {
+            <div class="lp-row">
+              <span class="lp-label">{{ selectedLeave.leaveType === 'Sick' ? 'Reason' : 'Position / Department' }}:</span>
+              <span class="lp-value">{{ selectedLeave.reason }}</span>
+            </div>
+          }
+          <hr>
+          <div class="lp-row lp-status-row">
+            <span class="lp-label">Status:</span>
+            <span class="lp-status" [class]="'lp-status-' + selectedLeave.status.toLowerCase()">{{ selectedLeave.status }}</span>
+          </div>
+          @if (selectedLeave.adminNotes) {
+            <div class="lp-row">
+              <span class="lp-label">Admin Notes:</span>
+              <span class="lp-value">{{ selectedLeave.adminNotes }}</span>
+            </div>
+          }
+          @if (selectedLeave.leaveType === 'Sick' && selectedLeave.documentPath) {
+            <div class="lp-doc-section">
+              <p class="lp-doc-label">Medical Certificate / Supporting Document</p>
+              @if (isImageDoc(selectedLeave.documentPath)) {
+                <img [src]="getDocUrl(selectedLeave.documentPath)" class="lp-doc-img" alt="Medical certificate" />
+              } @else {
+                <iframe [src]="getSafeDocUrl(selectedLeave.documentPath)" class="lp-doc-iframe" title="Medical certificate"></iframe>
+              }
+            </div>
+          }
+          <div class="lp-signatures">
+            <div class="lp-sig-block">
+              <div class="lp-sig-line"></div>
+              <p>Employee Signature &amp; Date</p>
+            </div>
+            <div class="lp-sig-block">
+              <div class="lp-sig-line"></div>
+              <p>Authorized Signature &amp; Date</p>
+            </div>
+          </div>
+          <p class="lp-footer">This is a computer-generated leave request. Form No: LR-{{ selectedLeave.id }}</p>
+          <div class="lp-actions no-print">
+            <button mat-raised-button (click)="printLeave()"><mat-icon>print</mat-icon> Print</button>
+            <button mat-button (click)="showLeaveDetail = false">Close</button>
+          </div>
+        </div>
+      </div>
+    }
   `,
   styles: [`
     .records-container {
@@ -554,108 +671,193 @@ import { environment } from '../../../environments/environment';
       margin: 1rem 0;
     }
 
-    .leave-requests {
+    .leave-list {
       display: flex;
       flex-direction: column;
       gap: 1rem;
     }
 
+    /* Leave Cards — matches leave-requests page */
     .leave-card {
-      border: 2px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 1rem;
-      background: #f9fafb;
+      padding: 1.5rem;
+      border-left: 4px solid #e5e7eb;
+      transition: box-shadow 0.2s;
     }
 
-    .leave-card.leave-pending {
-      border-color: #fbbf24;
-      background: #fffbeb;
-    }
+    .leave-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .leave-card.leave-pending  { border-left-color: #f59e0b; }
+    .leave-card.leave-approved { border-left-color: #10b981; }
+    .leave-card.leave-rejected { border-left-color: #ef4444; }
 
-    .leave-card.leave-approved {
-      border-color: #34d399;
-      background: #ecfdf5;
-    }
-
-    .leave-card.leave-rejected {
-      border-color: #f87171;
-      background: #fef2f2;
-    }
-
-    .leave-header {
+    .leave-card-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.75rem;
+      align-items: flex-start;
+      margin-bottom: 1rem;
     }
 
-    .leave-type {
+    .leave-type-chip {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.25rem;
+      font-size: 0.95rem;
       font-weight: 600;
       color: #1f2937;
     }
 
-    .leave-type mat-icon {
+    .leave-type-chip mat-icon {
+      font-size: 1.1rem;
+      width: 1.1rem;
+      height: 1.1rem;
       color: #667eea;
     }
 
-    .status-pending {
-      background: #fef3c7 !important;
-      color: #92400e !important;
+    .status-chip {
+      font-size: 0.75rem;
+      font-weight: 600;
+      height: 28px;
     }
 
-    .status-approved {
-      background: #d1fae5 !important;
-      color: #065f46 !important;
-    }
-
-    .status-rejected {
-      background: #fee2e2 !important;
-      color: #991b1b !important;
-    }
+    .status-chip.status-pending  { background: #fef3c7 !important; color: #92400e !important; }
+    .status-chip.status-approved { background: #d1fae5 !important; color: #065f46 !important; }
+    .status-chip.status-rejected { background: #fee2e2 !important; color: #991b1b !important; }
 
     .leave-details {
       display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
     }
 
-    .leave-dates {
+    .detail-item {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      color: #4b5563;
+      gap: 0.4rem;
       font-size: 0.875rem;
+      color: #4b5563;
     }
 
-    .leave-dates mat-icon {
+    .detail-item mat-icon {
       font-size: 1rem;
       width: 1rem;
       height: 1rem;
-    }
-
-    .days-badge {
-      background: #667eea;
-      color: white;
-      padding: 0.125rem 0.5rem;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: 600;
+      color: #9ca3af;
     }
 
     .leave-reason, .admin-notes {
       font-size: 0.875rem;
-      color: #4b5563;
+      color: #6b7280;
+      background: #f9fafb;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      margin-bottom: 0.75rem;
+    }
+
+    .admin-notes {
+      background: #eff6ff;
+      color: #1e40af;
     }
 
     .leave-actions {
-      display: flex;
-      gap: 0.5rem;
       margin-top: 1rem;
       padding-top: 1rem;
       border-top: 1px solid #e5e7eb;
+    }
+
+    .view-print-btns {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .view-print-btns button { font-size: 0.8rem; }
+
+    .notes-field {
+      width: 100%;
+      margin-bottom: 0.75rem;
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    /* Leave print overlay — matches leave-requests page */
+    .leave-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .leave-print-card {
+      background: white;
+      width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 8px;
+      padding: 2rem;
+      font-family: 'Times New Roman', Times, serif;
+    }
+
+    .lp-header { text-align: center; margin-bottom: 0.5rem; }
+    .lp-header h2 { margin: 0 0 0.25rem; font-size: 1.3rem; letter-spacing: 0.15em; font-weight: bold; }
+    .lp-company { margin: 0; font-size: 0.9rem; color: #555; }
+
+    .lp-row {
+      display: flex;
+      gap: 1rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px dashed #ddd;
+      font-size: 0.95rem;
+    }
+
+    .lp-label { font-weight: 600; min-width: 160px; flex-shrink: 0; color: #333; }
+    .lp-value { color: #111; }
+    .lp-status-row { align-items: center; }
+
+    .lp-status {
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.2rem 0.75rem;
+      border-radius: 4px;
+    }
+
+    .lp-status-pending  { background: #fef3c7; color: #92400e; }
+    .lp-status-approved { background: #d1fae5; color: #065f46; }
+    .lp-status-rejected { background: #fee2e2; color: #991b1b; }
+
+    .lp-signatures {
+      display: flex;
+      gap: 2rem;
+      margin: 2rem 0 1rem;
+    }
+
+    .lp-sig-block { flex: 1; text-align: center; }
+    .lp-sig-line { border-bottom: 1px solid #333; margin-bottom: 0.4rem; height: 36px; }
+    .lp-sig-block p { margin: 0; font-size: 0.8rem; color: #555; }
+    .lp-footer { text-align: center; font-size: 0.75rem; color: #999; margin-top: 1rem; }
+
+    .lp-doc-section { margin: 1.25rem 0; }
+    .lp-doc-label { font-weight: 600; font-size: 0.9rem; margin: 0 0 0.5rem; color: #333; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.25rem; }
+    .lp-doc-img { max-width: 100%; height: auto; border: 1px solid #d1d5db; border-radius: 4px; display: block; }
+    .lp-doc-iframe { width: 100%; height: 500px; border: 1px solid #d1d5db; border-radius: 4px; display: block; }
+
+    .lp-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 1.25rem;
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      .records-container { display: none !important; }
+      .leave-overlay { position: static; background: none; }
+      .leave-print-card { box-shadow: none; border-radius: 0; max-height: none; }
     }
 
     .loading-state, .empty-state {
@@ -692,11 +894,17 @@ export class EmployeeRecordsComponent implements OnInit {
   leaveRequests: LeaveRequest[] = [];
   loading = true;
   searchTerm = '';
+  showLeaveDetail = false;
+  selectedLeave: LeaveRequest | null = null;
+  selectedEmployee: Employee | null = null;
 
   constructor(
     private employeeService: EmployeeService,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private snackBar: MatSnackBar,
+    private sanitizer: DomSanitizer,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -861,13 +1069,89 @@ export class EmployeeRecordsComponent implements OnInit {
     }
   }
 
-  approveLeave(leaveId: number) {
-    // Implement approval logic with API call
-    console.log('Approving leave:', leaveId);
+  approveLeave(leave: LeaveRequest) {
+    this.updateLeaveStatus(leave, 'Approved');
   }
 
-  rejectLeave(leaveId: number) {
-    // Implement rejection logic with API call
-    console.log('Rejecting leave:', leaveId);
+  rejectLeave(leave: LeaveRequest) {
+    this.updateLeaveStatus(leave, 'Rejected');
+  }
+
+  private updateLeaveStatus(leave: LeaveRequest, status: string) {
+    const notes = leave._notes || '';
+    const apiUrl = environment.apiUrl + '/leaverequests';
+    this.http.put(`${apiUrl}/${leave.id}/status`, { status, adminNotes: notes }).subscribe({
+      next: () => {
+        leave.status = status;
+        leave.adminNotes = notes || undefined;
+        this.cdr.detectChanges();
+        this.snackBar.open(`Leave request ${status.toLowerCase()}`, 'Close', { duration: 2500 });
+      },
+      error: () => this.snackBar.open('Failed to update leave request', 'Close', { duration: 3000 })
+    });
+  }
+
+  openLeaveView(leave: LeaveRequest, employee: Employee) {
+    this.selectedLeave = leave;
+    this.selectedEmployee = employee;
+    this.showLeaveDetail = true;
+  }
+
+  printLeave() {
+    setTimeout(() => {
+      const card = document.querySelector<HTMLElement>('.leave-print-card');
+      if (!card) return;
+      const win = window.open('', '_blank', 'width=700,height=900');
+      if (!win) return;
+      win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <title>Leave Request Form</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Times New Roman', Times, serif; margin: 2rem; color: #111; }
+    .lp-actions { display: none !important; }
+    .lp-header { text-align: center; margin-bottom: 0.5rem; }
+    .lp-header h2 { margin: 0 0 0.25rem; font-size: 1.3rem; letter-spacing: 0.15em; font-weight: bold; }
+    .lp-company { margin: 0; font-size: 0.9rem; color: #555; }
+    .lp-row { display: flex; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px dashed #ddd; font-size: 0.95rem; }
+    .lp-label { font-weight: 600; min-width: 160px; flex-shrink: 0; color: #333; }
+    .lp-value { color: #111; }
+    .lp-status { font-weight: 700; font-size: 1rem; padding: 0.2rem 0.75rem; border-radius: 4px; }
+    .lp-status-pending  { background: #fef3c7; color: #92400e; }
+    .lp-status-approved { background: #d1fae5; color: #065f46; }
+    .lp-status-rejected { background: #fee2e2; color: #991b1b; }
+    .lp-signatures { display: flex; gap: 2rem; margin: 2rem 0 1rem; }
+    .lp-sig-block { flex: 1; text-align: center; }
+    .lp-sig-line { border-bottom: 1px solid #333; margin-bottom: 0.4rem; height: 36px; }
+    .lp-sig-block p { margin: 0; font-size: 0.8rem; color: #555; }
+    .lp-footer { text-align: center; font-size: 0.75rem; color: #999; margin-top: 1rem; }
+    .lp-doc-section { margin: 1.25rem 0; page-break-inside: avoid; }
+    .lp-doc-label { font-weight: 600; font-size: 0.9rem; margin: 0 0 0.5rem; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 0.25rem; }
+    .lp-doc-img { max-width: 100%; height: auto; border: 1px solid #ccc; display: block; }
+    .lp-doc-iframe { width: 100%; height: 700px; border: 1px solid #ccc; display: block; }
+    hr { border: none; border-top: 1px solid #ddd; margin: 0.75rem 0; }
+  </style>
+</head>
+<body>${card.innerHTML}</body>
+</html>`);
+      win.document.close();
+      win.focus();
+      win.print();
+      setTimeout(() => win.close(), 1000);
+    }, 50);
+  }
+
+  getDocUrl(path: string): string {
+    const base = environment.apiUrl.replace(/\/api$/, '');
+    return base + path;
+  }
+
+  getSafeDocUrl(path: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(this.getDocUrl(path));
+  }
+
+  isImageDoc(path: string): boolean {
+    return /\.(jpg|jpeg|png)$/i.test(path);
   }
 }

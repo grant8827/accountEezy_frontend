@@ -149,6 +149,7 @@ export interface LeaveRequest {
   reviewedOn?: string;
   reviewedBy?: number;
   documentPath?: string;
+  _notes?: string; // transient UI field for admin notes input
 }
 
 export interface LeaveRequestDto {
