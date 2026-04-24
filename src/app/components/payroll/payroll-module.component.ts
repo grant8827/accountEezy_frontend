@@ -240,15 +240,16 @@ const DEFAULT_TAX: TaxConfig = {
               <input matInput [matDatepicker]="payDatePicker" [(ngModel)]="newBatch.payDate" (ngModelChange)="onPayDateChange($event)">
               <mat-datepicker-toggle matIconSuffix [for]="payDatePicker"></mat-datepicker-toggle>
               <mat-datepicker #payDatePicker></mat-datepicker>
-              <mat-hint>Date employees will be paid — determines the payroll month</mat-hint>
             </mat-form-field>
           </div>
         </mat-card-content>
         <mat-card-actions>
           <button mat-raised-button class="gold-btn" (click)="createBatch()" [disabled]="creating">
-            <mat-spinner *ngIf="creating" diameter="18"></mat-spinner>
-            <mat-icon *ngIf="!creating">check</mat-icon>
-            {{ creating ? 'Creating…' : 'Create Pay Period' }}
+            <span style="display:flex;align-items:center;gap:6px">
+              <mat-spinner *ngIf="creating" diameter="18"></mat-spinner>
+              <mat-icon *ngIf="!creating">check</mat-icon>
+              <span>{{ creating ? 'Creating…' : 'Create Pay Period' }}</span>
+            </span>
           </button>
           <button mat-button (click)="showNewBatchForm = false">Cancel</button>
         </mat-card-actions>
