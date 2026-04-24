@@ -135,8 +135,8 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
           </div>
         }
 
-        <!-- ── Leave Requested dates ───────────────────────────────── -->
-        @if (selectedLeaveType) {
+        <!-- ── Leave Requested dates (non-mat/pat) ─────────────────── -->
+        @if (selectedLeaveType && selectedLeaveType !== 'Maternity' && selectedLeaveType !== 'Paternity') {
           <div class="dates-section">
             <span class="dates-label">Leave Requested:</span>
             <div class="dates-inline">
@@ -157,6 +157,67 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
               <span class="date-word">Total Days</span>
               <span class="total-days-val">{{ totalDays > 0 ? totalDays : '—' }}</span>
             </div>
+          </div>
+        }
+
+        <!-- ── Maternity / Paternity summary section ──────────────── -->
+        @if (selectedLeaveType === 'Maternity' || selectedLeaveType === 'Paternity') {
+          <div class="matpat-section">
+
+            <div class="matpat-row">
+              <span class="matpat-label">Date leave to begin:</span>
+              <mat-form-field appearance="outline" class="paper-date-field matpat-date">
+                <mat-label>Start date</mat-label>
+                <input matInput [matDatepicker]="mpFromPicker" formControlName="startDate" placeholder="MM/DD/YYYY">
+                <mat-datepicker-toggle matSuffix [for]="mpFromPicker"></mat-datepicker-toggle>
+                <mat-datepicker #mpFromPicker></mat-datepicker>
+              </mat-form-field>
+            </div>
+
+            <div class="matpat-row">
+              <span class="matpat-label">Date of return to duties:</span>
+              <mat-form-field appearance="outline" class="paper-date-field matpat-date">
+                <mat-label>Return date</mat-label>
+                <input matInput [matDatepicker]="mpToPicker" formControlName="endDate" placeholder="MM/DD/YYYY">
+                <mat-datepicker-toggle matSuffix [for]="mpToPicker"></mat-datepicker-toggle>
+                <mat-datepicker #mpToPicker></mat-datepicker>
+              </mat-form-field>
+            </div>
+
+            @if (selectedLeaveType === 'Maternity') {
+              <div class="matpat-row">
+                <span class="matpat-label">Date of expected delivery:</span>
+                <mat-form-field appearance="outline" class="paper-date-field matpat-date">
+                  <mat-label>Expected delivery</mat-label>
+                  <input matInput [matDatepicker]="deliveryPicker" formControlName="deliveryDate" placeholder="MM/DD/YYYY">
+                  <mat-datepicker-toggle matSuffix [for]="deliveryPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #deliveryPicker></mat-datepicker>
+                </mat-form-field>
+              </div>
+            }
+
+            <div class="matpat-divider"></div>
+
+            <div class="matpat-row">
+              <span class="matpat-label">Accumulated sick days to use:</span>
+              <input class="matpat-num-input" type="number" min="0" formControlName="sickDaysToUse" placeholder="0">
+            </div>
+
+            <div class="matpat-row">
+              <span class="matpat-label">Personal leave days to use:</span>
+              <input class="matpat-num-input" type="number" min="0" formControlName="personalDaysToUse" placeholder="0">
+            </div>
+
+            <div class="matpat-row">
+              <span class="matpat-label">Days without pay:</span>
+              <input class="matpat-num-input" type="number" min="0" formControlName="daysWithoutPay" placeholder="0">
+            </div>
+
+            <div class="matpat-row matpat-total-row">
+              <span class="matpat-label"><strong>Total</strong></span>
+              <span class="matpat-total-val">{{ matPatTotal > 0 ? matPatTotal : '—' }}</span>
+            </div>
+
           </div>
         }
 
@@ -404,12 +465,73 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
     .file-hint  { font-size: 11px; color: #aaa; }
     .file-error { margin: 0; font-size: 12px; color: #f44336; }
 
+    /* ── Maternity / Paternity section ──────────────── */
+    .matpat-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .matpat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      border-bottom: 1px solid #e8e8e8;
+    }
+
+    .matpat-row:last-child { border-bottom: none; }
+
+    .matpat-label {
+      font-size: 13px;
+      color: #222;
+      flex: 1;
+    }
+
+    .matpat-date { width: 190px; margin: 0; }
+    .matpat-date .mat-mdc-form-field-subscript-wrapper { display: none; }
+
+    .matpat-divider {
+      height: 1px;
+      background: #bbb;
+      margin: 2px 0;
+    }
+
+    .matpat-num-input {
+      width: 80px;
+      border: none;
+      border-bottom: 1px solid #888;
+      background: transparent;
+      outline: none;
+      font-size: 14px;
+      font-family: inherit;
+      text-align: right;
+      padding: 2px 4px;
+      color: #1a1a1a;
+    }
+
+    .matpat-num-input:focus { border-bottom-color: #1976d2; }
+
+    .matpat-total-row { background: #f5f5f5; }
+
+    .matpat-total-val {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a1a;
+      min-width: 80px;
+      text-align: right;
+    }
+
     @media (max-width: 700px) {
       .dialog-content   { min-width: 90vw; max-width: 95vw; }
       .paper-form       { padding: 1rem; }
       .info-grid        { grid-template-columns: 1fr; }
       .checkbox-grid    { grid-template-columns: 1fr; }
       .paper-date-field { width: 120px; }
+      .matpat-date      { width: 150px; }
     }
   `]
 })
@@ -437,6 +559,13 @@ export class ApplyLeaveDialogComponent {
     if (!start || !end) return 0;
     const diff = Math.ceil((new Date(end).getTime() - new Date(start).getTime()) / 86400000) + 1;
     return diff > 0 ? diff : 0;
+  }
+
+  get matPatTotal(): number {
+    const sick     = +(this.vacationForm.get('sickDaysToUse')?.value    ?? 0);
+    const personal = +(this.vacationForm.get('personalDaysToUse')?.value ?? 0);
+    const unpaid   = +(this.vacationForm.get('daysWithoutPay')?.value    ?? 0);
+    return sick + personal + unpaid;
   }
 
   get isSubmitDisabled(): boolean {
@@ -472,11 +601,15 @@ export class ApplyLeaveDialogComponent {
     const reasonParts  = (existing?.reason ?? '').split(' | ');
     const otherSpecify = existing?.leaveType === 'Personal' ? (existing?.reason ?? '') : '';
     this.vacationForm = this.fb.group({
-      title:        [reasonParts[0] || data.position || ''],
-      department:   [reasonParts[1] || data.department || ''],
-      otherSpecify: [otherSpecify],
-      startDate:    [existing?.startDate ? new Date(existing.startDate) : '', Validators.required],
-      endDate:      [existing?.endDate   ? new Date(existing.endDate)   : '', Validators.required]
+      title:            [reasonParts[0] || data.position || ''],
+      department:       [reasonParts[1] || data.department || ''],
+      otherSpecify:     [otherSpecify],
+      startDate:        [existing?.startDate ? new Date(existing.startDate) : '', Validators.required],
+      endDate:          [existing?.endDate   ? new Date(existing.endDate)   : '', Validators.required],
+      deliveryDate:     [null],
+      sickDaysToUse:    [0],
+      personalDaysToUse:[0],
+      daysWithoutPay:   [0]
     });
   }
 
@@ -500,16 +633,31 @@ export class ApplyLeaveDialogComponent {
   submit() {
     if (this.isSubmitDisabled) return;
 
-    const v      = this.vacationForm.value;
-    const reason = this.selectedLeaveType === 'Personal'
-      ? (v.otherSpecify || undefined)
-      : ([v.title, v.department].filter(Boolean).join(' | ') || undefined);
+    const v = this.vacationForm.value;
+    let reason: string | undefined;
+
+    if (this.selectedLeaveType === 'Personal') {
+      reason = v.otherSpecify || undefined;
+    } else if (this.selectedLeaveType === 'Maternity' || this.selectedLeaveType === 'Paternity') {
+      const parts: string[] = [];
+      if (v.deliveryDate) parts.push(`delivery:${new Date(v.deliveryDate).toISOString().split('T')[0]}`);
+      if (v.sickDaysToUse)     parts.push(`sick:${v.sickDaysToUse}`);
+      if (v.personalDaysToUse) parts.push(`personal:${v.personalDaysToUse}`);
+      if (v.daysWithoutPay)    parts.push(`unpaid:${v.daysWithoutPay}`);
+      reason = parts.join(' | ') || undefined;
+    } else {
+      reason = [v.title, v.department].filter(Boolean).join(' | ') || undefined;
+    }
+
+    const daysRequested = (this.selectedLeaveType === 'Maternity' || this.selectedLeaveType === 'Paternity')
+      ? (this.matPatTotal > 0 ? this.matPatTotal : this.totalDays)
+      : this.totalDays;
 
     const payload = {
       leaveType:     this.selectedLeaveType,
       startDate:     v.startDate,
       endDate:       v.endDate,
-      daysRequested: this.totalDays,
+      daysRequested,
       reason,
       file:          this.selectedLeaveType === 'Sick' ? this.selectedFile : null,
       leaveId:       this.existingLeaveId
