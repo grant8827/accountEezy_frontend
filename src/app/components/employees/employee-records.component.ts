@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,6 +15,7 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { Employee, LeaveRequest } from '../../types/index';
 import { EmployeeService } from '../../services/employee.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-employee-records',
@@ -693,6 +695,7 @@ export class EmployeeRecordsComponent implements OnInit {
 
   constructor(
     private employeeService: EmployeeService,
+    private http: HttpClient,
     private router: Router
   ) {}
 
@@ -794,8 +797,11 @@ export class EmployeeRecordsComponent implements OnInit {
   }
 
   loadLeaveRequests() {
-    // Mock data for now - replace with actual API call
-    this.leaveRequests = [];
+    const apiUrl = environment.apiUrl + '/leaverequests';
+    this.http.get<LeaveRequest[]>(apiUrl).subscribe({
+      next: (data) => { this.leaveRequests = data; },
+      error: (err)  => { console.error('Failed to load leave requests:', err); }
+    });
   }
 
   filterEmployees() {

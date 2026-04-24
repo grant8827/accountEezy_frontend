@@ -58,7 +58,7 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
           </div>
 
           <div class="info-cell">
-            <span class="info-label">Designation:</span>
+            <span class="info-label">Position:</span>
             <input class="paper-input" formControlName="title" />
           </div>
           <div class="info-cell">
@@ -150,14 +150,14 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
               <span class="date-word">From</span>
               <mat-form-field appearance="outline" class="paper-date-field">
                 <mat-label>Start</mat-label>
-                <input matInput [matDatepicker]="fromPicker" formControlName="startDate" placeholder="MM/DD/YYYY">
+                <input matInput [matDatepicker]="fromPicker" formControlName="startDate" placeholder="MM/DD/YYYY" (click)="fromPicker.open()">
                 <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
                 <mat-datepicker #fromPicker></mat-datepicker>
               </mat-form-field>
               <span class="date-word">To</span>
               <mat-form-field appearance="outline" class="paper-date-field">
                 <mat-label>End</mat-label>
-                <input matInput [matDatepicker]="toPicker" formControlName="endDate" placeholder="MM/DD/YYYY">
+                <input matInput [matDatepicker]="toPicker" formControlName="endDate" placeholder="MM/DD/YYYY" (click)="toPicker.open()">
                 <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
                 <mat-datepicker #toPicker></mat-datepicker>
               </mat-form-field>
@@ -175,7 +175,7 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
               <span class="matpat-label">Date leave to begin:</span>
               <mat-form-field appearance="outline" class="paper-date-field matpat-date">
                 <mat-label>Start date</mat-label>
-                <input matInput [matDatepicker]="mpFromPicker" formControlName="startDate" placeholder="MM/DD/YYYY">
+                <input matInput [matDatepicker]="mpFromPicker" formControlName="startDate" placeholder="MM/DD/YYYY" (click)="mpFromPicker.open()">
                 <mat-datepicker-toggle matSuffix [for]="mpFromPicker"></mat-datepicker-toggle>
                 <mat-datepicker #mpFromPicker></mat-datepicker>
               </mat-form-field>
@@ -185,7 +185,7 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
               <span class="matpat-label">Date of return to duties:</span>
               <mat-form-field appearance="outline" class="paper-date-field matpat-date">
                 <mat-label>Return date</mat-label>
-                <input matInput [matDatepicker]="mpToPicker" formControlName="endDate" placeholder="MM/DD/YYYY">
+                <input matInput [matDatepicker]="mpToPicker" formControlName="endDate" placeholder="MM/DD/YYYY" (click)="mpToPicker.open()">
                 <mat-datepicker-toggle matSuffix [for]="mpToPicker"></mat-datepicker-toggle>
                 <mat-datepicker #mpToPicker></mat-datepicker>
               </mat-form-field>
@@ -196,7 +196,7 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
                 <span class="matpat-label">Date of expected delivery:</span>
                 <mat-form-field appearance="outline" class="paper-date-field matpat-date">
                   <mat-label>Expected delivery</mat-label>
-                  <input matInput [matDatepicker]="deliveryPicker" formControlName="deliveryDate" placeholder="MM/DD/YYYY">
+                  <input matInput [matDatepicker]="deliveryPicker" formControlName="deliveryDate" placeholder="MM/DD/YYYY" (click)="deliveryPicker.open()">
                   <mat-datepicker-toggle matSuffix [for]="deliveryPicker"></mat-datepicker-toggle>
                   <mat-datepicker #deliveryPicker></mat-datepicker>
                 </mat-form-field>
