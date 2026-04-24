@@ -75,8 +75,8 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
           </div>
 
           <div class="paper-row">
-            <span class="paper-label">Title:</span>
-            <input class="paper-input" formControlName="title" placeholder="Your job title" />
+            <span class="paper-label">Position:</span>
+            <input class="paper-input" formControlName="title" placeholder="Your position" />
           </div>
 
           <div class="paper-row">
@@ -403,7 +403,7 @@ export class ApplyLeaveDialogComponent {
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<ApplyLeaveDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) data: { employeeName: string, existingLeave?: any, leaveBalance?: number }
+    @Inject(MAT_DIALOG_DATA) data: { employeeName: string, existingLeave?: any, leaveBalance?: number, position?: string, department?: string }
   ) {
     this.employeeName = data?.employeeName ?? '';
     this.leaveBalance = data?.leaveBalance ?? 0;
@@ -414,8 +414,8 @@ export class ApplyLeaveDialogComponent {
 
     const reasonParts = (existing?.reason ?? '').split(' | ');
     this.vacationForm = this.fb.group({
-      title:        [reasonParts[0] ?? ''],
-      department:   [reasonParts[1] ?? ''],
+      title:        [reasonParts[0] || data.position || ''],
+      department:   [reasonParts[1] || data.department || ''],
       startDate:    [existing?.startDate ? new Date(existing.startDate) : '', Validators.required],
       endDate:      [existing?.endDate ? new Date(existing.endDate) : '', Validators.required]
     });
@@ -1258,6 +1258,8 @@ export class EmployeeDashboardComponent implements OnInit {
   employeeName = '';
   employeeEmail = '';
   employeeId = '';
+  employeePosition = '';
+  employeeDepartment = '';
   leaveBalance = 0;
   leaveRequests: LeaveRequest[] = [];
   payslips: any[] = [];
@@ -1299,6 +1301,7 @@ export class EmployeeDashboardComponent implements OnInit {
     const segment = this.router.url.split('/').pop()?.split('?')[0] ?? 'overview';
     this.selectedTabIndex = this.routeToTab[segment] ?? 0;
 
+    this.loadProfile();
     this.loadLeaveRequests();
     this.loadPayslips();
     this.loadNotices();
@@ -1307,6 +1310,18 @@ export class EmployeeDashboardComponent implements OnInit {
   onTabChange(index: number) {
     const route = this.tabToRoute[index] ?? 'overview';
     this.router.navigate(['/employee-dashboard', route]);
+  }
+
+  loadProfile() {
+    const token = localStorage.getItem('employeeToken');
+    if (!token) return;
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    this.http.get<any>(`${environment.apiUrl}/employee-portal/profile`, { headers }).subscribe({
+      next: (data) => {
+        this.employeePosition = data.position ?? '';
+        this.employeeDepartment = data.department ?? '';
+      }
+    });
   }
 
   loadLeaveRequests() {
@@ -1487,7 +1502,7 @@ export class EmployeeDashboardComponent implements OnInit {
     const dialogRef = this.dialog.open(ApplyLeaveDialogComponent, {
       width: '720px',
       maxWidth: '95vw',
-      data: { employeeName: this.employeeName, leaveBalance: this.leaveBalance }
+      data: { employeeName: this.employeeName, leaveBalance: this.leaveBalance, position: this.employeePosition, department: this.employeeDepartment }
     });
 
     dialogRef.afterClosed().subscribe((result: LeaveRequestDto & { file?: File | null }) => {
