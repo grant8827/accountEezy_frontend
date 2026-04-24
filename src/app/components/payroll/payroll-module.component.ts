@@ -25,7 +25,7 @@ import { Employee as AppEmployee } from '../../types/index';
 
 interface PayrollBatchSummary {
   id: number; label: string; payCycle: string;
-  startDate: string; endDate: string;
+  startDate: string; endDate: string; payDate?: string;
   status: number; createdAt: string;
   employeeCount: number; totalNet: number; totalRemittance: number;
 }
@@ -212,7 +212,8 @@ const DEFAULT_TAX: TaxConfig = {
           <div class="form-grid">
             <mat-form-field appearance="outline">
               <mat-label>Label (optional)</mat-label>
-              <input matInput [(ngModel)]="newBatch.label" placeholder="e.g. March 2025 Monthly">
+              <input matInput [(ngModel)]="newBatch.label" placeholder="Auto-filled from Pay Date">
+              <mat-hint>Leave blank to auto-fill from pay date</mat-hint>
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Pay Cycle</mat-label>
@@ -233,6 +234,13 @@ const DEFAULT_TAX: TaxConfig = {
               <input matInput [matDatepicker]="endPicker" [(ngModel)]="newBatch.endDate">
               <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
               <mat-datepicker #endPicker></mat-datepicker>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Pay Date</mat-label>
+              <input matInput [matDatepicker]="payDatePicker" [(ngModel)]="newBatch.payDate" (ngModelChange)="onPayDateChange($event)">
+              <mat-datepicker-toggle matIconSuffix [for]="payDatePicker"></mat-datepicker-toggle>
+              <mat-datepicker #payDatePicker></mat-datepicker>
+              <mat-hint>Date employees will be paid — determines the payroll month</mat-hint>
             </mat-form-field>
           </div>
         </mat-card-content>
@@ -260,6 +268,7 @@ const DEFAULT_TAX: TaxConfig = {
               <td mat-cell *matCellDef="let b">
                 <strong>{{ b.label }}</strong><br>
                 <small class="muted">{{ b.startDate | date:'dd MMM' }} – {{ b.endDate | date:'dd MMM yyyy' }}</small>
+                <span *ngIf="b.payDate"><br><small class="pay-date-label"><mat-icon style="font-size:11px;vertical-align:middle;width:12px;height:12px">payments</mat-icon> Pay date: {{ b.payDate | date:'dd MMM yyyy' }}</small></span>
               </td>
             </ng-container>
             <ng-container matColumnDef="payCycle">
@@ -740,6 +749,7 @@ const DEFAULT_TAX: TaxConfig = {
     .empty-state { display: flex; flex-direction: column; align-items: center; padding: 3rem; color: #999; text-align: center; }
     .empty-icon { font-size: 3rem; width: 3rem; height: 3rem; margin-bottom: 1rem; color: #ccc; }
     .muted { color: #888; font-size: 0.85rem; }
+    .pay-date-label { color: #10b981; font-size: 0.8rem; font-weight: 500; }
 
     /* ── Payslip overlay ── */
     .payslip-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 9999; }
@@ -797,7 +807,7 @@ export class PayrollModuleComponent implements OnInit {
   loadingBatches = false;
   showNewBatchForm = false;
   creating = false;
-  newBatch = { label: '', payCycle: 'Monthly', startDate: null as Date | null, endDate: null as Date | null };
+  newBatch = { label: '', payCycle: 'Monthly', startDate: null as Date | null, endDate: null as Date | null, payDate: null as Date | null };
 
   // Run Payroll
   activeBatch: PayrollBatchSummary | null = null;
@@ -860,11 +870,12 @@ export class PayrollModuleComponent implements OnInit {
       payCycle: this.newBatch.payCycle,
       startDate: this.newBatch.startDate,
       endDate: this.newBatch.endDate,
+      payDate: this.newBatch.payDate,
       label: this.newBatch.label
     }).subscribe({
       next: () => {
         this.creating = false; this.showNewBatchForm = false;
-        this.newBatch = { label: '', payCycle: 'Monthly', startDate: null, endDate: null };
+        this.newBatch = { label: '', payCycle: 'Monthly', startDate: null, endDate: null, payDate: null };
         this.cdr.detectChanges();
         this.loadBatches();
         this.snack.open('Pay period created!', '', { duration: 2500 });
@@ -1116,6 +1127,14 @@ export class PayrollModuleComponent implements OnInit {
   }
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
+
+  onPayDateChange(date: Date | null) {
+    if (date && !this.newBatch.label) {
+      const month = date.toLocaleString('en-US', { month: 'long' });
+      const year = date.getFullYear();
+      this.newBatch.label = `${month} ${year} ${this.newBatch.payCycle}`;
+    }
+  }
 
   statusLabel(status: number): string {
     return ['Draft', 'Processed', 'Paid'][status] ?? 'Unknown';
