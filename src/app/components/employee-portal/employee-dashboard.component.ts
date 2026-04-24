@@ -39,119 +39,129 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
   ],
   template: `
     <h2 mat-dialog-title class="dialog-title">
-      <mat-icon>event_available</mat-icon>
-      Apply for Leave
+      <mat-icon>assignment</mat-icon>
+      Leave Application Form
     </h2>
 
     <mat-dialog-content class="dialog-content">
-      <!-- Leave type selector always visible -->
-      <div [formGroup]="leaveTypeForm">
-        <mat-form-field appearance="outline" class="type-select">
-          <mat-label>Leave Type</mat-label>
-          <mat-select formControlName="leaveType">
-            <mat-option value="Vacation">Vacation</mat-option>
-            <mat-option value="Sick">Sick Leave</mat-option>
-            <mat-option value="Personal">Personal</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
+      <div class="paper-form" [formGroup]="vacationForm">
 
-      <!-- ═══ VACATION / PERSONAL — paper form ═══ -->
-      @if (leaveType === 'Vacation' || leaveType === 'Personal') {
-        <div class="paper-form" [formGroup]="vacationForm">
-          <div class="paper-header">
-            <h3>{{ leaveType === 'Vacation' ? 'Vacation Request Form' : 'Personal Leave Request Form' }}</h3>
-            <p class="paper-note">Please submit this form for approval at least four weeks in advance of your preferred leave dates.</p>
+        <!-- ── Employee Info Grid (2 columns) ───────────────────── -->
+        <div class="info-grid">
+          <div class="info-cell">
+            <span class="info-label">Employee Name:</span>
+            <span class="info-underline">{{ employeeName }}</span>
+          </div>
+          <div class="info-cell">
+            <span class="info-label">Employee No:</span>
+            <span class="info-underline">{{ employeeIdNumber || '—' }}</span>
           </div>
 
-          <div class="paper-row">
-            <span class="paper-label">Date:</span>
-            <span class="paper-value readonly-val">{{ today | date:'MM/dd/yyyy' }}</span>
+          <div class="info-cell">
+            <span class="info-label">Designation:</span>
+            <input class="paper-input" formControlName="title" />
+          </div>
+          <div class="info-cell">
+            <span class="info-label">Date of Joining:</span>
+            <span class="info-underline">{{ hireDate ? (hireDate | date:'MM/dd/yyyy') : '—' }}</span>
           </div>
 
-          <div class="paper-row">
-            <span class="paper-label">Employee Name:</span>
-            <span class="paper-value readonly-val">{{ employeeName }}</span>
+          <div class="info-cell">
+            <span class="info-label">Department:</span>
+            <input class="paper-input" formControlName="department" />
           </div>
-
-          <div class="paper-row">
-            <span class="paper-label">Position:</span>
-            <input class="paper-input" formControlName="title" placeholder="Your position" />
+          <div class="info-cell">
+            <span class="info-label">Date of Application:</span>
+            <span class="info-underline">{{ today | date:'MM/dd/yyyy' }}</span>
           </div>
+        </div>
 
-          <div class="paper-row">
-            <span class="paper-label">Department:</span>
-            <input class="paper-input" formControlName="department" placeholder="Your department" />
-          </div>
+        <!-- ── Checkbox Section ───────────────────────────────────── -->
+        <div class="checkbox-section">
+          <div class="checkbox-header">REQUEST FOR: &nbsp;( Please check the box of the desired leave )</div>
+          <div class="checkbox-grid">
 
-          <div class="paper-row">
-            <span class="paper-label">{{ leaveType === 'Vacation' ? 'Vacation' : 'Leave' }} Days Balance:</span>
-            <span class="paper-value readonly-val">{{ leaveBalance }} days</span>
-          </div>
-
-          @if (leaveType === 'Vacation' && totalDays > 0 && totalDays > leaveBalance) {
-            <div style="color: #d32f2f; font-size: 13px; background: #fff3e0; border-left: 3px solid #ff9800; padding: 8px 12px; border-radius: 4px;">
-              &#9888; Insufficient vacation days. You are requesting {{ totalDays }} day(s) but only have {{ leaveBalance }} available.
+            <div class="checkbox-item" (click)="selectLeaveType('Vacation')">
+              <div class="cb-box" [class.cb-checked]="selectedLeaveType === 'Vacation'">
+                @if (selectedLeaveType === 'Vacation') { <mat-icon class="cb-check">check</mat-icon> }
+              </div>
+              <span class="cb-label">Annual Leave</span>
             </div>
-          }
 
-          <div class="paper-row dates-row">
-            <span class="paper-label">{{ leaveType === 'Vacation' ? 'Vacation' : 'Leave' }} Dates Requested:</span>
+            <div class="checkbox-item" (click)="selectLeaveType('Maternity')">
+              <div class="cb-box" [class.cb-checked]="selectedLeaveType === 'Maternity'">
+                @if (selectedLeaveType === 'Maternity') { <mat-icon class="cb-check">check</mat-icon> }
+              </div>
+              <span class="cb-label">Maternity Leave</span>
+            </div>
+
+            <div class="checkbox-item" (click)="selectLeaveType('Sick')">
+              <div class="cb-box" [class.cb-checked]="selectedLeaveType === 'Sick'">
+                @if (selectedLeaveType === 'Sick') { <mat-icon class="cb-check">check</mat-icon> }
+              </div>
+              <span class="cb-label">Sick / Medical Leave</span>
+            </div>
+
+            <div class="checkbox-item" (click)="selectLeaveType('Paternity')">
+              <div class="cb-box" [class.cb-checked]="selectedLeaveType === 'Paternity'">
+                @if (selectedLeaveType === 'Paternity') { <mat-icon class="cb-check">check</mat-icon> }
+              </div>
+              <span class="cb-label">Paternity Leave</span>
+            </div>
+
+            <div class="checkbox-item others-item" (click)="selectLeaveType('Personal')">
+              <div class="cb-box" [class.cb-checked]="selectedLeaveType === 'Personal'">
+                @if (selectedLeaveType === 'Personal') { <mat-icon class="cb-check">check</mat-icon> }
+              </div>
+              <span class="cb-label">Others</span>
+              <em class="pl-specify">&nbsp;Pl.specify</em>
+              <input class="paper-input other-input" formControlName="otherSpecify"
+                     [attr.disabled]="selectedLeaveType !== 'Personal' ? '' : null" />
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── Annual Leave balance banner ──────────────────────────── -->
+        @if (selectedLeaveType === 'Vacation') {
+          <div class="balance-banner">
+            <mat-icon>beach_access</mat-icon>
+            Annual Leave Balance:&nbsp;<strong>{{ leaveBalance }} day{{ leaveBalance !== 1 ? 's' : '' }}</strong>
+          </div>
+        }
+        @if (selectedLeaveType === 'Vacation' && totalDays > 0 && totalDays > leaveBalance) {
+          <div class="warning-banner">
+            &#9888; Insufficient vacation days. You are requesting {{ totalDays }} day(s) but only have {{ leaveBalance }} available.
+          </div>
+        }
+
+        <!-- ── Leave Requested dates ───────────────────────────────── -->
+        @if (selectedLeaveType) {
+          <div class="dates-section">
+            <span class="dates-label">Leave Requested:</span>
             <div class="dates-inline">
+              <span class="date-word">From</span>
               <mat-form-field appearance="outline" class="paper-date-field">
-                <mat-label>From</mat-label>
-                <input matInput [matDatepicker]="fromPicker" formControlName="startDate"
-                       placeholder="MM/DD/YYYY">
+                <mat-label>Start</mat-label>
+                <input matInput [matDatepicker]="fromPicker" formControlName="startDate" placeholder="MM/DD/YYYY">
                 <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
                 <mat-datepicker #fromPicker></mat-datepicker>
               </mat-form-field>
-              <span class="date-sep">through</span>
+              <span class="date-word">To</span>
               <mat-form-field appearance="outline" class="paper-date-field">
-                <mat-label>To</mat-label>
-                <input matInput [matDatepicker]="throughPicker" formControlName="endDate"
-                       placeholder="MM/DD/YYYY">
-                <mat-datepicker-toggle matSuffix [for]="throughPicker"></mat-datepicker-toggle>
-                <mat-datepicker #throughPicker></mat-datepicker>
+                <mat-label>End</mat-label>
+                <input matInput [matDatepicker]="toPicker" formControlName="endDate" placeholder="MM/DD/YYYY">
+                <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+                <mat-datepicker #toPicker></mat-datepicker>
               </mat-form-field>
+              <span class="date-word">Total Days</span>
+              <span class="total-days-val">{{ totalDays > 0 ? totalDays : '—' }}</span>
             </div>
           </div>
+        }
 
-          <div class="paper-row">
-            <span class="paper-label">Returning:</span>
-            <span class="paper-value readonly-val">{{ returningDate | date:'MM/dd/yyyy' }}</span>
-          </div>
-
-          <div class="paper-row">
-            <span class="paper-label">Total Number of Days Requested:</span>
-            <span class="paper-value readonly-val">{{ totalDays }}</span>
-          </div>
-        </div>
-      }
-
-      <!-- ═══ SICK LEAVE — upload form ═══ -->
-      @if (leaveType === 'Sick') {
-        <form [formGroup]="sickForm" class="sick-form">
-          <div class="date-range">
-            <mat-form-field appearance="outline">
-              <mat-label>Start Date</mat-label>
-              <input matInput [matDatepicker]="sickStart" formControlName="startDate">
-              <mat-datepicker-toggle matSuffix [for]="sickStart"></mat-datepicker-toggle>
-              <mat-datepicker #sickStart></mat-datepicker>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>End Date</mat-label>
-              <input matInput [matDatepicker]="sickEnd" formControlName="endDate">
-              <mat-datepicker-toggle matSuffix [for]="sickEnd"></mat-datepicker-toggle>
-              <mat-datepicker #sickEnd></mat-datepicker>
-            </mat-form-field>
-          </div>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Number of Days</mat-label>
-            <input matInput type="number" formControlName="daysRequested" min="1">
-          </mat-form-field>
-
+        <!-- ── Sick: medical certificate upload ───────────────────── -->
+        @if (selectedLeaveType === 'Sick') {
           <div class="file-upload-section">
             <p class="file-upload-label">
               Medical Certificate <span class="required-star">*</span>
@@ -170,8 +180,9 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
               <p class="file-error">{{ fileError }}</p>
             }
           </div>
-        </form>
-      }
+        }
+
+      </div>
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
@@ -193,132 +204,180 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      min-width: 600px;
-      max-width: 700px;
+      min-width: 620px;
+      max-width: 720px;
     }
 
-    .type-select { width: 100%; }
-
-    /* ── Paper form ───────────────────────────────── */
+    /* ── Paper form shell ─────────────────────────────── */
     .paper-form {
-      border: 2px solid #333;
+      border: 1.5px solid #bbb;
       border-radius: 4px;
       padding: 1.5rem 2rem;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 1rem;
       background: #fafafa;
       font-family: 'Times New Roman', Times, serif;
     }
 
-    .paper-header {
-      text-align: center;
-      margin-bottom: 0.5rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid #aaa;
+    /* ── Info Grid (2-column header) ─────────────────── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem 1.5rem;
     }
 
-    .paper-header h3 {
-      margin: 0 0 0.35rem 0;
-      font-size: 16px;
-      font-weight: bold;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-    }
-
-    .paper-note {
-      margin: 0;
-      font-size: 11.5px;
-      color: #444;
-      font-style: italic;
-    }
-
-    .paper-row {
+    .info-cell {
       display: flex;
       align-items: baseline;
-      gap: 0.5rem;
+      gap: 0.4rem;
+      border-bottom: 1px solid #bbb;
       padding-bottom: 4px;
-      border-bottom: 1px solid #ccc;
     }
 
-    .paper-label {
+    .info-label {
       font-size: 13px;
       font-weight: 600;
       white-space: nowrap;
-      flex-shrink: 0;
-      min-width: 180px;
       color: #222;
     }
 
-    .paper-value {
+    .info-underline {
       flex: 1;
       font-size: 13px;
-    }
-
-    .readonly-val {
       color: #1a1a1a;
-      font-size: 13.5px;
-      min-height: 20px;
+      min-height: 18px;
     }
 
     .paper-input {
       flex: 1;
       border: none;
-      border-bottom: 1px solid #888;
       background: transparent;
       outline: none;
-      font-size: 13.5px;
+      font-size: 13px;
       font-family: inherit;
-      padding: 2px 4px;
       color: #1a1a1a;
-      width: 100%;
+      padding: 2px 2px;
+      min-width: 0;
     }
 
-    .paper-input:focus {
-      border-bottom-color: #1976d2;
+    .paper-input:focus { border-bottom: 1px solid #1976d2; }
+
+    /* ── Checkbox section ────────────────────────────── */
+    .checkbox-section {
+      border: 1px solid #ccc;
+      border-radius: 3px;
     }
 
-    .short-input { max-width: 80px; }
+    .checkbox-header {
+      background: #e8e8e8;
+      padding: 6px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #333;
+      border-bottom: 1px solid #ccc;
+    }
 
-    .dates-row { align-items: flex-end; flex-wrap: wrap; gap: 4px; }
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      padding: 10px 16px;
+      row-gap: 10px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .cb-box {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: #fff;
+      transition: background 0.15s;
+    }
+
+    .cb-box.cb-checked {
+      background: #1976d2;
+      border-color: #1976d2;
+    }
+
+    .cb-check {
+      font-size: 13px !important;
+      height: 13px !important;
+      width: 13px !important;
+      color: #fff;
+      line-height: 13px !important;
+    }
+
+    .cb-label { font-size: 13.5px; color: #222; }
+    .pl-specify { font-size: 12px; color: #666; white-space: nowrap; }
+    .others-item { grid-column: 1 / -1; }
+    .other-input { flex: 1; border-bottom: 1px solid #888; max-width: 220px; }
+
+    /* ── Banners ─────────────────────────────────────── */
+    .balance-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #e3f2fd;
+      border-left: 4px solid #1976d2;
+      padding: 8px 14px;
+      font-size: 13.5px;
+      color: #0d47a1;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .balance-banner mat-icon { color: #1976d2; font-size: 18px; height: 18px; width: 18px; }
+
+    .warning-banner {
+      color: #d32f2f;
+      font-size: 13px;
+      background: #fff3e0;
+      border-left: 3px solid #ff9800;
+      padding: 8px 12px;
+      border-radius: 4px;
+    }
+
+    /* ── Dates section ───────────────────────────────── */
+    .dates-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+    }
+
+    .dates-label { font-size: 13px; font-weight: 600; color: #222; }
 
     .dates-inline {
       display: flex;
-      align-items: flex-end;
-      gap: 6px;
-      flex: 1;
+      align-items: center;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
+    .date-word { font-size: 13px; color: #555; white-space: nowrap; }
+
     .paper-date-field {
-      width: 160px;
+      width: 155px;
       font-family: 'Times New Roman', Times, serif;
       font-size: 13px;
     }
 
-    /* Remove extra bottom spacing under the date fields */
     .paper-date-field .mat-mdc-form-field-subscript-wrapper { display: none; }
 
-    .date-sep {
-      font-size: 13px;
-      color: #555;
-      white-space: nowrap;
-      padding-bottom: 8px;
-    }
+    .total-days-val { font-size: 15px; font-weight: 600; color: #1a1a1a; min-width: 28px; }
 
-    /* ── Sick form ───────────────────────────────── */
-    .sick-form {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .date-range {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-
+    /* ── File upload ─────────────────────────────────── */
     .file-upload-section { display: flex; flex-direction: column; gap: 6px; }
     .file-upload-label   { margin: 0; font-size: 12px; color: rgba(0,0,0,.6); font-weight: 500; }
     .required-star       { color: #f44336; }
@@ -326,7 +385,7 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
     .file-upload-area {
       border: 2px dashed #ccc;
       border-radius: 8px;
-      padding: 1.5rem 1rem;
+      padding: 1.25rem 1rem;
       text-align: center;
       cursor: pointer;
       display: flex;
@@ -346,10 +405,10 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
     .file-error { margin: 0; font-size: 12px; color: #f44336; }
 
     @media (max-width: 700px) {
-      .dialog-content { min-width: 90vw; max-width: 95vw; }
-      .paper-form     { padding: 1rem; }
-      .paper-label    { min-width: 130px; }
-      .date-range     { grid-template-columns: 1fr; }
+      .dialog-content   { min-width: 90vw; max-width: 95vw; }
+      .paper-form       { padding: 1rem; }
+      .info-grid        { grid-template-columns: 1fr; }
+      .checkbox-grid    { grid-template-columns: 1fr; }
       .paper-date-field { width: 120px; }
     }
   `]
@@ -357,16 +416,12 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
 export class ApplyLeaveDialogComponent {
   today = new Date();
 
-  leaveTypeForm: FormGroup;
+  selectedLeaveType = '';
   vacationForm: FormGroup;
-  sickForm: FormGroup;
-
   selectedFile: File | null = null;
   fileError: string | null = null;
 
-  get leaveType(): string {
-    return this.leaveTypeForm.get('leaveType')?.value ?? 'Vacation';
-  }
+  get leaveType(): string { return this.selectedLeaveType; }
 
   get returningDate(): Date | null {
     const end = this.vacationForm.get('endDate')?.value;
@@ -385,46 +440,48 @@ export class ApplyLeaveDialogComponent {
   }
 
   get isSubmitDisabled(): boolean {
-    if (this.leaveType === 'Sick') {
-      return this.sickForm.invalid || !this.selectedFile;
-    }
+    if (!this.selectedLeaveType) return true;
     const s = this.vacationForm.get('startDate')?.value;
     const e = this.vacationForm.get('endDate')?.value;
     if (!s || !e || this.totalDays < 1) return true;
-    // Block vacation submission when balance is insufficient
-    if (this.leaveType === 'Vacation' && this.totalDays > this.leaveBalance) return true;
+    if (this.selectedLeaveType === 'Sick' && !this.selectedFile) return true;
+    if (this.selectedLeaveType === 'Vacation' && this.totalDays > this.leaveBalance) return true;
     return false;
   }
 
   employeeName: string;
+  employeeIdNumber: string;
+  hireDate: Date | null;
   leaveBalance: number;
   private existingLeaveId: number | undefined;
 
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<ApplyLeaveDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) data: { employeeName: string, existingLeave?: any, leaveBalance?: number, position?: string, department?: string }
+    @Inject(MAT_DIALOG_DATA) data: { employeeName: string, employeeIdNumber?: string, hireDate?: string, existingLeave?: any, leaveBalance?: number, position?: string, department?: string }
   ) {
-    this.employeeName = data?.employeeName ?? '';
-    this.leaveBalance = data?.leaveBalance ?? 0;
-    const existing = data?.existingLeave;
-    this.existingLeaveId = existing?.id;
+    this.employeeName     = data?.employeeName ?? '';
+    this.employeeIdNumber = data?.employeeIdNumber ?? '';
+    this.hireDate         = data?.hireDate ? new Date(data.hireDate) : null;
+    this.leaveBalance     = data?.leaveBalance ?? 0;
+    const existing        = data?.existingLeave;
+    this.existingLeaveId  = existing?.id;
 
-    this.leaveTypeForm = this.fb.group({ leaveType: [existing?.leaveType ?? 'Vacation'] });
+    this.selectedLeaveType = existing?.leaveType ?? '';
 
-    const reasonParts = (existing?.reason ?? '').split(' | ');
+    const reasonParts  = (existing?.reason ?? '').split(' | ');
+    const otherSpecify = existing?.leaveType === 'Personal' ? (existing?.reason ?? '') : '';
     this.vacationForm = this.fb.group({
       title:        [reasonParts[0] || data.position || ''],
       department:   [reasonParts[1] || data.department || ''],
+      otherSpecify: [otherSpecify],
       startDate:    [existing?.startDate ? new Date(existing.startDate) : '', Validators.required],
-      endDate:      [existing?.endDate ? new Date(existing.endDate) : '', Validators.required]
+      endDate:      [existing?.endDate   ? new Date(existing.endDate)   : '', Validators.required]
     });
+  }
 
-    this.sickForm = this.fb.group({
-      startDate:      [existing?.startDate ? new Date(existing.startDate) : '', Validators.required],
-      endDate:        [existing?.endDate ? new Date(existing.endDate) : '', Validators.required],
-      daysRequested:  [existing?.daysRequested ?? 1, [Validators.required, Validators.min(1)]]
-    });
+  selectLeaveType(type: string): void {
+    this.selectedLeaveType = type;
   }
 
   onFileSelected(event: Event): void {
@@ -443,21 +500,19 @@ export class ApplyLeaveDialogComponent {
   submit() {
     if (this.isSubmitDisabled) return;
 
-    if (this.leaveType === 'Sick') {
-      this.dialogRef.close({ ...this.sickForm.value, leaveType: 'Sick', file: this.selectedFile, leaveId: this.existingLeaveId });
-      return;
-    }
+    const v      = this.vacationForm.value;
+    const reason = this.selectedLeaveType === 'Personal'
+      ? (v.otherSpecify || undefined)
+      : ([v.title, v.department].filter(Boolean).join(' | ') || undefined);
 
-    // Vacation / Personal
-    const v = this.vacationForm.value;
     const payload = {
-      leaveType:      this.leaveType,
-      startDate:      v.startDate,
-      endDate:        v.endDate,
-      daysRequested:  this.totalDays,
-      reason:         [v.title, v.department].filter(Boolean).join(' | ') || undefined,
-      file:           null,
-      leaveId:        this.existingLeaveId
+      leaveType:     this.selectedLeaveType,
+      startDate:     v.startDate,
+      endDate:       v.endDate,
+      daysRequested: this.totalDays,
+      reason,
+      file:          this.selectedLeaveType === 'Sick' ? this.selectedFile : null,
+      leaveId:       this.existingLeaveId
     };
     this.dialogRef.close(payload);
   }
@@ -1260,6 +1315,8 @@ export class EmployeeDashboardComponent implements OnInit {
   employeeId = '';
   employeePosition = '';
   employeeDepartment = '';
+  employeeIdNumber = '';
+  hireDate: string | null = null;
   leaveBalance = 0;
   leaveRequests: LeaveRequest[] = [];
   payslips: any[] = [];
@@ -1318,8 +1375,10 @@ export class EmployeeDashboardComponent implements OnInit {
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
     this.http.get<any>(`${environment.apiUrl}/employee-portal/profile`, { headers }).subscribe({
       next: (data) => {
-        this.employeePosition = data.position ?? '';
+        this.employeePosition   = data.position ?? '';
         this.employeeDepartment = data.department ?? '';
+        this.employeeIdNumber   = data.employeeIdNumber ?? '';
+        this.hireDate           = data.hireDate ?? null;
       }
     });
   }
@@ -1502,7 +1561,7 @@ export class EmployeeDashboardComponent implements OnInit {
     const dialogRef = this.dialog.open(ApplyLeaveDialogComponent, {
       width: '720px',
       maxWidth: '95vw',
-      data: { employeeName: this.employeeName, leaveBalance: this.leaveBalance, position: this.employeePosition, department: this.employeeDepartment }
+      data: { employeeName: this.employeeName, leaveBalance: this.leaveBalance, position: this.employeePosition, department: this.employeeDepartment, employeeIdNumber: this.employeeIdNumber, hireDate: this.hireDate }
     });
 
     dialogRef.afterClosed().subscribe((result: LeaveRequestDto & { file?: File | null }) => {
@@ -1516,7 +1575,7 @@ export class EmployeeDashboardComponent implements OnInit {
     const dialogRef = this.dialog.open(ApplyLeaveDialogComponent, {
       width: '720px',
       maxWidth: '95vw',
-      data: { employeeName: this.employeeName, existingLeave: leave, leaveBalance: this.leaveBalance }
+      data: { employeeName: this.employeeName, existingLeave: leave, leaveBalance: this.leaveBalance, position: this.employeePosition, department: this.employeeDepartment, employeeIdNumber: this.employeeIdNumber, hireDate: this.hireDate }
     });
 
     dialogRef.afterClosed().subscribe((result: any) => {
