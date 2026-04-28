@@ -29,7 +29,7 @@ export interface CategoryGroup {
 export const EXPENSE_CATEGORY_GROUPS: CategoryGroup[] = [
   {
     label: 'General',
-    options: ['Rent', 'Payroll', 'Inventory', 'Marketing', 'Travel', 'Other Expense']
+    options: ['Rent', 'Inventory', 'Marketing', 'Travel', 'Other Expense']
   },
   {
     label: 'Utilities',

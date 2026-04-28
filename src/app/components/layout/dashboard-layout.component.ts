@@ -22,6 +22,11 @@ import { AuthService, User } from '../../services/auth.service';
     <div class="dashboard-layout">
       <!-- Top Navbar -->
       <mat-toolbar color="primary" class="app-bar">
+        <!-- Hamburger: mobile only -->
+        <button mat-icon-button class="menu-toggle" (click)="menuOpen = !menuOpen" aria-label="Toggle navigation">
+          <mat-icon>{{ menuOpen ? 'close' : 'menu' }}</mat-icon>
+        </button>
+
         <span class="title">AccountEezy Dashboard</span>
 
         <span class="spacer"></span>
@@ -53,38 +58,43 @@ import { AuthService, User } from '../../services/auth.service';
 
       <!-- Main Content with Sidebar -->
       <div class="main-container">
+        <!-- Mobile backdrop -->
+        @if (menuOpen) {
+          <div class="mobile-backdrop" (click)="menuOpen = false"></div>
+        }
+
         <!-- Sidebar Navigation -->
-        <aside class="sidebar">
+        <aside class="sidebar" [class.mobile-open]="menuOpen">
           <nav class="sidebar-nav">
-            <a class="nav-link" routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <a class="nav-link" routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="menuOpen = false">
               <mat-icon>dashboard</mat-icon>
               <span>Overview</span>
             </a>
-            <a class="nav-link" routerLink="/dashboard/employees" routerLinkActive="active">
+            <a class="nav-link" routerLink="/dashboard/employees" routerLinkActive="active" (click)="menuOpen = false">
               <mat-icon>people</mat-icon>
               <span>Employees</span>
             </a>
-            <a class="nav-link" routerLink="/dashboard/payroll" routerLinkActive="active">
+            <a class="nav-link" routerLink="/dashboard/payroll" routerLinkActive="active" (click)="menuOpen = false">
               <mat-icon>payment</mat-icon>
               <span>Payroll</span>
             </a>
-            <a class="nav-link" routerLink="/dashboard/transactions" routerLinkActive="active">
+            <a class="nav-link" routerLink="/dashboard/transactions" routerLinkActive="active" (click)="menuOpen = false">
               <mat-icon>receipt</mat-icon>
               <span>Transactions</span>
             </a>
-            <a class="nav-link" routerLink="/dashboard/tax" routerLinkActive="active">
+            <a class="nav-link" routerLink="/dashboard/tax" routerLinkActive="active" (click)="menuOpen = false">
               <mat-icon>account_balance</mat-icon>
               <span>Reports</span>
             </a>
-            <a class="nav-link" routerLink="/dashboard/leaves" routerLinkActive="active">
+            <a class="nav-link" routerLink="/dashboard/leaves" routerLinkActive="active" (click)="menuOpen = false">
               <mat-icon>event_available</mat-icon>
               <span>Leaves</span>
             </a>
-            <a class="nav-link" routerLink="/dashboard/notices" routerLinkActive="active">
+            <a class="nav-link" routerLink="/dashboard/notices" routerLinkActive="active" (click)="menuOpen = false">
               <mat-icon>notifications</mat-icon>
               <span>Notices</span>
             </a>
-            <a class="nav-link" routerLink="/dashboard/admin" routerLinkActive="active">
+            <a class="nav-link" routerLink="/dashboard/admin" routerLinkActive="active" (click)="menuOpen = false">
               <mat-icon>admin_panel_settings</mat-icon>
               <span>Admin</span>
             </a>
@@ -110,6 +120,13 @@ import { AuthService, User } from '../../services/auth.service';
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
       z-index: 1001;
       background: var(--primary-brand) !important;
+      position: sticky;
+      top: 0;
+    }
+
+    /* Hamburger hidden on desktop */
+    .menu-toggle {
+      display: none;
     }
 
     .title {
@@ -132,6 +149,7 @@ import { AuthService, User } from '../../services/auth.service';
       display: flex;
       flex: 1;
       overflow: hidden;
+      position: relative;
     }
 
     /* Sidebar Styles */
@@ -188,7 +206,17 @@ import { AuthService, User } from '../../services/auth.service';
       background: var(--bg-light);
     }
 
+    /* Mobile backdrop */
+    .mobile-backdrop {
+      display: none;
+    }
+
     @media (max-width: 768px) {
+      .menu-toggle {
+        display: inline-flex;
+        margin-right: 0.25rem;
+      }
+
       .title {
         font-size: 1.2rem;
       }
@@ -197,22 +225,41 @@ import { AuthService, User } from '../../services/auth.service';
         display: none;
       }
 
+      /* Sidebar hidden off-screen by default on mobile */
       .sidebar {
-        width: 70px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 260px;
+        z-index: 1002;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
       }
 
-      .nav-link span {
-        display: none;
+      .sidebar.mobile-open {
+        transform: translateX(0);
       }
 
-      .nav-link {
-        padding: 1rem;
-        justify-content: center;
+      /* Semi-transparent backdrop */
+      .mobile-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 1001;
+      }
+
+      /* Content takes full width */
+      .content {
+        width: 100%;
       }
     }
   `]
 })
 export class DashboardLayoutComponent {
+  menuOpen = false;
+
   constructor(
     private router: Router,
     private authService: AuthService

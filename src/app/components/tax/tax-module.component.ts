@@ -941,7 +941,7 @@ interface TaxRow { label: string; employee: number; employer: number; total: num
     }
 
     /* Breakdown table */
-    .breakdown-table { width: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #e0e0e0; margin-bottom: 1.5rem; }
+    .breakdown-table { width: 100%; border-radius: 8px; overflow-x: auto; overflow-y: hidden; border: 1px solid #e0e0e0; margin-bottom: 1.5rem; -webkit-overflow-scrolling: touch; }
     .breakdown-table ::ng-deep .mat-mdc-header-cell { background: #f8f8f5; font-weight: 700; color: #222; }
     .breakdown-table ::ng-deep .mat-mdc-footer-cell { background: #f8f6ee; font-weight: 700; }
     .amount-col { text-align: right !important; justify-content: flex-end; }
@@ -1169,6 +1169,25 @@ interface TaxRow { label: string; employee: number; employer: number; total: num
     }
     @media (max-width: 700px) {
       .fin-grid { grid-template-columns: 1fr; }
+      .tax-module { padding: 1rem 0.75rem; }
+      .breakdown-table { min-width: 480px; }
+      .fin-section { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .fin-table { min-width: 260px; }
+
+      /* SO1 / SO2 form mobile */
+      .form-preview { padding: 1rem 0.75rem; }
+      .form-govt-header { flex-direction: column; gap: 0.5rem; }
+      .form-code { text-align: left; }
+      .form-code-value { font-size: 1.75rem; }
+      .form-info-grid { grid-template-columns: 1fr; }
+      .form-title-bar { font-size: 0.78rem; letter-spacing: 0; padding: 0.4rem 0.5rem; }
+      .form-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .col-desc { min-width: 130px; }
+      .col-rate { min-width: 70px; }
+      .col-amt  { min-width: 110px; }
+      .form-total-bar { flex-direction: column; align-items: flex-start; gap: 0.2rem; padding: 0.5rem 0.75rem; }
+      .form-total-amount { font-size: 1rem; }
+      .form-sig-row { flex-direction: column; gap: 0.75rem; }
     }
     .fin-section-heading {
       margin: 0 0 0.6rem;

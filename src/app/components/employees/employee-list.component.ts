@@ -23,11 +23,11 @@ import { EmployeeService } from '../../services/employee.service';
   selector: 'app-employee-list',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     FormsModule,
-    MatCardModule, 
-    MatButtonModule, 
-    MatTableModule, 
+    MatCardModule,
+    MatButtonModule,
+    MatTableModule,
     MatIconModule,
     MatInputModule,
     MatFormFieldModule,
@@ -106,7 +106,7 @@ import { EmployeeService } from '../../services/employee.service';
             <mat-icon matPrefix>search</mat-icon>
             <input matInput placeholder="Search employees..." [(ngModel)]="searchTerm" (ngModelChange)="filterEmployees()">
           </mat-form-field>
-          
+
           <div class="filter-chips">
             <mat-chip-set>
               <mat-chip [class.active-chip]="statusFilter === 'all'" (click)="setStatusFilter('all')">
@@ -135,7 +135,7 @@ import { EmployeeService } from '../../services/employee.service';
           </div>
         } @else if (filteredEmployees.length > 0) {
           <table mat-table [dataSource]="filteredEmployees" class="employee-table">
-            
+
             <!-- Employee Column -->
             <ng-container matColumnDef="employee">
               <th mat-header-cell *matHeaderCellDef>Employee</th>
@@ -450,12 +450,14 @@ import { EmployeeService } from '../../services/employee.service';
       margin: 0 auto;
       background: white;
       border-radius: 16px;
-      overflow: hidden;
+      overflow-x: auto;
+      overflow-y: hidden;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
     .employee-table {
       width: 100%;
+      min-width: 800px;
       background: white;
     }
 
@@ -774,7 +776,7 @@ export class EmployeeListComponent implements OnInit {
     // Filter by search term
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(e => 
+      filtered = filtered.filter(e =>
         e.firstName.toLowerCase().includes(term) ||
         e.lastName.toLowerCase().includes(term) ||
         e.email.toLowerCase().includes(term) ||
@@ -839,7 +841,7 @@ export class EmployeeListComponent implements OnInit {
               message: error.message,
               error: error.error
             });
-            const errorMsg = error.status === 404 ? 'Employee not found' : 
+            const errorMsg = error.status === 404 ? 'Employee not found' :
                            error.status === 401 ? 'Unauthorized - please login again' :
                            error.status === 400 ? 'Invalid employee data' :
                            'Failed to update employee';
@@ -868,10 +870,10 @@ export class EmployeeListComponent implements OnInit {
 
   formatDate(dateString: string): string {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
   }
 

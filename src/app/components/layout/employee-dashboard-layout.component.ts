@@ -23,6 +23,11 @@ import { MatDividerModule } from '@angular/material/divider';
     <div class="dashboard-layout">
       <!-- Top Navbar -->
       <mat-toolbar color="primary" class="app-bar">
+        <!-- Hamburger: mobile only -->
+        <button mat-icon-button class="menu-toggle" (click)="menuOpen = !menuOpen" aria-label="Toggle navigation">
+          <mat-icon>{{ menuOpen ? 'close' : 'menu' }}</mat-icon>
+        </button>
+
         <span class="title">Employee Portal</span>
 
         <span class="spacer"></span>
@@ -47,26 +52,31 @@ import { MatDividerModule } from '@angular/material/divider';
 
       <!-- Main Content with Sidebar -->
       <div class="main-container">
+        <!-- Mobile backdrop -->
+        @if (menuOpen) {
+          <div class="mobile-backdrop" (click)="menuOpen = false"></div>
+        }
+
         <!-- Sidebar Navigation -->
-        <aside class="sidebar">
+        <aside class="sidebar" [class.mobile-open]="menuOpen">
           <nav class="sidebar-nav">
-            <a class="nav-link" routerLink="/employee-dashboard/overview" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">
+            <a class="nav-link" routerLink="/employee-dashboard/overview" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" (click)="menuOpen = false">
               <mat-icon>dashboard</mat-icon>
               <span>Overview</span>
             </a>
-            <a class="nav-link" routerLink="/employee-dashboard/payslips" routerLinkActive="active">
+            <a class="nav-link" routerLink="/employee-dashboard/payslips" routerLinkActive="active" (click)="menuOpen = false">
               <mat-icon>receipt</mat-icon>
               <span>Payslips</span>
             </a>
-            <a class="nav-link" routerLink="/employee-dashboard/leaves" routerLinkActive="active">
+            <a class="nav-link" routerLink="/employee-dashboard/leaves" routerLinkActive="active" (click)="menuOpen = false">
               <mat-icon>event_available</mat-icon>
               <span>Leaves</span>
             </a>
-            <a class="nav-link" routerLink="/employee-dashboard/notices" routerLinkActive="active">
+            <a class="nav-link" routerLink="/employee-dashboard/notices" routerLinkActive="active" (click)="menuOpen = false">
               <mat-icon>notifications</mat-icon>
               <span>Notices</span>
             </a>
-            <a class="nav-link" routerLink="/employee-dashboard/profile" routerLinkActive="active">
+            <a class="nav-link" routerLink="/employee-dashboard/profile" routerLinkActive="active" (click)="menuOpen = false">
               <mat-icon>person</mat-icon>
               <span>Profile</span>
             </a>
@@ -95,6 +105,11 @@ import { MatDividerModule } from '@angular/material/divider';
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
+    /* Hamburger hidden on desktop */
+    .menu-toggle {
+      display: none;
+    }
+
     .title {
       font-size: 1.25rem;
       font-weight: 600;
@@ -113,6 +128,7 @@ import { MatDividerModule } from '@angular/material/divider';
       display: flex;
       flex: 1;
       overflow: hidden;
+      position: relative;
     }
 
     .sidebar {
@@ -121,6 +137,7 @@ import { MatDividerModule } from '@angular/material/divider';
       border-right: 1px solid rgba(255,255,255,0.14);
       padding: 1.5rem 0;
       overflow-y: auto;
+      flex-shrink: 0;
     }
 
     .sidebar-nav {
@@ -164,46 +181,51 @@ import { MatDividerModule } from '@angular/material/divider';
       padding: 2rem;
     }
 
-    @media (max-width: 768px) {
-      .sidebar {
-        width: 200px;
-      }
-
-      .nav-link span {
-        font-size: 0.9rem;
-      }
-
-      .content {
-        padding: 1rem;
-      }
+    /* Mobile backdrop */
+    .mobile-backdrop {
+      display: none;
     }
 
     @media (max-width: 640px) {
-      .main-container {
-        flex-direction: column;
+      .menu-toggle {
+        display: inline-flex;
+        margin-right: 0.25rem;
       }
 
+      .welcome-text {
+        display: none;
+      }
+
+      /* Sidebar hidden off-screen by default on mobile */
       .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 260px;
+        z-index: 1002;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        padding-top: 1.5rem;
+      }
+
+      .sidebar.mobile-open {
+        transform: translateX(0);
+      }
+
+      /* Semi-transparent backdrop */
+      .mobile-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 1001;
+      }
+
+      /* Content takes full width */
+      .content {
         width: 100%;
-        border-right: none;
-        border-bottom: 1px solid rgba(255,255,255,0.14);
-      }
-
-      .sidebar-nav {
-        flex-direction: row;
-        overflow-x: auto;
-        padding: 0 0.5rem;
-      }
-
-      .nav-link {
-        flex-direction: column;
-        gap: 0.25rem;
-        min-width: 80px;
-        text-align: center;
-      }
-
-      .nav-link span {
-        font-size: 0.75rem;
+        padding: 1rem;
       }
     }
   `]
@@ -211,6 +233,7 @@ import { MatDividerModule } from '@angular/material/divider';
 export class EmployeeDashboardLayoutComponent implements OnInit {
   employeeName: string = '';
   employeeEmail: string = '';
+  menuOpen = false;
 
   constructor(private router: Router) {}
 

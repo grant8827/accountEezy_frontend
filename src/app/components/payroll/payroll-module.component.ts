@@ -1117,7 +1117,67 @@ export class PayrollModuleComponent implements OnInit {
 
   closePayslip() { this.showPayslip = false; this.payslipEntry = null; }
 
-  printPayslip() { window.print(); }
+  printPayslip() {
+    setTimeout(() => {
+      const card = document.querySelector<HTMLElement>('.payslip-card');
+      if (!card) return;
+
+      const win = window.open('', '_blank', 'width=700,height=900');
+      if (!win) return;
+
+      win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <title>Payslip</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Courier New', monospace; margin: 2rem; color: #111; }
+    .payslip-actions { display: none !important; }
+    .payslip-card { background: white; width: 100%; font-family: 'Courier New', monospace; }
+    .payslip-biz-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; }
+    .payslip-logo-box { width: 64px; height: 64px; min-width: 64px; background: #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.3rem; overflow: hidden; letter-spacing: 0.05em; }
+    .payslip-logo-box img { width: 100%; height: 100%; object-fit: contain; }
+    .payslip-biz-info { flex: 1; }
+    .payslip-biz-name { font-size: 1.3rem; font-weight: 700; line-height: 1.2; }
+    .payslip-biz-detail { font-size: 0.78rem; color: #555; line-height: 1.4; }
+    .payslip-title-section { text-align: center; margin: 1.25rem 0 0.75rem; }
+    .payslip-title-section h2 { font-size: 1.4rem; letter-spacing: 0.12em; margin: 0 0 0.25rem; font-weight: 700; }
+    .payslip-period { font-size: 0.85rem; font-weight: 600; }
+    .payslip-emp-section { border-left: 3px solid #ddd; padding-left: 0.75rem; margin: 0.75rem 0; font-size: 0.85rem; }
+    .payslip-emp-section div { padding: 0.1rem 0; }
+    .payslip-emp-label { font-weight: 700; }
+    .payslip-body { margin: 1rem 0; }
+    .payslip-section { margin-bottom: 1rem; }
+    .payslip-section h4 { font-size: 0.75rem; letter-spacing: 0.15em; color: #888; border-bottom: 1px dashed #ddd; padding-bottom: 0.3rem; margin-bottom: 0.5rem; }
+    .payslip-row { display: flex; justify-content: space-between; padding: 0.2rem 0; font-size: 0.9rem; }
+    .gross-row { border-top: 1px solid #ddd; padding-top: 0.4rem; margin-top: 0.2rem; }
+    .deductions-row { border-top: 1px solid #ddd; padding-top: 0.4rem; margin-top: 0.2rem; color: #c62828; }
+    .payslip-net { display: flex; justify-content: space-between; background: #000; color: white; padding: 0.75rem 0.5rem; font-size: 1.1rem; font-weight: 700; margin: 1rem 0; }
+    .net-amount { color: #C7AE6A; }
+    .employer-section h4 { color: #aaa; }
+    .employer-section .payslip-row { color: #777; font-size: 0.82rem; }
+    .payslip-footer { text-align: center; font-size: 0.75rem; color: #999; margin: 1rem 0; }
+    .ytd-table { margin: 0.75rem 0; font-size: 0.72rem; }
+    .ytd-label { font-size: 0.7rem; font-weight: 700; color: #888; letter-spacing: 0.06em; margin-bottom: 0.2rem; }
+    .ytd-divider { border: none; border-top: 1px solid #ddd; margin: 0 0 0.3rem 0; }
+    .ytd-row { display: grid; }
+    .ytd-gross-row { grid-template-columns: 1fr; }
+    .ytd-ded-row { grid-template-columns: repeat(4, 1fr); }
+    .ytd-row span { padding: 0.25rem 0.25rem; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ytd-gross-row span { text-align: left; font-size: 0.82rem; }
+    .ytd-header { font-weight: 700; font-size: 0.68rem; color: #888; letter-spacing: 0.04em; }
+    hr { border: none; border-top: 1px solid #ddd; margin: 1rem 0; }
+  </style>
+</head>
+<body>${card.innerHTML}</body>
+</html>`);
+
+      win.document.close();
+      win.focus();
+      win.print();
+      setTimeout(() => win.close(), 1000);
+    }, 50);
+  }
 
   getInitials(name: string | null | undefined): string {
     if (!name) return '?';

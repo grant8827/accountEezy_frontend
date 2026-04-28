@@ -248,11 +248,11 @@ import { environment } from '../../../environments/environment';
                     <!-- Leave Requests Section -->
                     <div class="details-section">
                       <h4>
-                        <mat-icon>event_available</mat-icon> 
-                        Leave Requests 
+                        <mat-icon>event_available</mat-icon>
+                        Leave Requests
                         <mat-chip class="leave-count">{{ getEmployeeLeaveRequests(employee.id).length }}</mat-chip>
                       </h4>
-                      
+
                       @if (getEmployeeLeaveRequests(employee.id).length === 0) {
                         <p class="no-records">No leave requests found</p>
                       } @else {
@@ -922,7 +922,7 @@ export class EmployeeRecordsComponent implements OnInit {
         this.filteredEmployees = this.employees;
       }
     }, 2000); // 2 second timeout
-    
+
     this.employeeService.getAll().subscribe({
       next: (employees) => {
         clearTimeout(timeoutId);
@@ -1019,7 +1019,7 @@ export class EmployeeRecordsComponent implements OnInit {
     }
 
     const searchLower = this.searchTerm.toLowerCase().trim();
-    
+
     this.filteredEmployees = this.employees.filter(employee => {
       const fullName = `${employee.firstName} ${employee.lastName}`.toLowerCase();
       const email = (employee.email || '').toLowerCase();

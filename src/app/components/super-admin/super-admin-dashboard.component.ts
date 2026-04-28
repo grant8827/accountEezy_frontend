@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { timeout } from 'rxjs/operators';
 import { MatIconModule } from '@angular/material/icon';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../services/auth.service';
@@ -383,29 +384,30 @@ export class SuperAdminDashboardComponent implements OnInit {
     this.loadBusinesses();
   }
 
-  private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('accounteezy_token');
-    return new HttpHeaders({ Authorization: `Bearer ${token}` });
-  }
-
   loadStats(): void {
-    this.http.get<Stats>(`${environment.apiUrl}/superadmin/stats`, { headers: this.getHeaders() })
+    this.http.get<Stats>(`${environment.apiUrl}/superadmin/stats`)
+      .pipe(timeout(15000))
       .subscribe({
         next: (data) => this.stats = data,
-        error: () => this.error = 'Failed to load stats.'
+        error: (err) => {
+          console.error('[SuperAdmin] loadStats error:', err);
+          this.error = `Failed to load stats (${err?.status ?? err?.name ?? 'timeout'}).`;
+        }
       });
   }
 
   loadBusinesses(): void {
     this.loading = true;
-    this.http.get<BusinessRow[]>(`${environment.apiUrl}/superadmin/businesses`, { headers: this.getHeaders() })
+    this.http.get<BusinessRow[]>(`${environment.apiUrl}/superadmin/businesses`)
+      .pipe(timeout(15000))
       .subscribe({
         next: (data) => {
           this.businesses = data;
           this.loading = false;
         },
-        error: () => {
-          this.error = 'Failed to load businesses.';
+        error: (err) => {
+          console.error('[SuperAdmin] loadBusinesses error:', err);
+          this.error = `Failed to load businesses (${err?.status ?? err?.name ?? 'timeout'}). Check console for details.`;
           this.loading = false;
         }
       });
@@ -427,8 +429,7 @@ export class SuperAdminDashboardComponent implements OnInit {
     this.actionLoading = biz.id;
     this.http.post<{ message: string }>(
       `${environment.apiUrl}/superadmin/businesses/${biz.id}/approve`,
-      {},
-      { headers: this.getHeaders() }
+      {}
     ).subscribe({
       next: () => {
         biz.status = 'Active';
@@ -446,8 +447,7 @@ export class SuperAdminDashboardComponent implements OnInit {
     this.actionLoading = biz.id;
     this.http.post<{ message: string }>(
       `${environment.apiUrl}/superadmin/businesses/${biz.id}/suspend`,
-      {},
-      { headers: this.getHeaders() }
+      {}
     ).subscribe({
       next: () => {
         biz.status = 'Suspended';
