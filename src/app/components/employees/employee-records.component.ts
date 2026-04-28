@@ -304,18 +304,30 @@ import { environment } from '../../../environments/environment';
                                   </button>
                                 </div>
                                 @if (leave.status === 'Pending') {
-                                  <mat-form-field appearance="outline" class="notes-field">
-                                    <mat-label>Notes (optional)</mat-label>
-                                    <input matInput [(ngModel)]="leave._notes" placeholder="Add a reason or note...">
-                                  </mat-form-field>
-                                  <div class="action-btns">
-                                    <button mat-raised-button color="primary" (click)="approveLeave(leave)">
-                                      <mat-icon>check</mat-icon> Approve
-                                    </button>
-                                    <button mat-stroked-button color="warn" (click)="rejectLeave(leave)">
-                                      <mat-icon>close</mat-icon> Reject
-                                    </button>
-                                  </div>
+                                  @if (leave._rejectPending) {
+                                    <div class="reject-panel">
+                                      <p class="reject-heading"><mat-icon>warning</mat-icon> Rejection Reason Required</p>
+                                      <mat-form-field appearance="outline" class="notes-field">
+                                        <mat-label>Reason for rejection *</mat-label>
+                                        <textarea matInput [(ngModel)]="leave._notes" rows="3" placeholder="Explain why this request is being rejected..."></textarea>
+                                      </mat-form-field>
+                                      <div class="action-btns">
+                                        <button mat-raised-button color="warn" (click)="confirmRejectLeave(leave)" [disabled]="!leave._notes?.trim()">
+                                          <mat-icon>close</mat-icon> Confirm Reject
+                                        </button>
+                                        <button mat-button (click)="cancelRejectLeave(leave)">Cancel</button>
+                                      </div>
+                                    </div>
+                                  } @else {
+                                    <div class="action-btns">
+                                      <button mat-raised-button color="primary" (click)="approveLeave(leave)">
+                                        <mat-icon>check</mat-icon> Approve
+                                      </button>
+                                      <button mat-stroked-button color="warn" (click)="rejectLeave(leave)">
+                                        <mat-icon>close</mat-icon> Reject
+                                      </button>
+                                    </div>
+                                  }
                                 }
                               </div>
                             </mat-card>
@@ -777,6 +789,30 @@ import { environment } from '../../../environments/environment';
       margin-bottom: 0.75rem;
     }
 
+    .reject-panel {
+      background: #fff5f5;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 0.75rem;
+    }
+
+    .reject-heading {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #991b1b;
+      margin: 0 0 0.75rem;
+    }
+
+    .reject-heading mat-icon {
+      font-size: 1.1rem;
+      width: 1.1rem;
+      height: 1.1rem;
+    }
+
     .action-btns {
       display: flex;
       gap: 0.75rem;
@@ -1074,7 +1110,17 @@ export class EmployeeRecordsComponent implements OnInit {
   }
 
   rejectLeave(leave: LeaveRequest) {
+    leave._rejectPending = true;
+  }
+
+  confirmRejectLeave(leave: LeaveRequest) {
     this.updateLeaveStatus(leave, 'Rejected');
+    leave._rejectPending = false;
+  }
+
+  cancelRejectLeave(leave: LeaveRequest) {
+    leave._rejectPending = false;
+    leave._notes = '';
   }
 
   private updateLeaveStatus(leave: LeaveRequest, status: string) {

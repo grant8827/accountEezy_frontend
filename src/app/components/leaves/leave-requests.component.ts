@@ -30,6 +30,7 @@ interface LeaveRequest {
   requestedOn: string;
   employee?: { name: string };
   _notes?: string;
+  _rejectPending?: boolean;
 }
 
 @Component({
@@ -245,18 +246,30 @@ interface LeaveRequest {
                   </button>
                 </div>
                 @if (leave.status === 'Pending') {
-                  <mat-form-field appearance="outline" class="notes-field">
-                    <mat-label>Notes (optional)</mat-label>
-                    <input matInput [(ngModel)]="leave._notes" placeholder="Add a reason or note...">
-                  </mat-form-field>
-                  <div class="action-btns">
-                    <button mat-raised-button color="primary" (click)="approve(leave)">
-                      <mat-icon>check</mat-icon> Approve
-                    </button>
-                    <button mat-stroked-button color="warn" (click)="reject(leave)">
-                      <mat-icon>close</mat-icon> Reject
-                    </button>
-                  </div>
+                  @if (leave._rejectPending) {
+                    <div class="reject-panel">
+                      <p class="reject-heading"><mat-icon>warning</mat-icon> Rejection Reason Required</p>
+                      <mat-form-field appearance="outline" class="notes-field">
+                        <mat-label>Reason for rejection *</mat-label>
+                        <textarea matInput [(ngModel)]="leave._notes" rows="3" placeholder="Explain why this request is being rejected..."></textarea>
+                      </mat-form-field>
+                      <div class="action-btns">
+                        <button mat-raised-button color="warn" (click)="confirmReject(leave)" [disabled]="!leave._notes?.trim()">
+                          <mat-icon>close</mat-icon> Confirm Reject
+                        </button>
+                        <button mat-button (click)="cancelReject(leave)">Cancel</button>
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="action-btns">
+                      <button mat-raised-button color="primary" (click)="approve(leave)">
+                        <mat-icon>check</mat-icon> Approve
+                      </button>
+                      <button mat-stroked-button color="warn" (click)="reject(leave)">
+                        <mat-icon>close</mat-icon> Reject
+                      </button>
+                    </div>
+                  }
                 }
               </div>
             </mat-card>
@@ -453,6 +466,30 @@ interface LeaveRequest {
     .notes-field {
       width: 100%;
       margin-bottom: 0.75rem;
+    }
+
+    .reject-panel {
+      background: #fff5f5;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 0.75rem;
+    }
+
+    .reject-heading {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #991b1b;
+      margin: 0 0 0.75rem;
+    }
+
+    .reject-heading mat-icon {
+      font-size: 1.1rem;
+      width: 1.1rem;
+      height: 1.1rem;
     }
 
     .action-btns {
@@ -695,7 +732,17 @@ export class LeaveRequestsComponent implements OnInit {
   }
 
   reject(leave: LeaveRequest) {
+    leave._rejectPending = true;
+  }
+
+  confirmReject(leave: LeaveRequest) {
     this.updateStatus(leave, 'Rejected');
+    leave._rejectPending = false;
+  }
+
+  cancelReject(leave: LeaveRequest) {
+    leave._rejectPending = false;
+    leave._notes = '';
   }
 
   private updateStatus(leave: LeaveRequest, status: string) {

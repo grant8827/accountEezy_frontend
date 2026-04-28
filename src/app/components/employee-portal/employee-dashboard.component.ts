@@ -968,8 +968,8 @@ export class ApplyLeaveDialogComponent {
                           <p class="leave-reason">{{ leave.reason }}</p>
                         }
                         @if (leave.adminNotes && leave.status !== 'Pending') {
-                          <div class="admin-notes">
-                            <strong>Admin Response:</strong> {{ leave.adminNotes }}
+                          <div class="admin-notes" [class.rejection-note]="leave.status === 'Rejected'">
+                            <strong>{{ leave.status === 'Rejected' ? 'Rejection Reason:' : 'Admin Notes:' }}</strong> {{ leave.adminNotes }}
                           </div>
                         }
                         @if (leave.status === 'Pending') {
@@ -1339,6 +1339,12 @@ export class ApplyLeaveDialogComponent {
       margin-top: 0.75rem;
       font-size: 0.875rem;
       color: #4b5563;
+    }
+
+    .admin-notes.rejection-note {
+      background: #fff5f5;
+      border-left: 3px solid #ef4444;
+      color: #991b1b;
     }
 
     .leave-edit-row {

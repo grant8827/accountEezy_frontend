@@ -150,6 +150,7 @@ export interface LeaveRequest {
   reviewedBy?: number;
   documentPath?: string;
   _notes?: string; // transient UI field for admin notes input
+  _rejectPending?: boolean; // transient UI flag for reject confirmation panel
 }
 
 export interface LeaveRequestDto {

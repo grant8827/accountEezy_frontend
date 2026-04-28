@@ -94,10 +94,12 @@ import { AuthService, User } from '../../services/auth.service';
               <mat-icon>notifications</mat-icon>
               <span>Notices</span>
             </a>
-            <a class="nav-link" routerLink="/dashboard/admin" routerLinkActive="active" (click)="menuOpen = false">
-              <mat-icon>admin_panel_settings</mat-icon>
-              <span>Admin</span>
-            </a>
+            @if (isSuperAdmin) {
+              <a class="nav-link" routerLink="/dashboard/admin" routerLinkActive="active" (click)="menuOpen = false">
+                <mat-icon>admin_panel_settings</mat-icon>
+                <span>Admin</span>
+              </a>
+            }
           </nav>
         </aside>
 
@@ -267,6 +269,10 @@ export class DashboardLayoutComponent {
 
   get user$() {
     return this.authService.user$;
+  }
+
+  get isSuperAdmin() {
+    return this.authService.isSuperAdmin();
   }
 
   navigate(path: string) {
