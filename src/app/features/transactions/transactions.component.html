@@ -214,10 +214,12 @@
 
           <div class="tx-date">{{ tx.date | date:'mediumDate':'UTC' }}</div>
 
-          @if (tx.category !== 'Payroll') {
-            <button class="btn-edit" (click)="openEdit(tx)" title="Edit">&#9998;</button>
-          }
-          <button class="btn-delete" (click)="remove(tx.id)" title="Delete">&#215;</button>
+          <div class="tx-actions">
+            @if (tx.category !== 'Payroll') {
+              <button class="btn-edit" (click)="openEdit(tx)" title="Edit">&#9998;</button>
+            }
+            <button class="btn-delete" (click)="remove(tx.id)" title="Delete">&#215;</button>
+          </div>
 
         </div>
       }
