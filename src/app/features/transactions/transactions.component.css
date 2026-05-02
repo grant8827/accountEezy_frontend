@@ -439,6 +439,17 @@
 
 .tx-date { font-size: 0.8rem; color: #94a3b8; white-space: nowrap; }
 
+.btn-edit {
+  width: 30px; height: 30px;
+  border: none; border-radius: 6px;
+  background: #dbeafe; color: #2563eb;
+  font-size: 1rem; line-height: 1;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.btn-edit:hover { background: #bfdbfe; }
+
 .btn-delete {
   width: 30px; height: 30px;
   border: none; border-radius: 6px;

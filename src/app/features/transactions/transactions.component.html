@@ -43,7 +43,7 @@
         <div class="modal-panel" (click)="$event.stopPropagation()">
 
           <div class="modal-header">
-            <h2 class="modal-title">Add Transaction</h2>
+            <h2 class="modal-title">{{ editingId() !== null ? 'Edit Transaction' : 'Add Transaction' }}</h2>
             <button class="modal-close" (click)="closeModal()" title="Close">&#215;</button>
           </div>
 
@@ -142,7 +142,7 @@
               }
               <button type="button" class="btn-cancel" (click)="closeModal()">Cancel</button>
               <button class="btn-add" type="submit" [disabled]="submitting()">
-                {{ submitting() ? 'Saving…' : '+ Add Transaction' }}
+                {{ submitting() ? 'Saving…' : (editingId() !== null ? 'Save Changes' : '+ Add Transaction') }}
               </button>
             </div>
 
@@ -214,6 +214,9 @@
 
           <div class="tx-date">{{ tx.date | date:'mediumDate':'UTC' }}</div>
 
+          @if (tx.category !== 'Payroll') {
+            <button class="btn-edit" (click)="openEdit(tx)" title="Edit">&#9998;</button>
+          }
           <button class="btn-delete" (click)="remove(tx.id)" title="Delete">&#215;</button>
 
         </div>

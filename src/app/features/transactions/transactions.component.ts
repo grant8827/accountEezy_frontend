@@ -35,6 +35,7 @@ export class TransactionsComponent implements OnInit {
   readonly loading = signal(false);
   readonly submitError = signal('');
   readonly loadError = signal('');
+  readonly editingId = signal<number | null>(null);
 
   readonly filteredTransactions = computed(() => {
     const f = this.frequencyFilter();
@@ -88,11 +89,30 @@ export class TransactionsComponent implements OnInit {
   }
 
   openModal()  {
+    this.editingId.set(null);
     this.submitError.set('');
     this.showModal.set(true);
   }
+
+  openEdit(tx: TransactionItem) {
+    this.editingId.set(tx.id);
+    this.submitError.set('');
+    this.form.reset({
+      amount: tx.amount,
+      type: tx.type,
+      gctApplicable: tx.gctApplicable,
+      category: tx.category,
+      description: tx.description,
+      frequency: tx.frequency,
+      status: tx.status,
+      date: new Date(tx.date).toISOString().slice(0, 10)
+    });
+    this.showModal.set(true);
+  }
+
   closeModal() {
     this.showModal.set(false);
+    this.editingId.set(null);
     this.submitError.set('');
     this.submitting.set(false);
     this.form.reset({
@@ -103,21 +123,26 @@ export class TransactionsComponent implements OnInit {
   }
 
   submit() {
-    // Mark all fields dirty so validation hints show
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
 
     this.submitting.set(true);
     this.submitError.set('');
     const v = this.form.getRawValue();
-
-    this.transactionsService.create({
+    const payload = {
       ...v,
       amount: +v.amount,
       frequency: +v.frequency as TransactionFrequency,
       status: +v.status as 1 | 2,
       date: new Date(v.date).toISOString()
-    }).subscribe({
+    };
+
+    const id = this.editingId();
+    const request$ = id !== null
+      ? this.transactionsService.update(id, payload)
+      : this.transactionsService.create(payload);
+
+    request$.subscribe({
       next: () => {
         this.submitting.set(false);
         this.closeModal();

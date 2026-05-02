@@ -18,7 +18,7 @@ import { CommonModule } from '@angular/common';
 
         <nav class="nav-menu">
           <a routerLink="/features" class="nav-link">Features</a>
-          <a routerLink="/pricing" class="nav-link">Pricing</a>
+          <a [routerLink]="['/']" fragment="pricing" class="nav-link">Pricing</a>
           <a routerLink="/about" class="nav-link">About</a>
         </nav>
 

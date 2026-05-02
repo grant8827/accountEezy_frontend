@@ -26,7 +26,7 @@
       </p>
 
       <div class="hero-cta">
-        <a class="btn btn-primary" routerLink="/pricing">
+        <a class="btn btn-primary" [routerLink]="['/']" fragment="pricing">
           Start for Free
           <span class="btn-arrow">→</span>
         </a>
@@ -206,7 +206,7 @@
           <span class="feature-cta-icon">🚀</span>
           <h3>Ready to get started?</h3>
           <p>Join hundreds of Jamaican businesses running payroll on AccountEezy.</p>
-          <a class="btn btn-primary" routerLink="/pricing">Start Free Trial</a>
+          <a class="btn btn-primary" routerLink="/register">Start Free Trial</a>
         </div>
       </div>
     </div>
@@ -277,42 +277,56 @@
 <!-- ══════════════════════════════════════════════════
      PRICING
 ══════════════════════════════════════════════════ -->
-<section class="section section--light">
+<section id="pricing" class="section section--light">
   <div class="container">
     <div class="section-header">
       <span class="section-tag">Pricing</span>
       <h2>Simple, transparent pricing</h2>
-      <p>No hidden fees. Upgrade or downgrade at any time.</p>
+      <p>No hidden fees. Cancel anytime.</p>
+    </div>
+
+    <!-- Billing toggle -->
+    <div class="billing-toggle">
+      <span [class.toggle-label--active]="!yearly">Monthly</span>
+      <button class="toggle-switch" [class.toggle-switch--on]="yearly" (click)="yearly = !yearly" type="button">
+        <span class="toggle-thumb"></span>
+      </button>
+      <span [class.toggle-label--active]="yearly">
+        Yearly
+        <span class="save-badge" [style.opacity]="yearly ? 1 : 0.4">Save 20%</span>
+      </span>
     </div>
 
     <div class="pricing-grid">
+
+      <!-- Starter -->
       <div class="pricing-card">
-        <div class="pricing-badge pricing-badge--free">Free</div>
+        <div class="pricing-badge pricing-badge--starter">Starter</div>
         <div class="pricing-price">
-          <span class="price-currency">J$</span>
-          <span class="price-amount">0</span>
-          <span class="price-period">/mo</span>
+          <span class="price-currency">$</span>
+          <span class="price-amount">{{ yearly ? (4500 * 12 * 0.8 | number:'1.0-0') : '4,500' }}</span>
+          <span class="price-period">/{{ yearly ? 'yr' : 'mo' }}</span>
         </div>
-        <p class="pricing-desc">Perfect for freelancers and micro-businesses getting started.</p>
+        <p class="pricing-desc">For small teams getting started with payroll.</p>
         <ul class="pricing-features">
-          <li>✓ Up to 3 employees</li>
-          <li>✓ Basic payroll calculator</li>
-          <li>✓ GCT tracking</li>
-          <li>✓ Manual SO1 export</li>
-          <li class="disabled">✗ SO2 annual reports</li>
-          <li class="disabled">✗ Deadline alerts</li>
+          <li>✓ Up to 10 employees</li>
+          <li>✓ Full payroll automation</li>
+          <li>✓ GCT &amp; income tracking</li>
+          <li>✓ SO1 reports</li>
+          <li>✓ Email support</li>
         </ul>
-        <a class="btn btn-outline w-full" routerLink="/pricing">Get Started Free</a>
+        <a class="btn btn-outline w-full" routerLink="/register" [queryParams]="{plan: 'starter'}">Get Started</a>
       </div>
 
+      <!-- Growth (featured) -->
       <div class="pricing-card pricing-card--featured">
-        <div class="pricing-badge pricing-badge--pro">Most Popular</div>
+        <div class="pricing-badge pricing-badge--growth">Most Popular</div>
         <div class="pricing-price">
-          <span class="price-currency">J$</span>
-          <span class="price-amount">4,500</span>
-          <span class="price-period">/mo</span>
+          <span class="price-currency">$</span>
+          <span class="price-amount">{{ yearly ? (8500 * 12 * 0.8 | number:'1.0-0') : '8,500' }}</span>
+          <span class="price-period">/{{ yearly ? 'yr' : 'mo' }}</span>
         </div>
-        <p class="pricing-desc">Everything a growing Jamaican business needs to stay compliant.</p>
+        <p class="pricing-desc">For growing businesses that need more power.</p>
         <ul class="pricing-features">
           <li>✓ Up to 25 employees</li>
           <li>✓ Full payroll automation</li>
@@ -321,25 +335,57 @@
           <li>✓ Deadline alerts &amp; reminders</li>
           <li>✓ Priority support</li>
         </ul>
-        <a class="btn btn-primary w-full" routerLink="/pricing">Start 14-Day Trial</a>
+        <a class="btn btn-primary w-full" routerLink="/register" [queryParams]="{plan: 'growth'}">Start 14-Day Trial</a>
       </div>
 
+      <!-- Professional -->
       <div class="pricing-card">
-        <div class="pricing-badge pricing-badge--enterprise">Enterprise</div>
+        <div class="pricing-badge pricing-badge--professional">Professional</div>
         <div class="pricing-price">
-          <span class="price-amount price-custom">Custom</span>
+          <span class="price-currency">$</span>
+          <span class="price-amount">{{ yearly ? (14500 * 12 * 0.8 | number:'1.0-0') : '14,500' }}</span>
+          <span class="price-period">/{{ yearly ? 'yr' : 'mo' }}</span>
         </div>
-        <p class="pricing-desc">Tailored for large businesses with multi-entity payroll needs.</p>
+        <p class="pricing-desc">For established businesses with larger teams.</p>
+        <ul class="pricing-features">
+          <li>✓ Up to 35 employees</li>
+          <li>✓ Full payroll automation</li>
+          <li>✓ All reports &amp; exports</li>
+          <li>✓ Deadline alerts &amp; reminders</li>
+          <li>✓ Multi-admin access</li>
+          <li>✓ Priority support</li>
+        </ul>
+        <a class="btn btn-outline w-full" routerLink="/register" [queryParams]="{plan: 'professional'}">Get Started</a>
+      </div>
+
+      <!-- Custom -->
+      <div class="pricing-card pricing-card--custom">
+        <div class="pricing-badge pricing-badge--custom">Custom</div>
+        <div class="pricing-price">
+          <span class="price-currency">$</span>
+          <span class="price-amount">{{ yearly ? (customPrice * 12 * 0.8 | number:'1.0-0') : (customPrice | number:'1.0-0') }}</span>
+          <span class="price-period">/{{ yearly ? 'yr' : 'mo' }}</span>
+        </div>
+        <p class="pricing-desc">More than 35 employees? Build your own plan.</p>
+        <div class="employee-stepper">
+          <label class="stepper-label">Number of employees</label>
+          <div class="stepper-row">
+            <button type="button" class="stepper-btn" (click)="decrementEmployees()">−</button>
+            <input type="number" [(ngModel)]="customEmployees" (ngModelChange)="onEmployeesChange($event)" min="36" class="stepper-input" />
+            <button type="button" class="stepper-btn" (click)="incrementEmployees()">+</button>
+          </div>
+          <p class="stepper-note">Base $14,500 + $200 per employee over 35</p>
+        </div>
         <ul class="pricing-features">
           <li>✓ Unlimited employees</li>
-          <li>✓ Multi-company support</li>
-          <li>✓ API access</li>
+          <li>✓ Everything in Professional</li>
           <li>✓ Dedicated account manager</li>
           <li>✓ Custom integrations</li>
           <li>✓ SLA guarantee</li>
         </ul>
-        <a class="btn btn-outline w-full" routerLink="/pricing">Contact Sales</a>
+        <a class="btn btn-outline w-full" routerLink="/register" [queryParams]="{plan: 'custom', employees: customEmployees}">Contact Sales</a>
       </div>
+
     </div>
   </div>
 </section>
@@ -401,7 +447,7 @@
     <h2>Ready to simplify your tax obligations?</h2>
     <p>Join 500+ Jamaican businesses already running payroll on AccountEezy.</p>
     <div class="cta-actions">
-      <a class="btn btn-primary btn-xl" routerLink="/pricing">
+      <a class="btn btn-primary btn-xl" routerLink="/register">
         Create Your Free Account
         <span class="btn-arrow">→</span>
       </a>
@@ -424,8 +470,8 @@
       <div class="footer-col">
         <h4>Product</h4>
         <a routerLink="/features">Features</a>
-        <a routerLink="/pricing">Pricing</a>
-        <a routerLink="/pricing">Get Started</a>
+        <a [routerLink]="['/']" fragment="pricing">Pricing</a>
+        <a routerLink="/register">Get Started</a>
       </div>
       <div class="footer-col">
         <h4>Company</h4>
