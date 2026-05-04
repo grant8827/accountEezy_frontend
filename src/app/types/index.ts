@@ -45,6 +45,7 @@ export interface Employee {
   payCycle?: string;
   password?: string; // Only used when creating/updating
   employmentType?: 'Salary' | 'Hourly';
+  jobType?: 'Full-Time' | 'Part-Time' | 'Contract';
   vacationDaysBalance?: number;
   // YTD accumulators
   ytdGross?: number;

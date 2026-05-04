@@ -151,6 +151,33 @@ import { Employee } from '../../types/index';
             </div>
           </div>
 
+          <!-- Job Type Toggle -->
+          <div class="form-row" style="align-items: center; margin-bottom: 8px;">
+            <div class="full-width">
+              <p style="font-size: 12px; color: rgba(0,0,0,0.6); margin: 0 0 6px 0;">Job Type</p>
+              <mat-button-toggle-group formControlName="jobType" style="margin-bottom: 12px;">
+                <mat-button-toggle value="Full-Time">
+                  <mat-icon style="margin-right: 4px; font-size: 18px; height: 18px; width: 18px;">work</mat-icon>
+                  Full-Time
+                </mat-button-toggle>
+                <mat-button-toggle value="Part-Time">
+                  <mat-icon style="margin-right: 4px; font-size: 18px; height: 18px; width: 18px;">timelapse</mat-icon>
+                  Part-Time
+                </mat-button-toggle>
+                <mat-button-toggle value="Contract">
+                  <mat-icon style="margin-right: 4px; font-size: 18px; height: 18px; width: 18px;">description</mat-icon>
+                  Contract
+                </mat-button-toggle>
+              </mat-button-toggle-group>
+              @if (employeeForm.get('jobType')?.value === 'Contract') {
+                <p style="font-size: 11px; color: #f59e0b; margin: -8px 0 8px 0;">
+                  <mat-icon style="font-size: 14px; height: 14px; width: 14px; vertical-align: middle;">info</mat-icon>
+                  Contract employees are excluded from payroll and statutory remittances (NIS, NHT, Ed. Tax, PAYE).
+                </p>
+              }
+            </div>
+          </div>
+
           <div class="form-row">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Position</mat-label>
@@ -465,6 +492,7 @@ export class EmployeeFormDialogComponent implements OnInit {
       salary: [data.employee?.salary || 0, [Validators.required, Validators.min(1)]],
       payCycle: [data.employee?.payCycle || 'Monthly'],
       employmentType: [data.employee?.employmentType || 'Salary'],
+      jobType: [data.employee?.jobType || 'Full-Time'],
       vacationDaysBalance: [data.employee?.vacationDaysBalance ?? 0],
       hireDate: [data.employee?.hireDate ? new Date(data.employee.hireDate) : new Date(), Validators.required],
       status: [data.employee?.status || 'active'],
@@ -507,6 +535,7 @@ export class EmployeeFormDialogComponent implements OnInit {
         phoneNumber: formValue.phoneNumber || undefined,
         payCycle: formValue.payCycle || 'Monthly',
         employmentType: formValue.employmentType || 'Salary',
+        jobType: formValue.jobType || 'Full-Time',
         vacationDaysBalance: Number(formValue.vacationDaysBalance) || 0,
         password: formValue.password || undefined, // Only include if provided
         ytdGross: Number(formValue.ytdGross) || 0,

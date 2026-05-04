@@ -22,6 +22,7 @@ interface BackendEmployee {
   email?: string;
   isActive: boolean;
   employmentType?: string;
+  jobType?: string;
   vacationDaysBalance?: number;
   position?: string;
   department?: string;
@@ -49,6 +50,7 @@ interface EmployeeRequest {
   password?: string;
   isActive?: boolean;
   employmentType?: string;
+  jobType?: string;
   vacationDaysBalance?: number;
   position?: string;
   department?: string;
@@ -95,6 +97,7 @@ export class EmployeeService {
       address: backendEmp.address,
       payCycle: this.mapPayCycleToFrontend(backendEmp.payCycle),
       employmentType: (backendEmp.employmentType as 'Salary' | 'Hourly') || 'Salary',
+      jobType: (backendEmp.jobType as 'Full-Time' | 'Part-Time' | 'Contract') || 'Full-Time',
       vacationDaysBalance: backendEmp.vacationDaysBalance ?? 0,
       ytdGross: backendEmp.ytdGross ?? 0,
       ytdNis: backendEmp.ytdNis ?? 0,
@@ -122,6 +125,7 @@ export class EmployeeService {
       password: employee.password,
       isActive: employee.status !== 'inactive',
       employmentType: employee.employmentType || 'Salary',
+      jobType: employee.jobType || 'Full-Time',
       vacationDaysBalance: employee.vacationDaysBalance ?? 0,
       position: employee.position,
       department: employee.department,
