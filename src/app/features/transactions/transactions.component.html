@@ -115,6 +115,7 @@
                   <option [value]="1">Daily</option>
                   <option [value]="2">Weekly</option>
                   <option [value]="3">Monthly</option>
+                  <option [value]="4">Yearly</option>
                 </select>
               </div>
               <div class="field-group">
@@ -164,6 +165,7 @@
         <button class="filter-btn" [class.active]="frequencyFilter() === 1" (click)="setFrequencyFilter(1)">Daily</button>
         <button class="filter-btn" [class.active]="frequencyFilter() === 2" (click)="setFrequencyFilter(2)">Weekly</button>
         <button class="filter-btn" [class.active]="frequencyFilter() === 3" (click)="setFrequencyFilter(3)">Monthly</button>
+        <button class="filter-btn" [class.active]="frequencyFilter() === 4" (click)="setFrequencyFilter(4)">Yearly</button>
       </div>
 
       @if (loadError()) {

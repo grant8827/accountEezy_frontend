@@ -34,6 +34,7 @@ interface BatchEntryInput {
   employeeId: number; name: string; baseSalary: number;
   holidayPay: number; bonus: number; loanDeduction: number;
   employmentType: string; hourlyRate: number; hours: number;
+  included: boolean;
 }
 
 interface PayrollEntry {
@@ -348,7 +349,7 @@ const DEFAULT_TAX: TaxConfig = {
         <mat-card class="worksheet-card">
           <mat-card-header>
             <mat-card-title>Employee Worksheet</mat-card-title>
-            <mat-card-subtitle>Enter any additional earnings or deductions. Base salary is loaded automatically.</mat-card-subtitle>
+            <mat-card-subtitle>Enter any additional earnings or deductions. Base salary is loaded automatically. Uncheck the checkbox to remove an employee from this payroll.</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
             <div *ngIf="loadingEmployees" class="center-spinner"><mat-spinner diameter="40"></mat-spinner></div>
@@ -360,6 +361,7 @@ const DEFAULT_TAX: TaxConfig = {
               <table class="worksheet-table">
                 <thead>
                   <tr>
+                    <th class="ws-check-col"><input type="checkbox" [checked]="allIncluded" (change)="toggleAllIncluded()" title="Select/deselect all"></th>
                     <th>Employee</th>
                     <th class="num-col">Type</th>
                     <th class="num-col">Hours</th>
@@ -371,7 +373,8 @@ const DEFAULT_TAX: TaxConfig = {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let e of worksheetEntries">
+                  <tr *ngFor="let e of worksheetEntries" [class.ws-excluded]="!e.included">
+                    <td class="ws-check-col"><input type="checkbox" [(ngModel)]="e.included"></td>
                     <td><strong>{{ e.name }}</strong></td>
                     <td class="num-col">
                       <span [style.color]="e.employmentType === 'Hourly' ? '#e65100' : '#1565c0'" style="font-size:12px; font-weight:600;">
@@ -412,10 +415,10 @@ const DEFAULT_TAX: TaxConfig = {
             </div>
           </mat-card-content>
           <mat-card-actions *ngIf="worksheetEntries.length > 0">
-            <button mat-raised-button class="gold-btn run-btn" (click)="processBatch()" [disabled]="processing">
+            <button mat-raised-button class="gold-btn run-btn" (click)="processBatch()" [disabled]="processing || includedCount === 0">
               <mat-spinner *ngIf="processing" diameter="20"></mat-spinner>
               <mat-icon *ngIf="!processing">rocket_launch</mat-icon>
-              {{ processing ? 'Processing…' : (activeBatch.status === 1 ? 'Reprocess' : 'Run') + ' Payroll for ' + worksheetEntries.length + ' Employees' }}
+              {{ processing ? 'Processing…' : (activeBatch.status === 1 ? 'Reprocess' : 'Run') + ' Payroll for ' + includedCount + ' Employees' }}
             </button>
           </mat-card-actions>
         </mat-card>
@@ -715,6 +718,9 @@ const DEFAULT_TAX: TaxConfig = {
     .ws-input { width: 110px; padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; text-align: right; font-size: 0.9rem; }
     .ws-input:focus { outline: none; border-color: #C7AE6A; box-shadow: 0 0 0 2px rgba(199,174,106,0.2); }
     .est-net { font-weight: 600; color: #2e7d32; }
+    .ws-check-col { width: 40px; text-align: center !important; }
+    .ws-excluded td:not(.ws-check-col) { opacity: 0.4; }
+    .ws-excluded:hover td { background: transparent !important; }
 
     /* ── Results table ── */
     .results-table ::ng-deep .mat-mdc-header-cell { background: #f9f7f1; }
@@ -925,7 +931,8 @@ export class PayrollModuleComponent implements OnInit {
             hours,
             holidayPay: existing?.holidayPay ?? 0,
             bonus: existing?.bonus ?? 0,
-            loanDeduction: existing?.loanDeduction ?? 0
+            loanDeduction: existing?.loanDeduction ?? 0,
+            included: true
           };
         });
         this.loadingEmployees = false;
@@ -980,7 +987,8 @@ export class PayrollModuleComponent implements OnInit {
           employmentType: e.employmentType || 'Salary',
           hourlyRate: e.salary,
           hours: 0,
-          holidayPay: 0, bonus: 0, loanDeduction: 0
+          holidayPay: 0, bonus: 0, loanDeduction: 0,
+          included: true
         }));
         this.loadingEmployees = false;
         this.cdr.detectChanges();
@@ -1001,13 +1009,15 @@ export class PayrollModuleComponent implements OnInit {
     if (!this.activeBatch) return;
     this.processing = true;
     const body = {
-      entries: this.worksheetEntries.map(e => ({
-        employeeId: e.employeeId,
-        holidayPay: e.holidayPay || 0,
-        bonus: e.bonus || 0,
-        loanDeduction: e.loanDeduction || 0,
-        ...(e.employmentType === 'Hourly' ? { hours: e.hours || 0 } : {})
-      }))
+      entries: this.worksheetEntries
+        .filter(e => e.included)
+        .map(e => ({
+          employeeId: e.employeeId,
+          holidayPay: e.holidayPay || 0,
+          bonus: e.bonus || 0,
+          loanDeduction: e.loanDeduction || 0,
+          ...(e.employmentType === 'Hourly' ? { hours: e.hours || 0 } : {})
+        }))
     };
     this.http.post<PayrollBatchDetail>(`${environment.apiUrl}/payroll-batches/${this.activeBatch.id}/process`, body).subscribe({
       next: result => {
@@ -1035,6 +1045,10 @@ export class PayrollModuleComponent implements OnInit {
   }
 
   recalcEstimate(_e: BatchEntryInput) { /* triggers change detection */ }
+
+  get includedCount(): number { return this.worksheetEntries.filter(e => e.included).length; }
+  get allIncluded(): boolean { return this.worksheetEntries.length > 0 && this.worksheetEntries.every(e => e.included); }
+  toggleAllIncluded() { const next = !this.allIncluded; this.worksheetEntries.forEach(e => e.included = next); }
 
   private getEmployeeDisplayName(employee: AppEmployee): string {
     return `${employee.firstName} ${employee.lastName}`.trim() || employee.email || 'Employee';

@@ -1,12 +1,13 @@
 export type TransactionType = 1 | 2;
-export type TransactionFrequency = 1 | 2 | 3;
+export type TransactionFrequency = 1 | 2 | 3 | 4;
 export type TransactionStatus = 1 | 2;
 
 export const FREQUENCY_LABELS: Record<number, string> = {
   0: 'Daily',   // fallback for legacy rows migrated with default 0
   1: 'Daily',
   2: 'Weekly',
-  3: 'Monthly'
+  3: 'Monthly',
+  4: 'Yearly'
 };
 
 export const STATUS_LABELS: Record<number, string> = {
@@ -39,7 +40,8 @@ export const EXPENSE_CATEGORY_GROUPS: CategoryGroup[] = [
       'Telephone Bill',
       'Internet Bill',
       'Waste Management Bill',
-      'Gas Bill'
+      'Gas Bill',
+      'Web Services'
     ]
   }
 ];
