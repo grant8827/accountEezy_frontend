@@ -30,7 +30,7 @@ export interface CategoryGroup {
 export const EXPENSE_CATEGORY_GROUPS: CategoryGroup[] = [
   {
     label: 'General',
-    options: ['Rent', 'Inventory', 'Marketing', 'Travel', 'Other Expense']
+    options: ['Rent', 'Inventory', 'Marketing', 'Travel', 'License', 'Other Expense']
   },
   {
     label: 'Utilities',
