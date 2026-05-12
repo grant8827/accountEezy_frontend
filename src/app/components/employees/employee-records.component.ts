@@ -101,7 +101,7 @@ import { environment } from '../../../environments/environment';
             <span>Found {{ filteredEmployees.length }} of {{ employees.length }} employees</span>
           </div>
         }
-        @if (searchTerm && filteredEmployees.length === 0) {
+        @if (searchTerm && filteredEmployees.length === 0 && !loading) {
           <div class="search-results-info no-results">
             <mat-icon>warning</mat-icon>
             <span>No employees found matching "{{ searchTerm }}"</span>
@@ -929,6 +929,7 @@ export class EmployeeRecordsComponent implements OnInit {
   filteredEmployees: Employee[] = [];
   leaveRequests: LeaveRequest[] = [];
   loading = true;
+  hasSearched = false;
   searchTerm = '';
   showLeaveDetail = false;
   selectedLeave: LeaveRequest | null = null;
@@ -949,28 +950,16 @@ export class EmployeeRecordsComponent implements OnInit {
   }
 
   loadEmployees() {
-    // Set a timeout to ensure we don't load forever
-    const timeoutId = setTimeout(() => {
-      if (this.loading) {
-        console.log('Employee Records: API timeout, loading mock data');
-        this.loading = false;
-        this.loadMockData();
-        this.filteredEmployees = this.employees;
-      }
-    }, 2000); // 2 second timeout
-
+    this.loading = true;
     this.employeeService.getAll().subscribe({
       next: (employees) => {
-        clearTimeout(timeoutId);
         this.employees = employees;
         this.filteredEmployees = employees;
         this.loading = false;
       },
       error: (error) => {
-        clearTimeout(timeoutId);
         console.error('Employee Records: Error loading employees:', error);
         this.loading = false;
-        // Load mock data as fallback
         this.loadMockData();
         this.filteredEmployees = this.employees;
       }
@@ -1046,6 +1035,15 @@ export class EmployeeRecordsComponent implements OnInit {
       next: (data) => { this.leaveRequests = data; },
       error: (err)  => { console.error('Failed to load leave requests:', err); }
     });
+  }
+
+  triggerSearch() {
+    this.hasSearched = true;
+    if (this.employees.length === 0) {
+      this.loadEmployees();
+    } else {
+      this.filterEmployees();
+    }
   }
 
   filterEmployees() {

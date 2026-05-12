@@ -30,7 +30,13 @@ export class TransactionsComponent implements OnInit {
 
   readonly transactions = signal<TransactionItem[]>([]);
   readonly frequencyFilter = signal<TransactionFrequency | 0>(0);
+  readonly monthFilter = signal<number>(0);
   readonly showModal = signal(false);
+
+  readonly MONTH_NAMES = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
   readonly submitting = signal(false);
   readonly loading = signal(false);
   readonly submitError = signal('');
@@ -39,8 +45,11 @@ export class TransactionsComponent implements OnInit {
 
   readonly filteredTransactions = computed(() => {
     const f = this.frequencyFilter();
-    const all = this.transactions();
-    return f === 0 ? all : all.filter(t => t.frequency === f);
+    const m = this.monthFilter();
+    let all = this.transactions();
+    if (f !== 0) all = all.filter(t => t.frequency === f);
+    if (m !== 0) all = all.filter(t => new Date(t.date).getMonth() + 1 === m);
+    return all;
   });
 
   readonly totalIncome = computed(() =>
@@ -170,6 +179,14 @@ export class TransactionsComponent implements OnInit {
 
   setFrequencyFilter(f: TransactionFrequency | 0) {
     this.frequencyFilter.set(f);
+  }
+
+  setMonthFilter(m: number) {
+    this.monthFilter.set(m);
+  }
+
+  printLedger() {
+    window.print();
   }
 
   exportCsv() {

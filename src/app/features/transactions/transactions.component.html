@@ -14,6 +14,9 @@
         <button class="btn-export" (click)="exportCsv()" title="Export current view to CSV">
           &#8595; Export CSV
         </button>
+        <button class="btn-print" (click)="printLedger()" title="Print the transaction ledger">
+          &#128438; Print
+        </button>
       </div>
     </div>
   </header>
@@ -166,6 +169,12 @@
         <button class="filter-btn" [class.active]="frequencyFilter() === 2" (click)="setFrequencyFilter(2)">Weekly</button>
         <button class="filter-btn" [class.active]="frequencyFilter() === 3" (click)="setFrequencyFilter(3)">Monthly</button>
         <button class="filter-btn" [class.active]="frequencyFilter() === 4" (click)="setFrequencyFilter(4)">Yearly</button>
+        <select class="filter-month-select" [value]="monthFilter()" (change)="setMonthFilter(+$any($event.target).value)" title="Filter by month">
+          <option value="0">All Months</option>
+          @for (name of MONTH_NAMES; track $index) {
+            <option [value]="$index + 1">{{ name }}</option>
+          }
+        </select>
       </div>
 
       @if (loadError()) {

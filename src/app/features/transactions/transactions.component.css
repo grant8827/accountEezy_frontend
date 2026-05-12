@@ -44,6 +44,21 @@
 }
 .btn-export:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.35); }
 
+.btn-print {
+  padding: 10px 20px;
+  background: rgba(255,255,255,0.1);
+  color: #e2e8f0;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.btn-print:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.35); }
+
 /* ── Header Actions Group ────────────────────────────────── */
 .header-actions {
   display: flex;
@@ -372,6 +387,27 @@
   background: #0f172a;
   color: #fff;
   border-color: #0f172a;
+}
+
+.filter-month-select {
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 20px;
+  background: #f8fafc;
+  color: #64748b;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.filter-month-select:focus { border-color: #0f172a; }
+
+@media print {
+  .page-header, .summary-row, .modal-backdrop, .filter-bar, .btn-add-trigger, .btn-export, .btn-print, .tx-actions { display: none !important; }
+  .tx-shell { background: #fff; }
+  .list-card { box-shadow: none; border: none; }
 }
 
 /* ── Transaction Row ─────────────────────────────────────── */
