@@ -57,7 +57,6 @@ interface LeaveRequest {
       <div class="leave-print-card" id="leave-print-area">
         <div class="lp-header">
           <h2>LEAVE REQUEST FORM</h2>
-          <p class="lp-company">AccountEezy HR Management</p>
         </div>
         <hr>
         <div class="lp-row">

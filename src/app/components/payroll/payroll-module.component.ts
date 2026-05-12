@@ -1063,7 +1063,64 @@ export class PayrollModuleComponent implements OnInit {
     });
   }
 
-  printRemittance() { window.print(); }
+  printRemittance() {
+    if (!this.remittance) return;
+    const r = this.remittance;
+    const fmt = (n: number) => 'JMD\u00a0' + n.toLocaleString('en-JM', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const totalEmp = r.totalEmployeeNis + r.totalEmployeeNht + r.totalEmployeeEdTax + r.totalEmployeePaye;
+    const totalEr  = r.totalEmployerNis + r.totalEmployerNht + r.totalEmployerEdTax + r.totalEmployerHeart;
+
+    const win = window.open('', '_blank', 'width=800,height=900');
+    if (!win) return;
+    win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <title>Remittance Report — ${r.label}</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #111; font-size: 0.9rem; }
+    h1 { font-size: 1.2rem; margin: 0 0 0.25rem; }
+    .sub { color: #555; margin: 0 0 1.5rem; font-size: 0.85rem; }
+    .summary { display: flex; gap: 1.5rem; margin-bottom: 1.5rem; }
+    .sum-box { flex: 1; border: 1px solid #ddd; border-radius: 4px; padding: 0.75rem; }
+    .sum-label { font-size: 0.75rem; color: #555; margin-bottom: 0.25rem; }
+    .sum-value { font-weight: 700; font-size: 1rem; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+    th { background: #f5f5f5; text-align: left; padding: 0.5rem 0.75rem; font-size: 0.8rem; border-bottom: 2px solid #ddd; }
+    td { padding: 0.45rem 0.75rem; border-bottom: 1px solid #eee; }
+    tr.total-row td { font-weight: 700; background: #f0f0f0; border-top: 2px solid #ccc; }
+    .note { font-size: 0.78rem; color: #666; border-top: 1px solid #eee; padding-top: 0.75rem; margin-top: 0.5rem; }
+    h3 { font-size: 0.9rem; letter-spacing: 0.05em; color: #333; margin: 1rem 0 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Consolidated Remittance Report — ${r.label}</h1>
+  <p class="sub">${r.period} &bull; ${r.employeeCount} employees</p>
+  <div class="summary">
+    <div class="sum-box"><div class="sum-label">Total Gross</div><div class="sum-value">${fmt(r.totalGross)}</div></div>
+    <div class="sum-box"><div class="sum-label">Total Net Pay</div><div class="sum-value">${fmt(r.totalNet)}</div></div>
+    <div class="sum-box"><div class="sum-label">Grand Remittance</div><div class="sum-value">${fmt(r.grandTotalRemittance)}</div></div>
+  </div>
+  <h3>Statutory Breakdown</h3>
+  <table>
+    <thead><tr><th>Statutory Item</th><th>Employee</th><th>Employer</th><th>Total Remittance</th></tr></thead>
+    <tbody>
+      <tr><td>National Insurance Scheme (NIS)</td><td>${fmt(r.totalEmployeeNis)}</td><td>${fmt(r.totalEmployerNis)}</td><td><strong>${fmt(r.totalNisRemittance)}</strong></td></tr>
+      <tr><td>National Housing Trust (NHT)</td><td>${fmt(r.totalEmployeeNht)}</td><td>${fmt(r.totalEmployerNht)}</td><td><strong>${fmt(r.totalNhtRemittance)}</strong></td></tr>
+      <tr><td>Education Tax</td><td>${fmt(r.totalEmployeeEdTax)}</td><td>${fmt(r.totalEmployerEdTax)}</td><td><strong>${fmt(r.totalEdTaxRemittance)}</strong></td></tr>
+      <tr><td>PAYE Income Tax</td><td>${fmt(r.totalEmployeePaye)}</td><td>—</td><td><strong>${fmt(r.totalPayeRemittance)}</strong></td></tr>
+      <tr><td>HEART Trust/NSTA</td><td>—</td><td>${fmt(r.totalEmployerHeart)}</td><td><strong>${fmt(r.totalHeartRemittance)}</strong></td></tr>
+      <tr class="total-row"><td>GRAND TOTAL</td><td>${fmt(totalEmp)}</td><td>${fmt(totalEr)}</td><td>${fmt(r.grandTotalRemittance)}</td></tr>
+    </tbody>
+  </table>
+  <p class="note">NIS, NHT, Education Tax and PAYE are remitted to the Tax Administration Jamaica (TAJ). HEART is remitted to the HEART Trust/NSTA.</p>
+</body>
+</html>`);
+    win.document.close();
+    win.focus();
+    win.print();
+    setTimeout(() => win.close(), 1000);
+  }
 
   // ── Tax Settings ────────────────────────────────────────────────────────────
 

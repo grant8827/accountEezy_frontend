@@ -350,7 +350,6 @@ import { environment } from '../../../environments/environment';
         <div class="leave-print-card" id="leave-print-area" (click)="$event.stopPropagation()">
           <div class="lp-header">
             <h2>LEAVE REQUEST FORM</h2>
-            <p class="lp-company">AccountEezy HR Management</p>
           </div>
           <hr>
           @if (selectedEmployee) {

@@ -257,6 +257,13 @@ import { AuthService, User } from '../../services/auth.service';
         width: 100%;
       }
     }
+
+    @media print {
+      .app-bar { display: none !important; }
+      .sidebar { display: none !important; }
+      .main-container { display: block !important; }
+      .content { overflow: visible !important; margin: 0 !important; padding: 0 !important; }
+    }
   `]
 })
 export class DashboardLayoutComponent {
