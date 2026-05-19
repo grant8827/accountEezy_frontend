@@ -27,7 +27,7 @@ import { AuthService, User } from '../../services/auth.service';
           <mat-icon>{{ menuOpen ? 'close' : 'menu' }}</mat-icon>
         </button>
 
-        <span class="title">AccountEezy Dashboard</span>
+        <span class="title">HRBooks360 Dashboard</span>
 
         <span class="spacer"></span>
 

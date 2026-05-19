@@ -7,8 +7,8 @@ import { environment } from '../../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly apiUrl = `${environment.apiUrl}/auth`;
-  private readonly tokenKey = 'accounteezy_token';
-  private readonly emailKey = 'accounteezy_email';
+  private readonly tokenKey = 'hrbooks360_token';
+  private readonly emailKey = 'hrbooks360_email';
 
   private tokenSignal = signal<string | null>(localStorage.getItem(this.tokenKey));
   private emailSignal = signal<string | null>(localStorage.getItem(this.emailKey));

@@ -9,7 +9,7 @@ export class SuperAdminGuard implements CanActivate {
   constructor(private authService: AuthService, private router: Router) {}
 
   canActivate(): boolean {
-    const token = localStorage.getItem('accounteezy_token');
+    const token = localStorage.getItem('hrbooks360_token');
     if (token && this.authService.isSuperAdmin()) {
       return true;
     }

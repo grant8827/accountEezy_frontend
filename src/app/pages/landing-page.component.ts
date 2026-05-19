@@ -15,7 +15,7 @@ import { MatIconModule } from '@angular/material/icon';
       <!-- Navigation -->
       <nav class="navbar">
         <div class="nav-container">
-          <h1 class="logo">AccountEezy</h1>
+          <h1 class="logo">HRBooks360</h1>
           <div class="nav-links">
             <a (click)="scrollTo('home')">Home</a>
             <a (click)="scrollTo('about')">About</a>
@@ -38,7 +38,7 @@ import { MatIconModule } from '@angular/material/icon';
 
       <!-- Features Section -->
       <section id="about" class="features">
-        <h2>Why Choose AccountEezy?</h2>
+        <h2>Why Choose HRBooks360?</h2>
         <div class="features-grid">
           <mat-card>
             <mat-icon>people</mat-icon>
@@ -178,13 +178,13 @@ import { MatIconModule } from '@angular/material/icon';
       <!-- Contact Section -->
       <section id="contact" class="contact">
         <h2>Get In Touch</h2>
-        <p>Email: support&#64;accounteezy.com</p>
+        <p>Email: support&#64;hrbooks360.com</p>
         <p>Phone: +1 (876) 555-0100</p>
       </section>
 
       <!-- Footer -->
       <footer class="footer">
-        <p>&copy; 2026 AccountEezy. All rights reserved.</p>
+        <p>&copy; 2026 HRBooks360. All rights reserved.</p>
       </footer>
     </div>
   `,

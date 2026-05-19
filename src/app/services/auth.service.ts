@@ -84,7 +84,7 @@ export class AuthService {
   }
 
   private checkExistingAuth(): void {
-    const token = localStorage.getItem('accounteezy_token');
+    const token = localStorage.getItem('hrbooks360_token');
     const userStr = localStorage.getItem('user');
 
     if (token && userStr && this.isTokenValid()) {
@@ -100,7 +100,7 @@ export class AuthService {
   }
 
   private isTokenValid(): boolean {
-    const token = localStorage.getItem('accounteezy_token');
+    const token = localStorage.getItem('hrbooks360_token');
     if (!token) return false;
 
     try {
@@ -119,9 +119,9 @@ export class AuthService {
       tap(response => {
         console.log('Login response:', response);
         if (response.success && response.data) {
-          // Only store accounteezy_token for admin/super-admin logins, not for employees
+          // Only store hrbooks360_token for admin/super-admin logins, not for employees
           if (!response.data.user.isEmployee || response.data.user.isAdmin || response.data.user.isSuperAdmin) {
-            localStorage.setItem('accounteezy_token', response.data.token);
+            localStorage.setItem('hrbooks360_token', response.data.token);
             localStorage.setItem('user', JSON.stringify(response.data.user));
             this.userSubject.next(response.data.user);
             this.isAuthenticatedSubject.next(true);
@@ -149,7 +149,7 @@ export class AuthService {
       tap(response => {
         console.log('Register response:', response);
         if (response.success && response.data) {
-          localStorage.setItem('accounteezy_token', response.data.token);
+          localStorage.setItem('hrbooks360_token', response.data.token);
           localStorage.setItem('user', JSON.stringify(response.data.user));
           this.userSubject.next(response.data.user);
           this.isAuthenticatedSubject.next(true);
@@ -169,7 +169,7 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem('accounteezy_token');
+    localStorage.removeItem('hrbooks360_token');
     localStorage.removeItem('token'); // remove legacy key if present
     localStorage.removeItem('user');
     this.userSubject.next(null);

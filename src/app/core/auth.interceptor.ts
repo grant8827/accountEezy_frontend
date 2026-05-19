@@ -22,7 +22,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     );
   }
 
-  const token = localStorage.getItem('accounteezy_token');
+  const token = localStorage.getItem('hrbooks360_token');
 
   const authReq = token
     ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })

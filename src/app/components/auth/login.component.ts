@@ -44,7 +44,7 @@ import { environment } from '../../../environments/environment';
               </defs>
             </svg>
           </div>
-          <span class="logo-text">AccountEezy</span>
+          <span class="logo-text">HRBooks360</span>
         </div>
 
         <!-- ─── LOGIN VIEW ─── -->

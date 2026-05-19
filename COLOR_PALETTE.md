@@ -1,4 +1,4 @@
-# Modern Color Palette - AccountEezy 2026
+# Modern Color Palette - HRBooks360 2026
 
 ## Overview
 The frontend has been updated with a modern, professional color scheme designed for contemporary business applications.

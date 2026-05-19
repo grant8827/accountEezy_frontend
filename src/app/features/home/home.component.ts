@@ -12,7 +12,7 @@ import { MatCardModule } from '@angular/material/card';
   template: `
     <div class="home-container">
       <div class="hero-section">
-        <h1>AccountEezy</h1>
+        <h1>HRBooks360</h1>
         <p class="tagline">Simplify Your Business Accounting</p>
         <p class="description">
           Manage employees, payroll, transactions, and tax records all in one place.

@@ -18,7 +18,7 @@ import { AuthService } from '../services/auth.service';
         <!-- Trial expired banner -->
         <div class="trial-banner" *ngIf="isTrialExpired">
           <span class="banner-icon">⏰</span>
-          <span>Your 30-day free trial has ended. Choose a plan below to continue using AccountEezy.</span>
+          <span>Your 30-day free trial has ended. Choose a plan below to continue using HRBooks360.</span>
         </div>
 
         <!-- Active trial notice -->
@@ -28,7 +28,7 @@ import { AuthService } from '../services/auth.service';
         </div>
 
         <h1>{{ isTrialExpired ? 'Upgrade to Continue' : 'Choose a Plan' }}</h1>
-        <p class="subtitle">{{ isTrialExpired ? 'Your free trial has expired. Subscribe now to regain full access.' : 'Unlock the full power of AccountEezy.' }}</p>
+        <p class="subtitle">{{ isTrialExpired ? 'Your free trial has expired. Subscribe now to regain full access.' : 'Unlock the full power of HRBooks360.' }}</p>
 
         <div class="plans">
           <!-- Starter Plan -->

@@ -1,6 +1,6 @@
-# AccountEezy Angular Frontend
+# HRBooks360 Angular Frontend
 
-This is the Angular frontend for AccountEezy, matching the structure and design of the React client.
+This is the Angular frontend for HRBooks360, matching the structure and design of the React client.
 
 ## Features
 
@@ -178,4 +178,4 @@ This Angular frontend is designed to be a 1:1 match with the React client in ter
 
 ## License
 
-Copyright © 2026 AccountEezy. All rights reserved.
+Copyright © 2026 HRBooks360. All rights reserved.

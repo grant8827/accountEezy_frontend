@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
         <div class="logo">
           <a routerLink="/">
             <span class="logo-icon">💼</span>
-            <span class="logo-text">Account<span class="logo-accent">Eezy</span></span>
+            <span class="logo-text">HRBooks<span class="logo-accent">360</span></span>
           </a>
         </div>
 

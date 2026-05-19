@@ -50,7 +50,7 @@ interface Stats {
               </linearGradient>
             </defs>
           </svg>
-          <span>AccountEezy <span class="sa-badge">Super Admin</span></span>
+          <span>HRBooks360 <span class="sa-badge">Super Admin</span></span>
         </div>
         <button class="btn-logout" (click)="logout()">
           <mat-icon>logout</mat-icon> Logout
