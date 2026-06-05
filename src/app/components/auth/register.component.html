@@ -16,7 +16,7 @@
         <div class="selected-plan-card">
           <h3>Selected Plan: {{ selectedPlan.name }}</h3>
           <p class="plan-price">
-            {{ formatCurrency(selectedPlan.price) }}/{{ selectedPlan.billing === 'monthly' ? 'month' : 'year' }}
+            {{ selectedPlan.price > 0 ? formatCurrency(selectedPlan.price) + '/' + (selectedPlan.billing === 'monthly' ? 'month' : 'year') : 'Custom quote' }}
           </p>
         </div>
       }
@@ -354,7 +354,7 @@
                 <div class="plan-details">
                   <p class="plan-name">{{ selectedPlan.name }}</p>
                   <p class="plan-price">
-                    {{ formatCurrency(selectedPlan.price) }}/{{ selectedPlan.billing === 'monthly' ? 'month' : 'year' }}
+                    {{ selectedPlan.price > 0 ? formatCurrency(selectedPlan.price) + '/' + (selectedPlan.billing === 'monthly' ? 'month' : 'year') : 'Custom quote' }}
                   </p>
                   <div class="plan-features">
                     @for (feature of selectedPlan.features; track feature) {
@@ -380,7 +380,7 @@
                 @if (loading) {
                   <mat-spinner diameter="24"></mat-spinner>
                 } @else {
-                  Complete Registration
+                  Continue to Payment
                 }
               </button>
             </div>

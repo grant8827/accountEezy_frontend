@@ -116,10 +116,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
         {
           label: 'Net Balance',
           data: balance,
-          borderColor: '#6366f1',
-          backgroundColor: 'rgba(99,102,241,0.08)',
+          borderColor: '#047857',
+          backgroundColor: 'rgba(4,120,87,0.08)',
           borderWidth: 2.5,
-          pointBackgroundColor: '#6366f1',
+          pointBackgroundColor: '#047857',
           pointRadius: 4,
           tension: 0.35,
           fill: false
@@ -135,7 +135,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       datasets: [
         {
           data: [s?.gctLiability ?? 0, s?.payrollTaxLiability ?? 0],
-          backgroundColor: ['#f59e0b', '#6366f1'],
+          backgroundColor: ['#f59e0b', '#047857'],
           borderColor: ['#fff', '#fff'],
           borderWidth: 3,
           hoverOffset: 8

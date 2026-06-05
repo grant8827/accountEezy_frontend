@@ -1,13 +1,13 @@
 /* ── Shell ─────────────────────────────────────────────── */
 .payroll-shell {
-  background: #f1f5f9;
+  background: var(--bg-app);
   min-height: 100vh;
   padding-bottom: 60px;
 }
 
 /* ── Header (reuse dashboard pattern) ────────────────────── */
 .page-header {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(135deg, var(--sidebar-bg) 0%, var(--sidebar-active-bg) 100%);
   padding: 40px 32px 36px;
 }
 .page-header-inner {
@@ -26,15 +26,15 @@
   margin: 0 0 4px;
   letter-spacing: -0.5px;
 }
-.page-sub { margin: 0; color: #94a3b8; font-size: 0.95rem; }
+.page-sub { margin: 0; color: var(--sidebar-text); font-size: 0.95rem; }
 .header-badge {
   display: flex; align-items: center; gap: 8px;
-  background: rgba(99,102,241,0.18); border: 1px solid rgba(99,102,241,0.4);
-  color: #a5b4fc; padding: 8px 16px; border-radius: 20px;
+  background: rgba(4,120,87,0.18); border: 1px solid rgba(4,120,87,0.4);
+  color: #BBF7D0; padding: 8px 16px; border-radius: 20px;
   font-size: 0.85rem; font-weight: 600; white-space: nowrap;
 }
 .badge-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: #10b981;
+  width: 8px; height: 8px; border-radius: 50%; background: #10B981;
   animation: pulse-dot 2s infinite;
 }
 @keyframes pulse-dot {
@@ -55,61 +55,62 @@
 
 /* ── Shared Card Styles ──────────────────────────────────── */
 .input-card, .result-card {
-  background: #fff;
-  border-radius: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
   padding: 28px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 3px rgba(28,25,23,0.06), 0 4px 12px rgba(28,25,23,0.04);
 }
 .card-title {
   margin: 0 0 20px;
   font-size: 1.05rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-main);
 }
 
 /* ── Input Card ──────────────────────────────────────────── */
 .calc-form { display: flex; flex-direction: column; gap: 16px; }
 .field-group { display: flex; flex-direction: column; gap: 6px; }
-.field-label { font-size: 0.8rem; font-weight: 600; color: #475569; letter-spacing: 0.04em; }
+.field-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.04em; }
 .field-input {
-  padding: 11px 14px; border: 1.5px solid #cbd5e1; border-radius: 8px;
-  font-size: 1rem; color: #0f172a; background: #fff; outline: none;
+  padding: 11px 14px; border: 1.5px solid var(--border-color); border-radius: 8px;
+  font-size: 1rem; color: var(--text-main); background: var(--bg-card); outline: none;
   transition: border-color 0.15s, box-shadow 0.15s; font-family: inherit;
   width: 100%; box-sizing: border-box;
 }
-.field-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+.field-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(4,120,87,0.12); }
 
 .btn-calc {
-  padding: 13px; background: linear-gradient(135deg, #6366f1, #4f46e5);
-  color: #fff; border: none; border-radius: 8px; font-size: 0.95rem;
+  padding: 13px; background: var(--color-primary);
+  color: var(--color-primary-text); border: none; border-radius: 8px; font-size: 0.95rem;
   font-weight: 600; cursor: pointer; font-family: inherit;
-  transition: opacity 0.18s, transform 0.15s;
+  transition: background 150ms ease, transform 150ms ease;
 }
-.btn-calc:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+.btn-calc:hover:not(:disabled) { background: var(--color-primary-hover); transform: translateY(-1px); }
 .btn-calc:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* ── Rates Reference ─────────────────────────────────────── */
 .rates-info {
   margin-top: 28px;
   padding-top: 24px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--border-color);
 }
 .rates-title {
   margin: 0 0 12px;
   font-size: 0.8rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 .rates-grid { display: flex; flex-direction: column; gap: 8px; }
 .rate-row {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 7px 12px; background: #f8fafc; border-radius: 7px;
+  padding: 7px 12px; background: var(--neutral-50); border-radius: 7px;
   font-size: 0.83rem;
 }
-.rate-label { font-weight: 600; color: #0f172a; }
-.rate-vals { color: #6366f1; font-weight: 600; }
+.rate-label { font-weight: 600; color: var(--text-main); }
+.rate-vals { color: var(--color-primary); font-weight: 600; }
 
 /* ── Result Card ─────────────────────────────────────────── */
 .result-card { min-height: 200px; }
@@ -119,40 +120,40 @@
 }
 .result-badge {
   font-size: 0.75rem; font-weight: 600;
-  background: #dcfce7; color: #15803d; padding: 3px 10px; border-radius: 12px;
+  background: var(--badge-success-bg); color: var(--badge-success-text); padding: 3px 10px; border-radius: 12px;
 }
 
 .result-section { margin-bottom: 20px; }
 .section-title {
   margin: 0 0 10px;
-  font-size: 0.78rem; font-weight: 700; color: #64748b;
+  font-size: 0.78rem; font-weight: 700; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: 0.08em;
 }
 
 .result-highlight {
-  background: linear-gradient(135deg, #0f172a, #1e293b);
+  background: linear-gradient(135deg, var(--sidebar-bg), var(--sidebar-active-bg));
   border-radius: 10px; padding: 16px 20px;
   display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 20px;
 }
-.rh-label { color: #94a3b8; font-size: 0.875rem; }
+.rh-label { color: var(--sidebar-text); font-size: 0.875rem; }
 .rh-value { color: #fff; font-size: 1.3rem; font-weight: 700; }
 
 .result-rows { display: flex; flex-direction: column; gap: 6px; }
 .result-row {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 8px 12px; background: #f8fafc; border-radius: 7px;
-  font-size: 0.875rem; color: #334155;
+  padding: 8px 12px; background: var(--neutral-50); border-radius: 7px;
+  font-size: 0.875rem; color: var(--text-main);
 }
 .result-row.subtotal {
-  background: #ede9fe; color: #4c1d95; font-weight: 700;
+  background: var(--badge-warning-bg); color: var(--badge-warning-text); font-weight: 700;
 }
 
 .result-total {
   display: flex; justify-content: space-between; align-items: center;
   padding: 14px 16px;
-  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-  border: 1.5px solid #86efac;
+  background: var(--badge-success-bg);
+  border: 1.5px solid #BBF7D0;
   border-radius: 10px; margin-top: 8px;
   font-weight: 700; font-size: 0.9rem; color: #166534;
 }

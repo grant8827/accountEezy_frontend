@@ -39,7 +39,7 @@ import { environment } from '../../../environments/environment';
               <path d="M9 22L14 10L19 18L22 14L26 22H9Z" fill="white" fill-opacity="0.9"/>
               <defs>
                 <linearGradient id="lg1" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#4F46E5"/><stop offset="1" stop-color="#06B6D4"/>
+                  <stop stop-color="var(--color-primary)"/><stop offset="1" stop-color="var(--accent-color)"/>
                 </linearGradient>
               </defs>
             </svg>
@@ -106,7 +106,7 @@ import { environment } from '../../../environments/environment';
 
             <p class="footer-text">
               Don't have an account?
-              <a routerLink="/register" class="link">Create account</a>
+              <a routerLink="/pricing" class="link">Create account</a>
             </p>
           </div>
         }
@@ -167,14 +167,14 @@ import { environment } from '../../../environments/environment';
     /* ── Root ── */
     .auth-root {
       min-height: 100vh;
-      background: #060B18;
+      background: var(--sidebar-bg);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 24px;
       position: relative;
       overflow: hidden;
-      font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+      font-family: var(--font-family);
     }
 
     /* ── Background orbs ── */
@@ -185,8 +185,8 @@ import { environment } from '../../../environments/environment';
       opacity: 0.35;
       pointer-events: none;
     }
-    .orb-left  { width: 480px; height: 480px; background: #4F46E5; top: -160px; left: -180px; }
-    .orb-right { width: 400px; height: 400px; background: #06B6D4; bottom: -120px; right: -120px; }
+    .orb-left  { width: 480px; height: 480px; background: var(--color-primary); top: -160px; left: -180px; }
+    .orb-right { width: 400px; height: 400px; background: var(--accent-color); bottom: -120px; right: -120px; }
 
     /* ── Card ── */
     .auth-card {
@@ -218,7 +218,7 @@ import { environment } from '../../../environments/environment';
     .logo-text {
       font-size: 1.25rem;
       font-weight: 700;
-      background: linear-gradient(135deg, #818CF8, #22D3EE);
+      background: linear-gradient(135deg, var(--primary-light), var(--accent-color));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -228,12 +228,12 @@ import { environment } from '../../../environments/environment';
     h1 {
       font-size: 1.75rem;
       font-weight: 700;
-      color: #F8FAFC;
+      color: var(--bg-app);
       margin: 0 0 6px;
     }
-    h2 { font-size: 1.3rem; font-weight: 700; color: #F8FAFC; margin: 0 0 6px; }
+    h2 { font-size: 1.3rem; font-weight: 700; color: var(--bg-app); margin: 0 0 6px; }
     .subtitle {
-      color: #94A3B8;
+      color: var(--sidebar-text);
       font-size: 0.9rem;
       margin: 0 0 28px;
     }
@@ -241,7 +241,7 @@ import { environment } from '../../../environments/environment';
     /* ── Form ── */
     .auth-form { display: flex; flex-direction: column; gap: 18px; }
     .field-wrap { display: flex; flex-direction: column; gap: 6px; }
-    label { font-size: 0.82rem; font-weight: 600; color: #CBD5E1; letter-spacing: 0.02em; }
+    label { font-size: 0.82rem; font-weight: 600; color: var(--neutral-300); letter-spacing: 0.02em; }
     .label-row { display: flex; justify-content: space-between; align-items: center; }
 
     .input-box {
@@ -254,12 +254,12 @@ import { environment } from '../../../environments/environment';
       transition: border-color 0.2s, box-shadow 0.2s;
     }
     .input-box:focus-within {
-      border-color: #6366F1;
-      box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(4,120,87,0.18);
     }
     .input-box.input-error { border-color: #F87171; }
     .input-box mat-icon {
-      color: #64748B;
+      color: var(--text-muted);
       padding: 0 10px 0 14px;
       font-size: 18px;
       width: 18px;
@@ -271,24 +271,24 @@ import { environment } from '../../../environments/environment';
       background: transparent;
       border: none;
       outline: none;
-      color: #F1F5F9;
+      color: var(--color-primary-text);
       font-size: 0.92rem;
       padding: 13px 12px 13px 0;
       font-family: inherit;
     }
-    .input-box input::placeholder { color: #475569; }
+    .input-box input::placeholder { color: var(--text-muted); }
 
     .eye-btn {
       background: transparent;
       border: none;
       cursor: pointer;
       padding: 0 12px;
-      color: #64748B;
+      color: var(--text-muted);
       display: flex;
       align-items: center;
       transition: color 0.2s;
     }
-    .eye-btn:hover { color: #94A3B8; }
+    .eye-btn:hover { color: var(--sidebar-text); }
     .eye-btn mat-icon { font-size: 18px; width: 18px; height: 18px; }
 
     .field-error { font-size: 0.78rem; color: #F87171; }
@@ -311,8 +311,8 @@ import { environment } from '../../../environments/environment';
     .btn-primary {
       width: 100%;
       padding: 13px;
-      background: linear-gradient(135deg, #4F46E5, #6366F1);
-      color: #fff;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary));
+      color: var(--bg-card);
       font-size: 0.95rem;
       font-weight: 600;
       border: none;
@@ -325,11 +325,11 @@ import { environment } from '../../../environments/environment';
       gap: 8px;
       margin-top: 4px;
       font-family: inherit;
-      box-shadow: 0 4px 14px rgba(79,70,229,0.35);
+      box-shadow: 0 4px 14px rgba(4,120,87,0.35);
     }
     .btn-primary:hover:not(:disabled) {
-      background: linear-gradient(135deg, #4338CA, #4F46E5);
-      box-shadow: 0 6px 20px rgba(79,70,229,0.5);
+      background: linear-gradient(135deg, var(--color-primary-hover), var(--color-primary));
+      box-shadow: 0 6px 20px rgba(4,120,87,0.5);
       transform: translateY(-1px);
     }
     .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
@@ -341,22 +341,22 @@ import { environment } from '../../../environments/environment';
       padding: 0;
       cursor: pointer;
       font-size: 0.8rem;
-      color: #818CF8;
+      color: var(--primary-light);
       font-weight: 500;
       font-family: inherit;
       transition: color 0.2s;
     }
-    .link-btn:hover { color: #A5B4FC; }
+    .link-btn:hover { color: var(--badge-success-bg); }
 
     /* ── Footer ── */
     .footer-text {
       text-align: center;
       margin-top: 22px;
       font-size: 0.85rem;
-      color: #64748B;
+      color: var(--text-muted);
     }
-    .link { color: #818CF8; text-decoration: none; font-weight: 600; margin-left: 4px; }
-    .link:hover { color: #A5B4FC; }
+    .link { color: var(--primary-light); text-decoration: none; font-weight: 600; margin-left: 4px; }
+    .link:hover { color: var(--badge-success-bg); }
 
     /* ── Back button ── */
     .back-btn {
@@ -365,7 +365,7 @@ import { environment } from '../../../environments/environment';
       gap: 4px;
       background: none;
       border: none;
-      color: #818CF8;
+      color: var(--primary-light);
       font-size: 0.85rem;
       font-weight: 500;
       cursor: pointer;
@@ -374,7 +374,7 @@ import { environment } from '../../../environments/environment';
       font-family: inherit;
       transition: color 0.2s;
     }
-    .back-btn:hover { color: #A5B4FC; }
+    .back-btn:hover { color: var(--badge-success-bg); }
     .back-btn mat-icon { font-size: 16px; width: 16px; height: 16px; }
 
     /* ── Forgot success ── */
@@ -397,9 +397,9 @@ import { environment } from '../../../environments/environment';
       justify-content: center;
       margin-bottom: 8px;
     }
-    .success-icon mat-icon { font-size: 32px; width: 32px; height: 32px; color: #4ADE80; }
-    .forgot-success p { color: #94A3B8; font-size: 0.88rem; max-width: 280px; }
-    .forgot-success strong { color: #F1F5F9; }
+    .success-icon mat-icon { font-size: 32px; width: 32px; height: 32px; color: var(--badge-success-bg); }
+    .forgot-success p { color: var(--sidebar-text); font-size: 0.88rem; max-width: 280px; }
+    .forgot-success strong { color: var(--color-primary-text); }
 
     /* ── Responsive ── */
     @media (max-width: 480px) {

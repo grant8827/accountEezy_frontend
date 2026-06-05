@@ -15,19 +15,19 @@
       </div>
 
       <h1 class="hero-title">
-        Accounting &amp;<br />
-        Payroll —&nbsp;<span class="gradient-text">Made Eezy.</span>
+        HR, Payroll &amp;<br />
+        Finance —&nbsp;<span class="gradient-text">In One Dashboard.</span>
       </h1>
 
       <p class="hero-sub">
-        The all-in-one platform built for Jamaican businesses. Automate NIS,
-        NHT, PAYE &amp; GCT, generate TAJ-ready reports and hit every
-        deadline — without the spreadsheets.
+        Run employee records, payroll, leave requests, transaction ledgers,
+        GCT tracking and TAJ-ready reports from one secure workspace built
+        for Jamaican businesses.
       </p>
 
       <div class="hero-cta">
-        <a class="btn btn-primary" [routerLink]="['/']" fragment="pricing">
-          Start for Free
+        <a class="btn btn-primary" routerLink="/pricing">
+          Get Started
           <span class="btn-arrow">→</span>
         </a>
         <a class="btn btn-outline" routerLink="/login">Sign In</a>
@@ -59,13 +59,14 @@
               <span class="kpi-change up">▲ 12.4%</span>
             </div>
             <div class="kpi kpi--tax">
-              <span class="kpi-label">Tax Liability</span>
+              <span class="kpi-label">Tax Liabilities</span>
               <span class="kpi-value red">J$94,150</span>
-              <span class="kpi-change">Due Mar 14</span>
+              <span class="kpi-change">GCT + Payroll</span>
             </div>
             <div class="kpi kpi--status">
-              <span class="kpi-label">SO1 Status</span>
-              <span class="kpi-pill">Filed ✔</span>
+              <span class="kpi-label">Cash Flow</span>
+              <span class="kpi-value">J$512,800</span>
+              <span class="kpi-change up">Healthy</span>
             </div>
           </div>
           <div class="dash-chart">
@@ -109,15 +110,15 @@
       <div class="float-card float-card--tl">
         <span class="fc-icon">🔔</span>
         <div>
-          <div class="fc-title">Deadline Reminder</div>
-          <div class="fc-sub">NHT payment due in 3 days</div>
+          <div class="fc-title">Leave Request</div>
+          <div class="fc-sub">2 approvals waiting in HR</div>
         </div>
       </div>
       <div class="float-card float-card--br">
         <span class="fc-icon">✅</span>
         <div>
-          <div class="fc-title">Payroll Processed</div>
-          <div class="fc-sub">12 employees · J$2.4M total</div>
+          <div class="fc-title">SO1 Summary Ready</div>
+          <div class="fc-sub">Payroll deductions prepared</div>
         </div>
       </div>
     </div>
@@ -129,23 +130,23 @@
 ══════════════════════════════════════════════════ -->
 <div class="stats-bar">
   <div class="stat">
-    <span class="stat-num">500+</span>
-    <span class="stat-label">Businesses Onboarded</span>
+    <span class="stat-num">360°</span>
+    <span class="stat-label">HR + Finance Workspace</span>
   </div>
   <div class="stat-sep"></div>
   <div class="stat">
-    <span class="stat-num">J$10B+</span>
-    <span class="stat-label">Payroll Processed</span>
+    <span class="stat-num">SO1</span>
+    <span class="stat-label">Payroll Report Preview</span>
   </div>
   <div class="stat-sep"></div>
   <div class="stat">
-    <span class="stat-num">99.9%</span>
-    <span class="stat-label">Compliance Accuracy</span>
+    <span class="stat-num">15%</span>
+    <span class="stat-label">GCT Auto Tracking</span>
   </div>
   <div class="stat-sep"></div>
   <div class="stat">
     <span class="stat-num">2026</span>
-    <span class="stat-label">TAJ Certified Rates</span>
+    <span class="stat-label">Jamaica Tax Year</span>
   </div>
 </div>
 
@@ -156,57 +157,57 @@
   <div class="container">
     <div class="section-header">
       <span class="section-tag">Features</span>
-      <h2>Everything your business needs</h2>
-      <p>Purpose-built for the Jamaican tax landscape — 2026 rates loaded out of the box.</p>
+      <h2>Matches the way your dashboard works</h2>
+      <p>Every landing-page promise maps to a real workspace inside HRBooks360.</p>
     </div>
 
     <div class="feature-grid">
       <div class="feature-card">
-        <div class="feature-icon-wrap" style="background: rgba(79,70,229,0.1);">
-          <span class="feature-icon">🏛️</span>
+        <div class="feature-icon-wrap" style="background: rgba(4,120,87,0.1);">
+          <span class="feature-icon">📈</span>
         </div>
-        <h3>Consolidated Payroll Tax</h3>
-        <p>Single-remittance model covering NIS, NHT, Education Tax, HEART and PAYE — aligned to Jamaica's 2026 consolidation.</p>
+        <h3>Business Overview</h3>
+        <p>Track net profit, tax liabilities, cash flow and GCT liability with live KPI cards and monthly charts.</p>
         <span class="feature-link">Learn more →</span>
       </div>
       <div class="feature-card">
-        <div class="feature-icon-wrap" style="background: rgba(6,182,212,0.1);">
-          <span class="feature-icon">📊</span>
+        <div class="feature-icon-wrap" style="background: rgba(217,119,6,0.1);">
+          <span class="feature-icon">👥</span>
         </div>
-        <h3>Real-Time Dashboard</h3>
-        <p>Live widgets for Net Profit, Tax Liabilities and Cash Flow with revenue vs expenses charts updated on every transaction.</p>
+        <h3>Employee Records</h3>
+        <p>Store employee details, salaries, job information and HR status in a structured employee workspace.</p>
         <span class="feature-link">Learn more →</span>
       </div>
       <div class="feature-card">
         <div class="feature-icon-wrap" style="background: rgba(16,185,129,0.1);">
-          <span class="feature-icon">🧾</span>
+          <span class="feature-icon">💳</span>
         </div>
-        <h3>GCT Auto-Tracking</h3>
-        <p>Toggle GCT per transaction. The 15% rate applies automatically, tracked separately in your tax ledger — no manual maths.</p>
+        <h3>Payroll Processing</h3>
+        <p>Calculate statutory deductions, run payroll, prepare payslips and feed payroll totals into reports.</p>
         <span class="feature-link">Learn more →</span>
       </div>
       <div class="feature-card">
         <div class="feature-icon-wrap" style="background: rgba(245,158,11,0.1);">
-          <span class="feature-icon">🧮</span>
+          <span class="feature-icon">🧾</span>
         </div>
-        <h3>Payroll Calculator</h3>
-        <p>Enter gross salary, instantly get employee net pay, all statutory deductions and the full employer cost — to the dollar.</p>
+        <h3>Transaction Ledger</h3>
+        <p>Record income and expenses, toggle GCT where needed, filter by frequency and export or print the ledger.</p>
         <span class="feature-link">Learn more →</span>
       </div>
       <div class="feature-card">
         <div class="feature-icon-wrap" style="background: rgba(239,68,68,0.1);">
           <span class="feature-icon">📋</span>
         </div>
-        <h3>SO1 &amp; SO2 Reports</h3>
-        <p>Aggregate payroll data to produce monthly SO1 and annual SO2 remittance summaries — ready for TAJ submission instantly.</p>
+        <h3>Reports &amp; Tax</h3>
+        <p>Preview SO1 payroll summaries, tax breakdowns and compliance checklists from the dashboard reports area.</p>
         <span class="feature-link">Learn more →</span>
       </div>
       <div class="feature-card feature-card--cta">
         <div class="feature-cta-inner">
-          <span class="feature-cta-icon">🚀</span>
-          <h3>Ready to get started?</h3>
-          <p>Join hundreds of Jamaican businesses running payroll on HRBooks360.</p>
-          <a class="btn btn-primary" routerLink="/register">Start Free Trial</a>
+          <span class="feature-cta-icon">🗓️</span>
+          <h3>HR self-service included</h3>
+          <p>Employees can view payslips, submit leave requests, read notices and access their profile.</p>
+          <a class="btn btn-primary" routerLink="/pricing">Start Free Trial</a>
         </div>
       </div>
     </div>
@@ -220,16 +221,16 @@
   <div class="container">
     <div class="section-header section-header--light">
       <span class="section-tag section-tag--light">How it Works</span>
-      <h2 class="text-light">Up and running in minutes</h2>
-      <p class="text-muted">No setup fees. No long contracts. No accountant required.</p>
+      <h2 class="text-light">From setup to reports</h2>
+      <p class="text-muted">Use the same flow your dashboard is built around.</p>
     </div>
 
     <div class="steps-grid">
       <div class="step-card">
         <div class="step-number">01</div>
         <div class="step-icon">🏢</div>
-        <h3>Register your business</h3>
-        <p>Create your account with your company name and TRN. JWT-secured from the first click.</p>
+        <h3>Create the company workspace</h3>
+        <p>Register the business, secure the account and set the foundation for HR and finance records.</p>
       </div>
       <div class="step-connector">
         <div class="connector-line"></div>
@@ -238,8 +239,8 @@
       <div class="step-card">
         <div class="step-number">02</div>
         <div class="step-icon">👥</div>
-        <h3>Add employees &amp; transactions</h3>
-        <p>Enter salaries and record income/expenses. All statutory calculations happen automatically.</p>
+        <h3>Add employees, payroll and ledger lines</h3>
+        <p>Enter employee records, process payroll and record transactions with GCT where applicable.</p>
       </div>
       <div class="step-connector">
         <div class="connector-line"></div>
@@ -248,8 +249,8 @@
       <div class="step-card">
         <div class="step-number">03</div>
         <div class="step-icon">📤</div>
-        <h3>Generate reports &amp; remit</h3>
-        <p>Pull SO1 monthly or SO2 annual returns any time. Deadline alerts fire automatically.</p>
+        <h3>Review dashboard reports</h3>
+        <p>Use the overview, tax breakdown and SO1 summary to monitor obligations before filing.</p>
       </div>
     </div>
   </div>
@@ -275,122 +276,6 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════
-     PRICING
-══════════════════════════════════════════════════ -->
-<section id="pricing" class="section section--light">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-tag">Pricing</span>
-      <h2>Simple, transparent pricing</h2>
-      <p>No hidden fees. Cancel anytime.</p>
-    </div>
-
-    <!-- Billing toggle -->
-    <div class="billing-toggle">
-      <span [class.toggle-label--active]="!yearly">Monthly</span>
-      <button class="toggle-switch" [class.toggle-switch--on]="yearly" (click)="yearly = !yearly" type="button">
-        <span class="toggle-thumb"></span>
-      </button>
-      <span [class.toggle-label--active]="yearly">
-        Yearly
-        <span class="save-badge" [style.opacity]="yearly ? 1 : 0.4">Save 20%</span>
-      </span>
-    </div>
-
-    <div class="pricing-grid">
-
-      <!-- Starter -->
-      <div class="pricing-card">
-        <div class="pricing-badge pricing-badge--starter">Starter</div>
-        <div class="pricing-price">
-          <span class="price-currency">$</span>
-          <span class="price-amount">{{ yearly ? (4500 * 12 * 0.8 | number:'1.0-0') : '4,500' }}</span>
-          <span class="price-period">/{{ yearly ? 'yr' : 'mo' }}</span>
-        </div>
-        <p class="pricing-desc">For small teams getting started with payroll.</p>
-        <ul class="pricing-features">
-          <li>✓ Up to 10 employees</li>
-          <li>✓ Full payroll automation</li>
-          <li>✓ GCT &amp; income tracking</li>
-          <li>✓ SO1 reports</li>
-          <li>✓ Email support</li>
-        </ul>
-        <a class="btn btn-outline w-full" routerLink="/register" [queryParams]="{plan: 'starter'}">Get Started</a>
-      </div>
-
-      <!-- Growth (featured) -->
-      <div class="pricing-card pricing-card--featured">
-        <div class="pricing-badge pricing-badge--growth">Most Popular</div>
-        <div class="pricing-price">
-          <span class="price-currency">$</span>
-          <span class="price-amount">{{ yearly ? (8500 * 12 * 0.8 | number:'1.0-0') : '8,500' }}</span>
-          <span class="price-period">/{{ yearly ? 'yr' : 'mo' }}</span>
-        </div>
-        <p class="pricing-desc">For growing businesses that need more power.</p>
-        <ul class="pricing-features">
-          <li>✓ Up to 25 employees</li>
-          <li>✓ Full payroll automation</li>
-          <li>✓ GCT &amp; income tracking</li>
-          <li>✓ SO1 &amp; SO2 reports</li>
-          <li>✓ Deadline alerts &amp; reminders</li>
-          <li>✓ Priority support</li>
-        </ul>
-        <a class="btn btn-primary w-full" routerLink="/register" [queryParams]="{plan: 'growth'}">Start 14-Day Trial</a>
-      </div>
-
-      <!-- Professional -->
-      <div class="pricing-card">
-        <div class="pricing-badge pricing-badge--professional">Professional</div>
-        <div class="pricing-price">
-          <span class="price-currency">$</span>
-          <span class="price-amount">{{ yearly ? (14500 * 12 * 0.8 | number:'1.0-0') : '14,500' }}</span>
-          <span class="price-period">/{{ yearly ? 'yr' : 'mo' }}</span>
-        </div>
-        <p class="pricing-desc">For established businesses with larger teams.</p>
-        <ul class="pricing-features">
-          <li>✓ Up to 35 employees</li>
-          <li>✓ Full payroll automation</li>
-          <li>✓ All reports &amp; exports</li>
-          <li>✓ Deadline alerts &amp; reminders</li>
-          <li>✓ Multi-admin access</li>
-          <li>✓ Priority support</li>
-        </ul>
-        <a class="btn btn-outline w-full" routerLink="/register" [queryParams]="{plan: 'professional'}">Get Started</a>
-      </div>
-
-      <!-- Custom -->
-      <div class="pricing-card pricing-card--custom">
-        <div class="pricing-badge pricing-badge--custom">Custom</div>
-        <div class="pricing-price">
-          <span class="price-currency">$</span>
-          <span class="price-amount">{{ yearly ? (customPrice * 12 * 0.8 | number:'1.0-0') : (customPrice | number:'1.0-0') }}</span>
-          <span class="price-period">/{{ yearly ? 'yr' : 'mo' }}</span>
-        </div>
-        <p class="pricing-desc">More than 35 employees? Build your own plan.</p>
-        <div class="employee-stepper">
-          <label class="stepper-label">Number of employees</label>
-          <div class="stepper-row">
-            <button type="button" class="stepper-btn" (click)="decrementEmployees()">−</button>
-            <input type="number" [(ngModel)]="customEmployees" (ngModelChange)="onEmployeesChange($event)" min="36" class="stepper-input" />
-            <button type="button" class="stepper-btn" (click)="incrementEmployees()">+</button>
-          </div>
-          <p class="stepper-note">Base $14,500 + $200 per employee over 35</p>
-        </div>
-        <ul class="pricing-features">
-          <li>✓ Unlimited employees</li>
-          <li>✓ Everything in Professional</li>
-          <li>✓ Dedicated account manager</li>
-          <li>✓ Custom integrations</li>
-          <li>✓ SLA guarantee</li>
-        </ul>
-        <a class="btn btn-outline w-full" routerLink="/register" [queryParams]="{plan: 'custom', employees: customEmployees}">Contact Sales</a>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════
      TESTIMONIALS
 ══════════════════════════════════════════════════ -->
 <section class="section section--gradient">
@@ -403,7 +288,7 @@
     <div class="testimonial-grid">
       <div class="testimonial-card">
         <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-text">"HRBooks360 cut our payroll processing time from half a day to 20 minutes. The SO1 reports are perfect every time."</p>
+        <p class="testimonial-text">"We can see payroll, leave requests and tax obligations without jumping between spreadsheets."</p>
         <div class="testimonial-author">
           <div class="author-avatar">KW</div>
           <div>
@@ -414,7 +299,7 @@
       </div>
       <div class="testimonial-card">
         <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-text">"Finally an accounting tool that actually knows Jamaican tax law. GCT tracking alone saves me hours every month."</p>
+        <p class="testimonial-text">"The transaction ledger and GCT tracking make month-end review much easier for our finance team."</p>
         <div class="testimonial-author">
           <div class="author-avatar">MC</div>
           <div>
@@ -425,7 +310,7 @@
       </div>
       <div class="testimonial-card">
         <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-text">"The deadline reminders have saved us from multiple TAJ penalties. I recommend it to every business owner I meet."</p>
+        <p class="testimonial-text">"Employees can check payslips and leave updates themselves, which cuts down on admin messages."</p>
         <div class="testimonial-author">
           <div class="author-avatar">DP</div>
           <div>
@@ -444,10 +329,10 @@
 <section class="cta-section">
   <div class="cta-glow"></div>
   <div class="cta-inner">
-    <h2>Ready to simplify your tax obligations?</h2>
-    <p>Join 500+ Jamaican businesses already running payroll on HRBooks360.</p>
+    <h2>Ready to run HR and finance from one place?</h2>
+    <p>Bring employees, payroll, transactions, leave requests and reports into one dashboard.</p>
     <div class="cta-actions">
-      <a class="btn btn-primary btn-xl" routerLink="/register">
+      <a class="btn btn-primary btn-xl" routerLink="/pricing">
         Create Your Free Account
         <span class="btn-arrow">→</span>
       </a>
@@ -464,14 +349,14 @@
   <div class="footer-inner">
     <div class="footer-brand">
       <div class="footer-logo">💼 HR<span class="logo-accent">Books360</span></div>
-      <p class="footer-tagline">Accounting &amp; payroll made simple for Jamaican businesses.</p>
+      <p class="footer-tagline">HR, payroll and financial tracking made simple for Jamaican businesses.</p>
     </div>
     <div class="footer-links">
       <div class="footer-col">
         <h4>Product</h4>
         <a routerLink="/features">Features</a>
-        <a [routerLink]="['/']" fragment="pricing">Pricing</a>
-        <a routerLink="/register">Get Started</a>
+        <a routerLink="/pricing">Pricing</a>
+        <a routerLink="/pricing">Get Started</a>
       </div>
       <div class="footer-col">
         <h4>Company</h4>

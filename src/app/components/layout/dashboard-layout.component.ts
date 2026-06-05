@@ -101,6 +101,18 @@ import { AuthService, User } from '../../services/auth.service';
               </a>
             }
           </nav>
+
+          <div class="sidebar-footer">
+            @if (user$ | async; as user) {
+              <div class="sidebar-profile">
+                <mat-icon>account_circle</mat-icon>
+                <div>
+                  <span class="profile-label">Signed in as</span>
+                  <strong>{{ $any(user).email ? $any(user).email.split('@')[0] : 'User' }}</strong>
+                </div>
+              </div>
+            }
+          </div>
         </aside>
 
         <!-- Content Area -->
@@ -115,15 +127,17 @@ import { AuthService, User } from '../../services/auth.service';
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      background: var(--bg-light);
+      background: var(--bg-app);
     }
 
     .app-bar {
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      box-shadow: 0 1px 3px rgba(28,25,23,0.12);
       z-index: 1001;
-      background: var(--primary-brand) !important;
+      background: var(--bg-card) !important;
+      color: var(--text-main) !important;
       position: sticky;
       top: 0;
+      border-bottom: 1px solid var(--border-color);
     }
 
     /* Hamburger hidden on desktop */
@@ -144,7 +158,7 @@ import { AuthService, User } from '../../services/auth.service';
     .welcome-text {
       margin-right: 1rem;
       font-size: 0.95rem;
-      color: rgba(255, 255, 255, 0.95);
+      color: var(--text-muted);
     }
 
     .main-container {
@@ -158,16 +172,19 @@ import { AuthService, User } from '../../services/auth.service';
     .sidebar {
       width: 260px;
       background: var(--sidebar-bg);
-      border-right: 1px solid rgba(255,255,255,0.14);
-      box-shadow: 2px 0 8px rgba(7,71,166,0.18);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 2px 0 12px rgba(28,25,23,0.18);
       overflow-y: auto;
       flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
     }
 
     .sidebar-nav {
       display: flex;
       flex-direction: column;
       padding: 1rem 0;
+      flex: 1;
     }
 
     .nav-link {
@@ -175,23 +192,23 @@ import { AuthService, User } from '../../services/auth.service';
       align-items: center;
       gap: 1rem;
       padding: 1rem 1.5rem;
-      color: rgba(255, 255, 255, 0.92);
+      color: var(--sidebar-text);
       text-decoration: none;
       font-size: 0.95rem;
       font-weight: 500;
-      transition: all 0.2s ease;
+      transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
       border-left: 3px solid transparent;
     }
 
     .nav-link:hover {
-      background: var(--primary-brand);
-      color: #ffffff;
+      background: var(--sidebar-active-bg);
+      color: var(--sidebar-active-text);
     }
 
     .nav-link.active {
-      background: var(--primary-brand);
-      color: #ffffff;
-      border-left-color: #ffffff;
+      background: var(--sidebar-active-bg);
+      color: var(--sidebar-active-text);
+      border-left-color: var(--color-primary);
       font-weight: 600;
     }
 
@@ -205,7 +222,43 @@ import { AuthService, User } from '../../services/auth.service';
     .content {
       flex: 1;
       overflow-y: auto;
-      background: var(--bg-light);
+      background: var(--bg-app);
+    }
+
+    .sidebar-footer {
+      border-top: 1px solid rgba(168, 162, 158, 0.24);
+      padding: 1rem 1.25rem;
+    }
+
+    .sidebar-profile {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--sidebar-active-text);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(168, 162, 158, 0.16);
+      border-radius: 12px;
+      padding: 0.75rem;
+    }
+
+    .sidebar-profile mat-icon {
+      color: var(--sidebar-text);
+    }
+
+    .profile-label {
+      display: block;
+      color: var(--sidebar-text);
+      font-size: 0.72rem;
+      margin-bottom: 0.15rem;
+    }
+
+    .sidebar-profile strong {
+      display: block;
+      max-width: 150px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 0.9rem;
     }
 
     /* Mobile backdrop */

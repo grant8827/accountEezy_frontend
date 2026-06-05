@@ -25,7 +25,7 @@ import { MatButtonModule } from '@angular/material/button';
   styles: [`
     .admin-panel {
       min-height: 100vh;
-      background: #060B18;
+      background: var(--sidebar-bg);
       padding: 2rem;
       max-width: 1200px;
       margin: 0 auto;
@@ -37,11 +37,11 @@ import { MatButtonModule } from '@angular/material/button';
       position: fixed; border-radius: 50%;
       filter: blur(130px); opacity: 0.28; pointer-events: none; z-index: 0;
     }
-    .orb-left  { width: 560px; height: 560px; background: #4F46E5; top: -200px; left: -200px; }
-    .orb-right { width: 440px; height: 440px; background: #06B6D4; bottom: -100px; right: -140px; }
+    .orb-left  { width: 560px; height: 560px; background: var(--color-primary); top: -200px; left: -200px; }
+    .orb-right { width: 440px; height: 440px; background: var(--accent-color); bottom: -100px; right: -140px; }
 
     h1 {
-      color: #F8FAFC;
+      color: var(--bg-app);
       margin-bottom: 2rem;
       font-weight: 800;
       font-size: 2.5rem;
@@ -60,18 +60,18 @@ import { MatButtonModule } from '@angular/material/button';
     }
 
     mat-card:hover {
-      border-color: rgba(99,102,241,0.35);
+      border-color: rgba(4,120,87,0.35);
       transform: translateY(-4px);
       box-shadow: 0 16px 48px rgba(0,0,0,0.3);
     }
 
     mat-card-title {
-      color: #F1F5F9 !important;
+      color: var(--color-primary-text) !important;
       font-weight: 700;
     }
 
     mat-card-content p {
-      color: #94A3B8;
+      color: var(--sidebar-text);
     }
   `]
 })

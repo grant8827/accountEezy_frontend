@@ -32,7 +32,7 @@ import { MatIconModule } from '@angular/material/icon';
         <div class="hero-content">
           <h1>Jamaica's Premier Financial Staffing System</h1>
           <p>Streamline your payroll, track employees, and manage finances with ease</p>
-          <button mat-raised-button color="primary" routerLink="/register">Start Free Trial</button>
+          <button mat-raised-button color="primary" routerLink="/pricing">Start Free Trial</button>
         </div>
       </section>
 
@@ -98,7 +98,7 @@ import { MatIconModule } from '@angular/material/icon';
                 <li>✓ SO1 reports</li>
                 <li>✓ Email support</li>
               </ul>
-              <a class="p-btn p-btn--outline" routerLink="/register" [queryParams]="{plan: 'starter'}">Get Started</a>
+              <a class="p-btn p-btn--outline" routerLink="/register" [queryParams]="{plan: 'starter', billing: yearly ? 'yearly' : 'monthly'}">Get Started</a>
             </div>
 
             <!-- Growth (featured) -->
@@ -118,7 +118,7 @@ import { MatIconModule } from '@angular/material/icon';
                 <li>✓ Deadline alerts &amp; reminders</li>
                 <li>✓ Priority support</li>
               </ul>
-              <a class="p-btn p-btn--primary" routerLink="/register" [queryParams]="{plan: 'growth'}">Start 14-Day Trial</a>
+              <a class="p-btn p-btn--primary" routerLink="/register" [queryParams]="{plan: 'growth', billing: yearly ? 'yearly' : 'monthly'}">Start 14-Day Trial</a>
             </div>
 
             <!-- Professional -->
@@ -138,7 +138,7 @@ import { MatIconModule } from '@angular/material/icon';
                 <li>✓ Multi-admin access</li>
                 <li>✓ Priority support</li>
               </ul>
-              <a class="p-btn p-btn--outline" routerLink="/register" [queryParams]="{plan: 'professional'}">Get Started</a>
+              <a class="p-btn p-btn--outline" routerLink="/register" [queryParams]="{plan: 'growth', billing: yearly ? 'yearly' : 'monthly'}">Get Started</a>
             </div>
 
             <!-- Custom -->
@@ -168,7 +168,7 @@ import { MatIconModule } from '@angular/material/icon';
                 <li>✓ Custom integrations</li>
                 <li>✓ SLA guarantee</li>
               </ul>
-              <a class="p-btn p-btn--outline" routerLink="/register" [queryParams]="{plan: 'custom', employees: customEmployees}">Contact Sales</a>
+              <a class="p-btn p-btn--outline" routerLink="/register" [queryParams]="{plan: 'custom', billing: yearly ? 'yearly' : 'monthly', employees: customEmployees}">Contact Sales</a>
             </div>
 
           </div><!-- /p-grid -->
@@ -192,7 +192,7 @@ import { MatIconModule } from '@angular/material/icon';
     .landing-page {
       width: 100%;
       min-height: 100vh;
-      background: #060B18;
+      background: var(--sidebar-bg);
       position: relative;
       overflow-x: hidden;
     }
@@ -204,7 +204,7 @@ import { MatIconModule } from '@angular/material/icon';
       left: -200px;
       width: 560px;
       height: 560px;
-      background: #4F46E5;
+      background: var(--color-primary);
       border-radius: 50%;
       filter: blur(130px);
       opacity: 0.28;
@@ -219,7 +219,7 @@ import { MatIconModule } from '@angular/material/icon';
       right: -140px;
       width: 440px;
       height: 440px;
-      background: #06B6D4;
+      background: var(--accent-color);
       border-radius: 50%;
       filter: blur(130px);
       opacity: 0.28;
@@ -249,7 +249,7 @@ import { MatIconModule } from '@angular/material/icon';
     }
 
     .logo {
-      background: linear-gradient(135deg, #818CF8, #22D3EE);
+      background: linear-gradient(135deg, var(--primary-light), var(--accent-color));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -265,7 +265,7 @@ import { MatIconModule } from '@angular/material/icon';
     }
 
     .nav-links a {
-      color: #94A3B8;
+      color: var(--sidebar-text);
       text-decoration: none;
       font-weight: 600;
       cursor: pointer;
@@ -273,7 +273,7 @@ import { MatIconModule } from '@angular/material/icon';
     }
 
     .nav-links a:hover {
-      color: #F1F5F9;
+      color: var(--color-primary-text);
     }
 
     .hero {
@@ -287,7 +287,7 @@ import { MatIconModule } from '@angular/material/icon';
       font-size: clamp(2.5rem, 5vw, 4rem);
       font-weight: 800;
       margin-bottom: 1.5rem;
-      background: linear-gradient(135deg, #F8FAFC, #818CF8);
+      background: linear-gradient(135deg, var(--bg-app), var(--primary-light));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -296,7 +296,7 @@ import { MatIconModule } from '@angular/material/icon';
     .hero-content p {
       font-size: 1.25rem;
       margin-bottom: 2.5rem;
-      color: #94A3B8;
+      color: var(--sidebar-text);
       max-width: 600px;
       margin-left: auto;
       margin-right: auto;
@@ -314,7 +314,7 @@ import { MatIconModule } from '@angular/material/icon';
       text-align: center;
       font-size: 2.5rem;
       margin-bottom: 3rem;
-      color: #F8FAFC;
+      color: var(--bg-app);
       font-weight: 800;
     }
 
@@ -335,7 +335,7 @@ import { MatIconModule } from '@angular/material/icon';
     }
 
     .features-grid mat-card:hover {
-      border-color: rgba(99,102,241,0.35);
+      border-color: rgba(4,120,87,0.35);
       transform: translateY(-4px);
       box-shadow: 0 16px 48px rgba(0,0,0,0.3);
     }
@@ -344,7 +344,7 @@ import { MatIconModule } from '@angular/material/icon';
       font-size: 48px;
       width: 48px;
       height: 48px;
-      background: linear-gradient(135deg, #4F46E5, #06B6D4);
+      background: linear-gradient(135deg, var(--color-primary), var(--accent-color));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -352,13 +352,13 @@ import { MatIconModule } from '@angular/material/icon';
     }
 
     .features-grid h3 {
-      color: #F1F5F9;
+      color: var(--color-primary-text);
       font-weight: 700;
       margin-bottom: 0.5rem;
     }
 
     .features-grid p {
-      color: #64748B;
+      color: var(--text-muted);
     }
 
     .contact {
@@ -373,13 +373,13 @@ import { MatIconModule } from '@angular/material/icon';
     .contact h2 {
       font-size: 2.5rem;
       margin-bottom: 2rem;
-      color: #F8FAFC;
+      color: var(--bg-app);
       font-weight: 800;
     }
 
     .contact p {
       font-size: 1.2rem;
-      color: #94A3B8;
+      color: var(--sidebar-text);
       margin: 0.5rem 0;
     }
 
@@ -394,7 +394,7 @@ import { MatIconModule } from '@angular/material/icon';
 
     .footer p {
       margin: 0;
-      color: #64748B;
+      color: var(--text-muted);
     }
 
     /* ── Pricing Section ── */
@@ -412,9 +412,9 @@ import { MatIconModule } from '@angular/material/icon';
       display: inline-block;
       padding: 4px 14px;
       border-radius: 100px;
-      background: rgba(99,102,241,0.15);
-      border: 1px solid rgba(99,102,241,0.3);
-      color: #A5B4FC;
+      background: rgba(4,120,87,0.15);
+      border: 1px solid rgba(4,120,87,0.3);
+      color: var(--badge-success-bg);
       font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.08em;
@@ -424,11 +424,11 @@ import { MatIconModule } from '@angular/material/icon';
     .pricing-section h2 {
       font-size: clamp(1.8rem, 4vw, 2.8rem);
       font-weight: 800;
-      color: #F8FAFC;
+      color: var(--bg-app);
       margin: 0 0 12px;
     }
     .pricing-sub {
-      color: #94A3B8;
+      color: var(--sidebar-text);
       font-size: 1rem;
       margin: 0 0 36px;
     }
@@ -443,17 +443,17 @@ import { MatIconModule } from '@angular/material/icon';
       border-radius: 100px;
       padding: 8px 20px;
       margin-bottom: 48px;
-      color: #64748B;
+      color: var(--text-muted);
       font-size: 0.9rem;
       font-weight: 600;
     }
-    .billing-toggle .toggle-active { color: #F1F5F9; }
+    .billing-toggle .toggle-active { color: var(--color-primary-text); }
     .toggle-switch {
       position: relative;
       width: 44px;
       height: 24px;
-      background: rgba(99,102,241,0.25);
-      border: 1px solid rgba(99,102,241,0.4);
+      background: rgba(4,120,87,0.25);
+      border: 1px solid rgba(4,120,87,0.4);
       border-radius: 100px;
       cursor: pointer;
       transition: background 0.25s;
@@ -461,8 +461,8 @@ import { MatIconModule } from '@angular/material/icon';
       outline: none;
     }
     .toggle-switch.on {
-      background: #4F46E5;
-      border-color: #4F46E5;
+      background: var(--color-primary);
+      border-color: var(--color-primary);
     }
     .toggle-thumb {
       position: absolute;
@@ -470,7 +470,7 @@ import { MatIconModule } from '@angular/material/icon';
       left: 3px;
       width: 16px;
       height: 16px;
-      background: #fff;
+      background: var(--bg-card);
       border-radius: 50%;
       transition: left 0.25s;
     }
@@ -479,7 +479,7 @@ import { MatIconModule } from '@angular/material/icon';
       display: inline-block;
       background: rgba(16,185,129,0.15);
       border: 1px solid rgba(16,185,129,0.3);
-      color: #34D399;
+      color: var(--color-primary);
       font-size: 0.7rem;
       font-weight: 700;
       padding: 2px 8px;
@@ -507,19 +507,19 @@ import { MatIconModule } from '@angular/material/icon';
       backdrop-filter: blur(16px);
     }
     .p-card:hover {
-      border-color: rgba(99,102,241,0.35);
+      border-color: rgba(4,120,87,0.35);
       transform: translateY(-4px);
       box-shadow: 0 16px 48px rgba(0,0,0,0.3);
     }
     .p-card--featured {
-      background: linear-gradient(180deg, #4F46E5 0%, #3730A3 100%);
+      background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
       border-color: transparent;
-      box-shadow: 0 20px 60px rgba(79,70,229,0.5);
+      box-shadow: 0 20px 60px rgba(4,120,87,0.5);
       transform: translateY(-12px);
     }
     .p-card--featured:hover { transform: translateY(-18px); }
     .p-card--custom {
-      border-color: rgba(6,182,212,0.3);
+      border-color: rgba(217,119,6,0.3);
     }
 
     /* ── Badge ── */
@@ -533,10 +533,10 @@ import { MatIconModule } from '@angular/material/icon';
       text-transform: uppercase;
       margin-bottom: 20px;
     }
-    .p-badge--starter    { background: rgba(99,102,241,0.15); color: #818CF8; }
-    .p-badge--growth     { background: rgba(255,255,255,0.2); color: #fff; }
-    .p-badge--pro        { background: rgba(99,102,241,0.15); color: #818CF8; }
-    .p-badge--custom     { background: rgba(6,182,212,0.15); color: #22D3EE; }
+    .p-badge--starter    { background: rgba(4,120,87,0.15); color: var(--primary-light); }
+    .p-badge--growth     { background: rgba(255,255,255,0.2); color: var(--bg-card); }
+    .p-badge--pro        { background: rgba(4,120,87,0.15); color: var(--primary-light); }
+    .p-badge--custom     { background: rgba(217,119,6,0.15); color: var(--accent-color); }
 
     /* ── Price ── */
     .p-price {
@@ -546,17 +546,17 @@ import { MatIconModule } from '@angular/material/icon';
       margin-bottom: 12px;
       line-height: 1;
     }
-    .p-currency { font-size: 1.2rem; font-weight: 700; color: #F1F5F9; align-self: flex-start; margin-top: 6px; }
-    .p-amount   { font-size: 2.6rem; font-weight: 900; color: #F1F5F9; }
-    .p-period   { font-size: 0.85rem; color: #94A3B8; margin-bottom: 4px; }
+    .p-currency { font-size: 1.2rem; font-weight: 700; color: var(--color-primary-text); align-self: flex-start; margin-top: 6px; }
+    .p-amount   { font-size: 2.6rem; font-weight: 900; color: var(--color-primary-text); }
+    .p-period   { font-size: 0.85rem; color: var(--sidebar-text); margin-bottom: 4px; }
     .p-card--featured .p-currency,
-    .p-card--featured .p-amount { color: #fff; }
+    .p-card--featured .p-amount { color: var(--bg-card); }
     .p-card--featured .p-period { color: rgba(255,255,255,0.65); }
 
     /* ── Desc ── */
     .p-desc {
       font-size: 0.875rem;
-      color: #64748B;
+      color: var(--text-muted);
       line-height: 1.6;
       margin: 0 0 20px;
     }
@@ -571,7 +571,7 @@ import { MatIconModule } from '@angular/material/icon';
       flex-direction: column;
       gap: 9px;
     }
-    .p-features li { font-size: 0.85rem; color: #CBD5E1; }
+    .p-features li { font-size: 0.85rem; color: var(--neutral-300); }
     .p-card--featured .p-features li { color: rgba(255,255,255,0.85); }
 
     /* ── Buttons ── */
@@ -590,24 +590,24 @@ import { MatIconModule } from '@angular/material/icon';
       box-sizing: border-box;
     }
     .p-btn--outline {
-      border: 1.5px solid rgba(99,102,241,0.4);
-      color: #818CF8;
+      border: 1.5px solid rgba(4,120,87,0.4);
+      color: var(--primary-light);
       background: transparent;
     }
     .p-btn--outline:hover {
-      background: rgba(99,102,241,0.1);
-      border-color: #6366F1;
-      color: #A5B4FC;
+      background: rgba(4,120,87,0.1);
+      border-color: var(--color-primary);
+      color: var(--badge-success-bg);
       transform: translateY(-1px);
     }
     .p-btn--primary {
-      background: #fff;
-      color: #4F46E5;
+      background: var(--bg-card);
+      color: var(--color-primary);
       border: none;
       box-shadow: 0 4px 14px rgba(0,0,0,0.15);
     }
     .p-btn--primary:hover {
-      background: #EEF2FF;
+      background: var(--badge-success-bg);
       transform: translateY(-2px);
       box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     }
@@ -619,7 +619,7 @@ import { MatIconModule } from '@angular/material/icon';
     .employee-input-wrap label {
       display: block;
       font-size: 0.8rem;
-      color: #94A3B8;
+      color: var(--sidebar-text);
       font-weight: 600;
       margin-bottom: 8px;
       text-transform: uppercase;
@@ -634,9 +634,9 @@ import { MatIconModule } from '@angular/material/icon';
       width: 32px;
       height: 32px;
       border-radius: 8px;
-      border: 1px solid rgba(6,182,212,0.4);
-      background: rgba(6,182,212,0.1);
-      color: #22D3EE;
+      border: 1px solid rgba(217,119,6,0.4);
+      background: rgba(217,119,6,0.1);
+      color: var(--accent-color);
       font-size: 1.1rem;
       font-weight: 700;
       cursor: pointer;
@@ -646,15 +646,15 @@ import { MatIconModule } from '@angular/material/icon';
       justify-content: center;
     }
     .qty-btn:hover {
-      background: rgba(6,182,212,0.2);
-      border-color: #22D3EE;
+      background: rgba(217,119,6,0.2);
+      border-color: var(--accent-color);
     }
     .qty-input {
       width: 64px;
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.15);
       border-radius: 8px;
-      color: #F1F5F9;
+      color: var(--color-primary-text);
       font-size: 1rem;
       font-weight: 700;
       text-align: center;
@@ -665,7 +665,7 @@ import { MatIconModule } from '@angular/material/icon';
     .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; }
     .custom-note {
       font-size: 0.75rem;
-      color: #64748B;
+      color: var(--text-muted);
       margin: 6px 0 0;
     }
     .custom-price-wrap {

@@ -11,6 +11,9 @@ import { DashboardLayoutComponent } from './components/layout/dashboard-layout.c
 import { EmployeeDashboardLayoutComponent } from './components/layout/employee-dashboard-layout.component';
 import { AdminPanelComponent } from './pages/admin-panel.component';
 import { PaymentPageComponent } from './pages/payment-page.component';
+import { PricingPageComponent } from './pages/pricing-page.component';
+import { AboutPageComponent } from './pages/about-page.component';
+import { FeaturesPageComponent } from './pages/features-page.component';
 import { DebugEnvPageComponent } from './pages/debug-env-page.component';
 import { BusinessListComponent } from './components/business/business-list.component';
 import { EmployeeListComponent } from './components/employees/employee-list.component';
@@ -34,7 +37,9 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'employee-login', redirectTo: 'login', pathMatch: 'full' },
-  { path: 'pricing', redirectTo: '/', pathMatch: 'full' },
+  { path: 'pricing', component: PricingPageComponent },
+  { path: 'about', component: AboutPageComponent },
+  { path: 'features', component: FeaturesPageComponent },
   { path: 'payment', component: PaymentPageComponent },
   { path: 'debug-env', component: DebugEnvPageComponent },
   { path: 'api-test', component: ApiTestComponent },

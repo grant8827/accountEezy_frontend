@@ -324,8 +324,8 @@ interface LeaveRequest {
       height: 2rem;
     }
 
-    .stat-card.pending mat-icon { color: #f59e0b; }
-    .stat-card.approved mat-icon { color: #10b981; }
+    .stat-card.pending mat-icon { color: var(--warning-amber); }
+    .stat-card.approved mat-icon { color: var(--color-primary); }
     .stat-card.rejected mat-icon { color: #ef4444; }
     .stat-card.total mat-icon { color: #667eea; }
 
@@ -359,8 +359,8 @@ interface LeaveRequest {
     }
 
     .leave-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .leave-card.leave-pending { border-left-color: #f59e0b; }
-    .leave-card.leave-approved { border-left-color: #10b981; }
+    .leave-card.leave-pending { border-left-color: var(--warning-amber); }
+    .leave-card.leave-approved { border-left-color: var(--color-primary); }
     .leave-card.leave-rejected { border-left-color: #ef4444; }
 
     .leave-card-header {
@@ -416,8 +416,8 @@ interface LeaveRequest {
       height: 28px;
     }
 
-    .status-chip.status-pending { background: #fef3c7 !important; color: #92400e !important; }
-    .status-chip.status-approved { background: #d1fae5 !important; color: #065f46 !important; }
+    .status-chip.status-pending { background: var(--badge-warning-bg) !important; color: var(--badge-warning-text) !important; }
+    .status-chip.status-approved { background: var(--badge-success-bg) !important; color: var(--badge-success-text) !important; }
     .status-chip.status-rejected { background: #fee2e2 !important; color: #991b1b !important; }
 
     .leave-details {
@@ -598,8 +598,8 @@ interface LeaveRequest {
       border-radius: 4px;
     }
 
-    .lp-status-pending  { background: #fef3c7; color: #92400e; }
-    .lp-status-approved { background: #d1fae5; color: #065f46; }
+    .lp-status-pending  { background: var(--badge-warning-bg); color: var(--badge-warning-text); }
+    .lp-status-approved { background: var(--badge-success-bg); color: var(--badge-success-text); }
     .lp-status-rejected { background: #fee2e2; color: #991b1b; }
 
     .lp-signatures {
@@ -815,8 +815,8 @@ export class LeaveRequestsComponent implements OnInit {
     .lp-label { font-weight: 600; min-width: 160px; flex-shrink: 0; color: #333; }
     .lp-value { color: #111; }
     .lp-status { font-weight: 700; font-size: 1rem; padding: 0.2rem 0.75rem; border-radius: 4px; }
-    .lp-status-pending  { background: #fef3c7; color: #92400e; }
-    .lp-status-approved { background: #d1fae5; color: #065f46; }
+    .lp-status-pending  { background: var(--badge-warning-bg); color: var(--badge-warning-text); }
+    .lp-status-approved { background: var(--badge-success-bg); color: var(--badge-success-text); }
     .lp-status-rejected { background: #fee2e2; color: #991b1b; }
     .lp-signatures { display: flex; gap: 2rem; margin: 2rem 0 1rem; }
     .lp-sig-block { flex: 1; text-align: center; }

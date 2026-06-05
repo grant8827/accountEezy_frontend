@@ -7,7 +7,7 @@
 /* ── Left Panel ──────────────────────────────────────────── */
 .auth-left {
   flex: 1;
-  background: linear-gradient(160deg, #0f172a 0%, #1e293b 60%, #312e81 100%);
+  background: linear-gradient(160deg, var(--sidebar-bg) 0%, var(--sidebar-active-bg) 60%, #312e81 100%);
   display: flex;
   align-items: center;
   padding: 60px 56px;
@@ -24,30 +24,30 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
   font-size: 0.85rem;
-  color: #fff;
+  color: var(--bg-card);
 }
 .brand-name {
   font-weight: 700;
   font-size: 1.1rem;
-  color: #e2e8f0;
+  color: var(--border-color);
 }
 
 .auth-headline {
   font-size: clamp(1.6rem, 3vw, 2.2rem);
   font-weight: 800;
-  color: #fff;
+  color: var(--bg-card);
   line-height: 1.2;
   letter-spacing: -0.5px;
   margin: 0 0 16px;
 }
 .auth-tagline {
-  color: #94a3b8;
+  color: var(--sidebar-text);
   font-size: 0.95rem;
   line-height: 1.6;
   margin: 0 0 32px;
@@ -72,14 +72,14 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #6366f1;
+  background: var(--color-primary);
   flex-shrink: 0;
 }
 
 /* ── Right Panel ─────────────────────────────────────────── */
 .auth-right {
   width: 480px;
-  background: #f8fafc;
+  background: var(--bg-app);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -94,7 +94,7 @@
 .auth-tabs {
   display: flex;
   gap: 4px;
-  background: #e2e8f0;
+  background: var(--border-color);
   border-radius: 10px;
   padding: 4px;
   margin-bottom: 28px;
@@ -107,13 +107,13 @@
   border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.18s;
 }
 .tab-btn.active {
-  background: #fff;
-  color: #0f172a;
+  background: var(--bg-card);
+  color: var(--sidebar-bg);
   box-shadow: 0 1px 4px rgba(0,0,0,0.1);
 }
 
@@ -136,20 +136,20 @@
 .field-label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--text-muted);
   letter-spacing: 0.03em;
 }
 .hint {
   font-weight: 400;
-  color: #94a3b8;
+  color: var(--sidebar-text);
 }
 .field-input {
   padding: 10px 14px;
   border: 1.5px solid #cbd5e1;
   border-radius: 8px;
   font-size: 0.9rem;
-  color: #0f172a;
-  background: #fff;
+  color: var(--sidebar-bg);
+  background: var(--bg-card);
   transition: border-color 0.15s, box-shadow 0.15s;
   outline: none;
   width: 100%;
@@ -157,16 +157,16 @@
   font-family: inherit;
 }
 .field-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(4,120,87,0.12);
 }
-.field-input::placeholder { color: #94a3b8; }
+.field-input::placeholder { color: var(--sidebar-text); }
 
 .btn-primary {
   margin-top: 4px;
   padding: 12px;
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
-  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary));
+  color: var(--bg-card);
   border: none;
   border-radius: 8px;
   font-size: 0.95rem;

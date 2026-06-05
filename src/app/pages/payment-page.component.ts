@@ -1,9 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../services/auth.service';
+import { environment } from '../../environments/environment';
+
+interface SelectedPlan {
+  key: string;
+  name: string;
+  price: number;
+  billing: 'monthly' | 'yearly';
+  features: string[];
+}
+
+interface CheckoutSessionResponse {
+  sessionId: string;
+  url: string;
+}
 
 @Component({
   selector: 'app-payment-page',
@@ -15,6 +30,10 @@ import { AuthService } from '../services/auth.service';
       <div class="orb orb-right"></div>
 
       <div class="content">
+        <div class="top-bar">
+          <a routerLink="/pricing" class="back-to-pricing">← Back to pricing</a>
+        </div>
+
         <!-- Trial expired banner -->
         <div class="trial-banner" *ngIf="isTrialExpired">
           <span class="banner-icon">⏰</span>
@@ -27,80 +46,52 @@ import { AuthService } from '../services/auth.service';
           <span>You have <strong>{{ daysLeft }} day{{ daysLeft === 1 ? '' : 's' }}</strong> remaining in your free trial.</span>
         </div>
 
-        <h1>{{ isTrialExpired ? 'Upgrade to Continue' : 'Choose a Plan' }}</h1>
-        <p class="subtitle">{{ isTrialExpired ? 'Your free trial has expired. Subscribe now to regain full access.' : 'Unlock the full power of HRBooks360.' }}</p>
-
-        <div class="plans">
-          <!-- Starter Plan -->
-          <mat-card class="plan-card">
-            <mat-card-content>
-              <div class="plan-badge">Starter</div>
-              <div class="plan-price">
-                <span class="currency">$</span>
-                <span class="amount">19</span>
-                <span class="period">/mo</span>
-              </div>
-              <ul class="plan-features">
-                <li>✓ Up to 10 employees</li>
-                <li>✓ Payroll processing</li>
-                <li>✓ Basic tax reports</li>
-                <li>✓ Email support</li>
-              </ul>
-              <button mat-raised-button class="btn-plan">Get Started</button>
-            </mat-card-content>
-          </mat-card>
-
-          <!-- Pro Plan -->
-          <mat-card class="plan-card featured">
-            <div class="popular-label">Most Popular</div>
-            <mat-card-content>
-              <div class="plan-badge">Pro</div>
-              <div class="plan-price">
-                <span class="currency">$</span>
-                <span class="amount">49</span>
-                <span class="period">/mo</span>
-              </div>
-              <ul class="plan-features">
-                <li>✓ Unlimited employees</li>
-                <li>✓ Advanced payroll & tax</li>
-                <li>✓ SO1 & SO2 reports</li>
-                <li>✓ Leave management</li>
-                <li>✓ Priority support</li>
-              </ul>
-              <button mat-raised-button class="btn-plan btn-featured">Upgrade to Pro</button>
-            </mat-card-content>
-          </mat-card>
-
-          <!-- Enterprise Plan -->
-          <mat-card class="plan-card">
-            <mat-card-content>
-              <div class="plan-badge">Enterprise</div>
-              <div class="plan-price">
-                <span class="currency">$</span>
-                <span class="amount">99</span>
-                <span class="period">/mo</span>
-              </div>
-              <ul class="plan-features">
-                <li>✓ Everything in Pro</li>
-                <li>✓ Multi-business support</li>
-                <li>✓ Custom integrations</li>
-                <li>✓ Dedicated account manager</li>
-              </ul>
-              <button mat-raised-button class="btn-plan">Contact Sales</button>
-            </mat-card-content>
-          </mat-card>
-        </div>
-
-        <p class="back-link" *ngIf="!isTrialExpired">
-          <a routerLink="/dashboard">← Back to Dashboard</a>
+        <h1>{{ selectedPlan ? 'Complete Payment' : 'Choose a Package First' }}</h1>
+        <p class="subtitle">
+          {{ selectedPlan ? 'Review your package, then continue to secure Stripe checkout.' : 'Pick a package before starting checkout.' }}
         </p>
+
+        @if (paymentError) {
+          <div class="payment-error">{{ paymentError }}</div>
+        }
+
+        @if (selectedPlan) {
+          <mat-card class="checkout-card">
+            <mat-card-content>
+              <div class="plan-badge">{{ selectedPlan.name }}</div>
+              <div class="plan-price">
+                @if (selectedPlan.price > 0) {
+                  <span class="currency">J$</span>
+                  <span class="amount">{{ selectedPlan.price | number:'1.0-0' }}</span>
+                  <span class="period">/{{ selectedPlan.billing === 'yearly' ? 'yr' : 'mo' }}</span>
+                } @else {
+                  <span class="amount custom-amount">Custom</span>
+                }
+              </div>
+              <ul class="plan-features">
+                <li *ngFor="let feature of selectedPlan.features">✓ {{ feature }}</li>
+              </ul>
+
+              @if (selectedPlan.key === 'custom') {
+                <p class="custom-note">Custom packages need a quick setup call before payment.</p>
+                <a class="btn-plan btn-featured contact-link" href="mailto:sales@hrbooks360.com">Contact Sales</a>
+              } @else {
+                <button mat-raised-button class="btn-plan btn-featured" type="button" (click)="startCheckout()" [disabled]="loading">
+                  {{ loading ? 'Starting checkout...' : 'Continue to Stripe Checkout' }}
+                </button>
+              }
+            </mat-card-content>
+          </mat-card>
+        } @else {
+          <a class="btn-plan btn-featured choose-link" routerLink="/pricing">View Packages</a>
+        }
       </div>
     </div>
   `,
   styles: [`
     .payment-page {
       min-height: 100vh;
-      background: #060B18;
+      background: var(--sidebar-bg);
       position: relative;
       overflow-x: hidden;
     }
@@ -109,8 +100,8 @@ import { AuthService } from '../services/auth.service';
       position: fixed; border-radius: 50%;
       filter: blur(130px); opacity: 0.28; pointer-events: none; z-index: 0;
     }
-    .orb-left  { width: 560px; height: 560px; background: #4F46E5; top: -200px; left: -200px; }
-    .orb-right { width: 440px; height: 440px; background: #06B6D4; bottom: -100px; right: -140px; }
+    .orb-left  { width: 560px; height: 560px; background: var(--color-primary); top: -200px; left: -200px; }
+    .orb-right { width: 440px; height: 440px; background: var(--accent-color); bottom: -100px; right: -140px; }
 
     .content {
       position: relative;
@@ -120,6 +111,20 @@ import { AuthService } from '../services/auth.service';
       padding: 3rem 2rem;
       text-align: center;
     }
+
+    .top-bar {
+      text-align: left;
+      margin-bottom: 2rem;
+    }
+
+    .back-to-pricing {
+      color: var(--sidebar-text);
+      font-size: 0.9rem;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .back-to-pricing:hover { color: var(--color-primary-text); }
 
     .trial-banner {
       background: rgba(239, 68, 68, 0.12);
@@ -152,26 +157,21 @@ import { AuthService } from '../services/auth.service';
     .banner-icon { font-size: 1.25rem; flex-shrink: 0; }
 
     h1 {
-      color: #F8FAFC;
+      color: var(--bg-app);
       font-weight: 800;
       font-size: 2.5rem;
       margin-bottom: 0.75rem;
     }
 
     .subtitle {
-      color: #94A3B8;
+      color: var(--sidebar-text);
       font-size: 1.1rem;
       margin-bottom: 3rem;
     }
 
-    .plans {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2.5rem;
-    }
-
-    .plan-card {
+    .checkout-card {
+      width: min(520px, 100%);
+      margin: 0 auto 2.5rem;
       background: rgba(255,255,255,0.04) !important;
       border: 1px solid rgba(255,255,255,0.1) !important;
       backdrop-filter: blur(16px);
@@ -182,34 +182,14 @@ import { AuthService } from '../services/auth.service';
       text-align: center;
     }
 
-    .plan-card:hover {
-      border-color: rgba(99,102,241,0.4) !important;
+    .checkout-card:hover {
+      border-color: rgba(4,120,87,0.4) !important;
       transform: translateY(-6px);
       box-shadow: 0 24px 60px rgba(0,0,0,0.35);
     }
 
-    .plan-card.featured {
-      border-color: rgba(99,102,241,0.5) !important;
-      background: rgba(99,102,241,0.08) !important;
-    }
-
-    .popular-label {
-      position: absolute;
-      top: -14px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(90deg, #4F46E5, #06B6D4);
-      color: #fff;
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 4px 16px;
-      border-radius: 20px;
-      white-space: nowrap;
-      letter-spacing: 0.04em;
-    }
-
     .plan-badge {
-      color: #94A3B8;
+      color: var(--sidebar-text);
       font-size: 0.85rem;
       font-weight: 600;
       letter-spacing: 0.1em;
@@ -225,9 +205,9 @@ import { AuthService } from '../services/auth.service';
       margin-bottom: 1.5rem;
     }
 
-    .currency { color: #94A3B8; font-size: 1.25rem; margin-top: 0.5rem; }
-    .amount { color: #F8FAFC; font-size: 3rem; font-weight: 800; line-height: 1; }
-    .period { color: #94A3B8; font-size: 1rem; align-self: flex-end; margin-bottom: 0.5rem; }
+    .currency { color: var(--sidebar-text); font-size: 1.25rem; margin-top: 0.5rem; }
+    .amount { color: var(--bg-app); font-size: 3rem; font-weight: 800; line-height: 1; }
+    .period { color: var(--sidebar-text); font-size: 1rem; align-self: flex-end; margin-bottom: 0.5rem; }
 
     .plan-features {
       list-style: none;
@@ -237,15 +217,18 @@ import { AuthService } from '../services/auth.service';
     }
 
     .plan-features li {
-      color: #CBD5E1;
+      color: var(--neutral-300);
       padding: 0.4rem 0;
       font-size: 0.9rem;
     }
 
     .btn-plan {
       width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       background: rgba(255,255,255,0.08) !important;
-      color: #F8FAFC !important;
+      color: var(--bg-app) !important;
       border-radius: 10px !important;
       padding: 0.6rem 0 !important;
       font-weight: 600 !important;
@@ -255,28 +238,45 @@ import { AuthService } from '../services/auth.service';
     .btn-plan:hover { background: rgba(255,255,255,0.14) !important; }
 
     .btn-featured {
-      background: linear-gradient(90deg, #4F46E5, #06B6D4) !important;
-      color: #fff !important;
+      background: linear-gradient(90deg, var(--color-primary), var(--accent-color)) !important;
+      color: var(--bg-card) !important;
     }
 
     .btn-featured:hover { opacity: 0.88; }
 
-    .back-link a {
-      color: #818CF8;
-      text-decoration: none;
-      font-size: 0.9rem;
+    .payment-error {
+      width: min(520px, 100%);
+      margin: 0 auto 1.5rem;
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(248,113,113,0.3);
+      background: rgba(248,113,113,0.12);
+      color: #FCA5A5;
+      text-align: left;
     }
 
-    .back-link a:hover { text-decoration: underline; }
+    .custom-note {
+      color: var(--sidebar-text);
+      margin: 0 0 1.25rem;
+    }
+
+    .contact-link,
+    .choose-link {
+      text-decoration: none;
+    }
   `]
 })
 export class PaymentPageComponent implements OnInit {
   isTrialExpired = false;
   daysLeft = 0;
+  selectedPlan: SelectedPlan | null = null;
+  loading = false;
+  paymentError: string | null = null;
 
   constructor(
     private authService: AuthService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -288,6 +288,72 @@ export class PaymentPageComponent implements OnInit {
       if (params['reason'] === 'trial-expired') {
         this.isTrialExpired = true;
       }
+      this.loadSelectedPlan(params['plan'], params['billing']);
     });
+  }
+
+  startCheckout(): void {
+    if (!this.selectedPlan || this.selectedPlan.key === 'custom') {
+      return;
+    }
+
+    this.loading = true;
+    this.paymentError = null;
+
+    this.http.post<CheckoutSessionResponse>(`${environment.apiUrl}/payments/create-checkout-session`, {
+      plan: this.selectedPlan.key,
+      billing: this.selectedPlan.billing,
+      customerEmail: localStorage.getItem('registrationEmail') || undefined,
+      businessName: localStorage.getItem('registrationBusinessName') || undefined,
+      businessId: Number(localStorage.getItem('registrationBusinessId')) || undefined,
+      successUrl: `${window.location.origin}/login?registered=1&payment=success`,
+      cancelUrl: `${window.location.origin}/payment?plan=${this.selectedPlan.key}&billing=${this.selectedPlan.billing}&payment=cancelled`
+    }).subscribe({
+      next: (response) => {
+        if (response.url) {
+          window.location.href = response.url;
+          return;
+        }
+        this.paymentError = 'Stripe did not return a checkout URL.';
+        this.loading = false;
+      },
+      error: (err) => {
+        this.paymentError = err.error?.message || 'Could not start Stripe checkout. Please try again.';
+        this.loading = false;
+      }
+    });
+  }
+
+  private loadSelectedPlan(planParam?: string, billingParam?: string): void {
+    const billing = billingParam === 'yearly' ? 'yearly' : 'monthly';
+    const planKey = planParam || localStorage.getItem('selectedPlanKey') || '';
+    const planMap: Record<string, SelectedPlan> = {
+      lite: { key: 'lite', name: 'Lite', price: this.planPrice(3500, billing), billing, features: ['Up to 5 employees', 'Payroll calculator', 'GCT tracking'] },
+      starter: { key: 'starter', name: 'Starter', price: this.planPrice(6500, billing), billing, features: ['6-15 employees', 'Full payroll automation', 'Employee portal access'] },
+      growth: { key: 'growth', name: 'Growth', price: this.planPrice(12500, billing), billing, features: ['16-35 employees', 'Advanced tax breakdowns', 'Priority support'] },
+      custom: { key: 'custom', name: 'Custom', price: 0, billing, features: ['36+ employees', 'Dedicated account support', 'Custom reporting setup'] }
+    };
+
+    this.selectedPlan = planMap[planKey] ?? this.readStoredPlan();
+  }
+
+  private readStoredPlan(): SelectedPlan | null {
+    const stored = localStorage.getItem('selectedPlan');
+    if (!stored) {
+      return null;
+    }
+    try {
+      const parsed = JSON.parse(stored) as Omit<SelectedPlan, 'key'>;
+      return {
+        ...parsed,
+        key: localStorage.getItem('selectedPlanKey') || parsed.name.toLowerCase()
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  private planPrice(monthlyPrice: number, billing: 'monthly' | 'yearly'): number {
+    return billing === 'yearly' ? monthlyPrice * 12 * 0.8 : monthlyPrice;
   }
 }

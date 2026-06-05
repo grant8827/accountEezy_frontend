@@ -46,7 +46,7 @@ interface Stats {
             <path d="M9 22L14 10L19 18L22 14L26 22H9Z" fill="white" fill-opacity="0.9"/>
             <defs>
               <linearGradient id="lg1" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#4F46E5"/><stop offset="1" stop-color="#06B6D4"/>
+                <stop stop-color="var(--color-primary)"/><stop offset="1" stop-color="var(--accent-color)"/>
               </linearGradient>
             </defs>
           </svg>
@@ -179,7 +179,7 @@ interface Stats {
       color: #F1F5F9;
     }
     .sa-badge {
-      background: linear-gradient(135deg, #4F46E5, #06B6D4);
+      background: linear-gradient(135deg, var(--color-primary), var(--accent-color));
       color: #fff;
       font-size: 0.7rem;
       font-weight: 700;
@@ -278,8 +278,8 @@ interface Stats {
     }
     .filter-tabs button.active,
     .filter-tabs button:hover {
-      background: rgba(79,70,229,0.2);
-      border-color: rgba(79,70,229,0.5);
+      background: rgba(4,120,87,0.2);
+      border-color: rgba(4,120,87,0.5);
       color: #A5B4FC;
     }
 

@@ -107,7 +107,7 @@ import { ApiService } from '../services/api.service';
                 <svg viewBox="0 0 200 60" preserveAspectRatio="none">
                   <polyline
                     fill="none"
-                    stroke="#3b82f6"
+                    stroke="var(--color-primary)"
                     stroke-width="2"
                     [attr.points]="generateBalanceChartPoints()"
                   />
@@ -137,8 +137,8 @@ import { ApiService } from '../services/api.service';
                     <!-- Gradient fill -->
                     <defs>
                       <linearGradient id="revenueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:0.3" />
-                        <stop offset="100%" style="stop-color:#4F46E5;stop-opacity:0" />
+                        <stop offset="0%" style="stop-color:var(--color-primary);stop-opacity:0.3" />
+                        <stop offset="100%" style="stop-color:var(--color-primary);stop-opacity:0" />
                       </linearGradient>
                     </defs>
 
@@ -151,14 +151,14 @@ import { ApiService } from '../services/api.service';
                     <!-- Revenue line -->
                     <polyline
                       fill="none"
-                      stroke="#4F46E5"
+                      stroke="var(--color-primary)"
                       stroke-width="3"
                       [attr.points]="'50,' + (250 - monthlyData[0]) + ' 166,' + (250 - monthlyData[1]) + ' 283,' + (250 - monthlyData[2]) + ' 400,' + (250 - monthlyData[3]) + ' 517,' + (250 - monthlyData[4]) + ' 633,' + (250 - monthlyData[5]) + ' 750,' + (250 - monthlyData[6])"
                     />
 
                     <!-- Data points -->
                     @for (point of monthlyData; track $index) {
-                      <circle [attr.cx]="50 + $index * 116.67" [attr.cy]="250 - point" r="5" fill="#4F46E5"/>
+                      <circle [attr.cx]="50 + $index * 116.67" [attr.cy]="250 - point" r="5" fill="var(--color-primary)"/>
                     }
 
                     <!-- Month labels -->
@@ -226,7 +226,7 @@ import { ApiService } from '../services/api.service';
     .dashboard-content {
       width: 100%;
       min-height: 100vh;
-      background: #f8fafc;
+      background: var(--bg-app);
       position: relative;
       overflow-x: hidden;
     }
@@ -255,23 +255,23 @@ import { ApiService } from '../services/api.service';
     }
 
     .summary-card {
-      background: #ffffff;
-      border-radius: 16px;
+      background: var(--bg-card);
+      border-radius: var(--card-radius);
       padding: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
+      box-shadow: 0 1px 3px rgba(28,25,23,0.08);
+      transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+      border: 1px solid var(--border-color);
       position: relative;
       overflow: hidden;
     }
 
     .summary-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      box-shadow: 0 10px 24px rgba(28,25,23,0.1);
     }
 
     .income-card {
-      border-color: #10b981;
+      border-color: #BBF7D0;
     }
 
     .expense-card {
@@ -279,7 +279,7 @@ import { ApiService } from '../services/api.service';
     }
 
     .balance-card {
-      border-color: #3b82f6;
+      border-color: var(--color-primary);
     }
 
     .card-header {
@@ -300,7 +300,7 @@ import { ApiService } from '../services/api.service';
     }
 
     .income-icon {
-      background: linear-gradient(135deg, #10b981, #059669);
+      background: linear-gradient(135deg, #16A34A, var(--color-primary));
     }
 
     .expense-icon {
@@ -308,7 +308,7 @@ import { ApiService } from '../services/api.service';
     }
 
     .balance-icon {
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
     }
 
     .icon-wrapper mat-icon {
@@ -324,7 +324,7 @@ import { ApiService } from '../services/api.service';
 
     .card-label {
       font-size: 0.875rem;
-      color: #6b7280;
+      color: var(--text-muted);
       margin: 0 0 0.5rem 0;
       font-weight: 500;
       text-transform: uppercase;
@@ -334,7 +334,7 @@ import { ApiService } from '../services/api.service';
     .card-value {
       font-size: 2rem;
       font-weight: 700;
-      color: #1f2937;
+      color: var(--text-main);
       margin: 0 0 0.5rem 0;
     }
 
@@ -353,7 +353,7 @@ import { ApiService } from '../services/api.service';
     }
 
     .trend.positive {
-      color: #10b981;
+      color: var(--badge-success-text);
     }
 
     .trend.negative {
@@ -380,11 +380,11 @@ import { ApiService } from '../services/api.service';
     }
 
     .chart-card {
-      background: #ffffff !important;
-      border: 1px solid #e5e7eb;
-      border-radius: 16px !important;
+      background: var(--bg-card) !important;
+      border: 1px solid var(--border-color);
+      border-radius: var(--card-radius) !important;
       padding: 1.5rem !important;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      box-shadow: 0 1px 3px rgba(28,25,23,0.08);
     }
 
     .chart-card mat-card-header {
@@ -395,7 +395,7 @@ import { ApiService } from '../services/api.service';
     }
 
     .chart-card mat-card-title {
-      color: #1f2937 !important;
+      color: var(--text-main) !important;
       font-weight: 700 !important;
       font-size: 1.25rem !important;
       margin: 0 !important;
@@ -403,8 +403,8 @@ import { ApiService } from '../services/api.service';
 
     .period-selector {
       font-size: 0.875rem;
-      color: #6b7280;
-      background: #f3f4f6;
+      color: var(--text-muted);
+      background: var(--neutral-100);
       padding: 0.5rem 1rem;
       border-radius: 8px;
     }
@@ -427,25 +427,26 @@ import { ApiService } from '../services/api.service';
     }
 
     .stat-card {
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--card-radius);
       padding: 1.25rem;
       display: flex;
       align-items: center;
       gap: 1rem;
-      transition: all 0.3s ease;
+      transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
     }
 
     .stat-card:hover {
-      border-color: #4F46E5;
+      border-color: var(--color-primary);
       transform: translateX(4px);
+      box-shadow: 0 8px 18px rgba(28,25,23,0.08);
     }
 
     .stat-icon {
       width: 48px;
       height: 48px;
-      background: linear-gradient(135deg, #4F46E5, #3730A3);
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
       color: white;
       border-radius: 10px;
       display: flex;
@@ -460,28 +461,29 @@ import { ApiService } from '../services/api.service';
 
     .stat-label {
       font-size: 0.875rem;
-      color: #6b7280;
+      color: var(--text-muted);
       margin: 0 0 0.25rem 0;
     }
 
     .stat-value {
       font-size: 1.5rem;
       font-weight: 700;
-      color: #1f2937;
+      color: var(--text-main);
       margin: 0;
     }
 
     /* Quick Actions */
     .quick-actions {
-      background: #ffffff;
-      border-radius: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--card-radius);
       padding: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      box-shadow: 0 1px 3px rgba(28,25,23,0.08);
     }
 
     .quick-actions h3 {
       margin: 0 0 1rem 0;
-      color: #1f2937;
+      color: var(--text-main);
       font-weight: 700;
       font-size: 1.25rem;
     }
@@ -493,18 +495,19 @@ import { ApiService } from '../services/api.service';
     }
 
     .action-buttons button {
-      background: linear-gradient(135deg, #4F46E5, #3730A3) !important;
-      color: white !important;
+      background: var(--color-primary) !important;
+      color: var(--color-primary-text) !important;
       border-radius: 10px;
       padding: 0.875rem 1.5rem !important;
       font-weight: 600;
-      transition: all 0.2s;
+      transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
       border: none;
     }
 
     .action-buttons button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(79,70,229,0.4);
+      background: var(--color-primary-hover) !important;
+      box-shadow: 0 8px 20px rgba(4,120,87,0.28);
     }
 
     .action-buttons button mat-icon {

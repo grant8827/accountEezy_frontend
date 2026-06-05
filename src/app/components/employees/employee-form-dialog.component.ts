@@ -440,7 +440,7 @@ import { Employee } from '../../types/index';
     }
 
     .submit-btn {
-      background: linear-gradient(135deg, #4F46E5, #3730A3) !important;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover)) !important;
       color: white !important;
       font-weight: 600;
     }

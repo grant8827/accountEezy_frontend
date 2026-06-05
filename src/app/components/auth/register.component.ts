@@ -18,7 +18,7 @@ import { AuthService } from '../../services/auth.service';
 interface SelectedPlan {
   name: string;
   price: number;
-  billing: 'monthly' | 'annual';
+  billing: 'monthly' | 'yearly';
   features: string[];
 }
 
@@ -106,6 +106,7 @@ export class RegisterComponent implements OnInit {
   loading = false;
   registrationError: string | null = null;
   selectedPlan: SelectedPlan | null = null;
+  selectedPlanKey: string | null = null;
   error$;
 
   // Logo upload state
@@ -163,19 +164,24 @@ export class RegisterComponent implements OnInit {
     // Read plan from query param (set by pricing page)
     this.route.queryParams.subscribe(params => {
       const planName = params['plan'];
+      const billing = params['billing'] === 'yearly' ? 'yearly' : 'monthly';
       if (planName) {
         const planMap: Record<string, SelectedPlan> = {
-          free:       { name: 'Free',         price: 0,     billing: 'monthly', features: [] },
-          pro:        { name: 'Professional', price: 4500,  billing: 'monthly', features: [] },
-          enterprise: { name: 'Enterprise',   price: 0,     billing: 'monthly', features: [] }
+          lite:    { name: 'Lite',    price: this.planPrice(3500, billing),  billing, features: ['Up to 5 employees', 'Payroll calculator', 'GCT tracking'] },
+          starter: { name: 'Starter', price: this.planPrice(6500, billing),  billing, features: ['6-15 employees', 'Full payroll automation', 'Employee portal access'] },
+          growth:  { name: 'Growth',  price: this.planPrice(12500, billing), billing, features: ['16-35 employees', 'Advanced tax breakdowns', 'Priority support'] },
+          custom:  { name: 'Custom',  price: 0, billing, features: ['36+ employees', billing === 'yearly' ? 'From J$144,000/year + J$1,920 per employee over 35' : 'From J$15,000/mo + J$200 per employee over 35', 'Dedicated account support'] }
         };
         this.selectedPlan = planMap[planName] ?? null;
         if (this.selectedPlan) {
+          this.selectedPlanKey = planName;
           localStorage.setItem('selectedPlan', JSON.stringify(this.selectedPlan));
+          localStorage.setItem('selectedPlanKey', planName);
         }
       } else {
         // Fallback to storage (in case of page refresh)
         const planFromStorage = localStorage.getItem('selectedPlan');
+        this.selectedPlanKey = localStorage.getItem('selectedPlanKey');
         if (planFromStorage) {
           try { this.selectedPlan = JSON.parse(planFromStorage); } catch { /* ignore */ }
         }
@@ -192,6 +198,10 @@ export class RegisterComponent implements OnInit {
         this.contactForm.patchValue({ business_email: email });
       }
     });
+  }
+
+  private planPrice(monthlyPrice: number, billing: 'monthly' | 'yearly'): number {
+    return billing === 'yearly' ? monthlyPrice * 12 * 0.8 : monthlyPrice;
   }
 
   autoPopulateBusinessName(): void {
@@ -320,10 +330,17 @@ export class RegisterComponent implements OnInit {
       next: (response) => {
         if (response.success) {
           localStorage.removeItem('registrationData');
-          localStorage.removeItem('selectedPlan');
-          // Account is pending approval — redirect to login with message
-          this.router.navigate(['/login'], {
-            queryParams: { registered: '1' }
+          localStorage.setItem('registrationEmail', registerPayload.email || '');
+          localStorage.setItem('registrationBusinessName', registerPayload.businessName || '');
+          if (response.data?.user.businessId) {
+            localStorage.setItem('registrationBusinessId', String(response.data.user.businessId));
+          }
+          this.router.navigate(['/payment'], {
+            queryParams: {
+              plan: this.selectedPlanKey,
+              billing: this.selectedPlan?.billing,
+              registered: '1'
+            }
           });
         } else {
           this.registrationError = response.message || 'Registration failed. Please try again.';

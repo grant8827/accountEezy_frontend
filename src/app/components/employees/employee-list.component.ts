@@ -280,18 +280,18 @@ import { EmployeeService } from '../../services/employee.service';
     }
 
     .add-btn {
-      background: linear-gradient(135deg, #4F46E5, #3730A3) !important;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover)) !important;
       color: white !important;
       border-radius: 10px;
       padding: 0.75rem 1.5rem !important;
       font-weight: 600;
-      box-shadow: 0 4px 12px rgba(79,70,229,0.3);
+      box-shadow: 0 4px 12px rgba(4,120,87,0.3);
       transition: all 0.2s;
     }
 
     .add-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(79,70,229,0.4);
+      box-shadow: 0 6px 20px rgba(4,120,87,0.4);
     }
 
     .add-btn mat-icon {
@@ -339,7 +339,7 @@ import { EmployeeService } from '../../services/employee.service';
     }
 
     .stat-card.total {
-      border-color: #4F46E5;
+      border-color: var(--color-primary);
     }
 
     .stat-card.active {
@@ -365,7 +365,7 @@ import { EmployeeService } from '../../services/employee.service';
     }
 
     .stat-card.total .stat-icon {
-      background: linear-gradient(135deg, #4F46E5, #3730A3);
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
     }
 
     .stat-card.active .stat-icon {
@@ -434,12 +434,12 @@ import { EmployeeService } from '../../services/employee.service';
     }
 
     .filter-chips mat-chip:hover {
-      border-color: #4F46E5 !important;
-      color: #4F46E5 !important;
+      border-color: var(--color-primary) !important;
+      color: var(--color-primary) !important;
     }
 
     .filter-chips mat-chip.active-chip {
-      background: linear-gradient(135deg, #4F46E5, #3730A3) !important;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover)) !important;
       color: white !important;
       border-color: transparent !important;
     }
@@ -495,7 +495,7 @@ import { EmployeeService } from '../../services/employee.service';
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #4F46E5, #3730A3);
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
       color: white;
       display: flex;
       align-items: center;
@@ -553,13 +553,13 @@ import { EmployeeService } from '../../services/employee.service';
     }
 
     .status-chip.status-active {
-      background: #d1fae5 !important;
-      color: #065f46 !important;
+      background: var(--badge-success-bg) !important;
+      color: var(--badge-success-text) !important;
     }
 
     .status-chip.status-on-leave {
-      background: #fef3c7 !important;
-      color: #92400e !important;
+      background: var(--badge-warning-bg) !important;
+      color: var(--badge-warning-text) !important;
     }
 
     .status-chip.status-inactive {
@@ -579,7 +579,7 @@ import { EmployeeService } from '../../services/employee.service';
     }
 
     .table-actions button:hover {
-      color: #4F46E5;
+      color: var(--color-primary);
       background: #ede9fe;
     }
 
@@ -595,7 +595,7 @@ import { EmployeeService } from '../../services/employee.service';
       font-size: 64px;
       width: 64px;
       height: 64px;
-      color: #4F46E5;
+      color: var(--color-primary);
       margin-bottom: 1rem;
       animation: spin 2s linear infinite;
     }

@@ -1119,11 +1119,11 @@ export class ApplyLeaveDialogComponent {
     }
 
     .stat-icon.pending {
-      color: #f59e0b;
+      color: var(--warning-amber);
     }
 
     .stat-icon.approved {
-      color: #10b981;
+      color: var(--color-primary);
     }
 
     .stat-content h3 {
@@ -1232,7 +1232,7 @@ export class ApplyLeaveDialogComponent {
 
     .net-pay {
       font-weight: 700;
-      color: #10b981;
+      color: var(--badge-success-text);
     }
 
     .leave-list {
@@ -1242,20 +1242,20 @@ export class ApplyLeaveDialogComponent {
     }
 
     .leave-item {
-      border: 2px solid #e5e7eb;
-      border-radius: 8px;
+      border: 2px solid var(--border-color);
+      border-radius: var(--card-radius);
       padding: 1.5rem;
       background: #f9fafb;
     }
 
     .leave-item.leave-pending {
-      border-color: #fbbf24;
-      background: #fffbeb;
+      border-color: var(--warning-amber);
+      background: var(--badge-warning-bg);
     }
 
     .leave-item.leave-approved {
-      border-color: #34d399;
-      background: #ecfdf5;
+      border-color: var(--color-primary);
+      background: var(--badge-success-bg);
     }
 
     .leave-item.leave-rejected {
@@ -1283,13 +1283,13 @@ export class ApplyLeaveDialogComponent {
     }
 
     .status-pending {
-      background: #fef3c7 !important;
-      color: #92400e !important;
+      background: var(--badge-warning-bg) !important;
+      color: var(--badge-warning-text) !important;
     }
 
     .status-approved {
-      background: #d1fae5 !important;
-      color: #065f46 !important;
+      background: var(--badge-success-bg) !important;
+      color: var(--badge-success-text) !important;
     }
 
     .status-rejected {
@@ -1298,8 +1298,8 @@ export class ApplyLeaveDialogComponent {
     }
 
     .status-active {
-      background: #d1fae5 !important;
-      color: #065f46 !important;
+      background: var(--badge-success-bg) !important;
+      color: var(--badge-success-text) !important;
     }
 
     .leave-dates {
