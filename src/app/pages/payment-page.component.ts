@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+import { finalize, timeout } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { environment } from '../../environments/environment';
 
@@ -308,18 +309,29 @@ export class PaymentPageComponent implements OnInit {
       businessId: Number(localStorage.getItem('registrationBusinessId')) || undefined,
       successUrl: `${window.location.origin}/login?registered=1&payment=success`,
       cancelUrl: `${window.location.origin}/payment?plan=${this.selectedPlan.key}&billing=${this.selectedPlan.billing}&payment=cancelled`
-    }).subscribe({
+    }).pipe(
+      timeout(15000),
+      finalize(() => {
+        this.loading = false;
+      })
+    ).subscribe({
       next: (response) => {
         if (response.url) {
-          window.location.href = response.url;
+          window.location.assign(response.url);
           return;
         }
         this.paymentError = 'Stripe did not return a checkout URL.';
-        this.loading = false;
       },
       error: (err) => {
-        this.paymentError = err.error?.message || 'Could not start Stripe checkout. Please try again.';
-        this.loading = false;
+        if (err.name === 'TimeoutError') {
+          this.paymentError = 'Checkout request timed out. Make sure the backend is running and reachable.';
+        } else if (err.status === 0) {
+          this.paymentError = 'Cannot reach the payment API. Check the backend URL, CORS/proxy setup, and deployment.';
+        } else if (err.status === 503) {
+          this.paymentError = err.error?.message || 'Payments are temporarily unavailable. Check Stripe configuration on the backend.';
+        } else {
+          this.paymentError = err.error?.message || 'Could not start Stripe checkout. Please try again.';
+        }
       }
     });
   }
