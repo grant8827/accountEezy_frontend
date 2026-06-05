@@ -21,8 +21,6 @@ interface CheckoutSessionResponse {
   url: string;
 }
 
-type PaymentMethod = 'stripe' | 'manual';
-
 @Component({
   selector: 'app-payment-page',
   standalone: true,
@@ -79,41 +77,9 @@ type PaymentMethod = 'stripe' | 'manual';
                 <p class="custom-note">Custom packages need a quick setup call before payment.</p>
                 <a class="btn-plan btn-featured contact-link" href="mailto:sales@hrbooks360.com">Contact Sales</a>
               } @else {
-                <div class="method-section">
-                  <p class="method-title">Choose payment method</p>
-                  <div class="method-grid">
-                    <button
-                      type="button"
-                      class="method-card"
-                      [class.method-card--active]="selectedMethod === 'stripe'"
-                      (click)="selectMethod('stripe')"
-                    >
-                      <span class="method-name">Stripe Checkout</span>
-                      <span class="method-note">Cards and secure hosted payment page</span>
-                    </button>
-                    <button
-                      type="button"
-                      class="method-card"
-                      [class.method-card--active]="selectedMethod === 'manual'"
-                      (click)="selectMethod('manual')"
-                    >
-                      <span class="method-name">Manual Transfer</span>
-                      <span class="method-note">Send proof by email after transfer</span>
-                    </button>
-                  </div>
-                </div>
-
-                @if (selectedMethod === 'stripe') {
-                  <button mat-raised-button class="btn-plan btn-featured" type="button" (click)="startCheckout()" [disabled]="loading">
-                    {{ loading ? 'Starting checkout...' : 'Continue to Stripe Checkout' }}
-                  </button>
-                } @else if (selectedMethod === 'manual') {
-                  <a class="btn-plan btn-featured contact-link" href="mailto:payments@hrbooks360.com?subject=Manual%20Payment%20Request">
-                    Continue with Manual Transfer
-                  </a>
-                } @else {
-                  <p class="custom-note">Select a payment method to continue.</p>
-                }
+                <button mat-raised-button class="btn-plan btn-featured" type="button" (click)="startCheckout()" [disabled]="loading">
+                  {{ loading ? 'Starting checkout...' : 'Continue to Stripe Checkout' }}
+                </button>
               }
             </mat-card-content>
           </mat-card>
@@ -295,70 +261,9 @@ type PaymentMethod = 'stripe' | 'manual';
       margin: 0 0 1.25rem;
     }
 
-    .method-section {
-      margin-bottom: 1.25rem;
-      text-align: left;
-    }
-
-    .method-title {
-      color: var(--bg-app);
-      font-weight: 700;
-      margin: 0 0 0.75rem;
-      font-size: 0.95rem;
-    }
-
-    .method-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .method-card {
-      border: 1px solid rgba(255,255,255,0.16);
-      background: rgba(255,255,255,0.03);
-      border-radius: 12px;
-      padding: 0.9rem;
-      color: var(--bg-app);
-      text-align: left;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-    }
-
-    .method-card:hover {
-      border-color: rgba(20,184,166,0.55);
-      background: rgba(20,184,166,0.09);
-    }
-
-    .method-card--active {
-      border-color: var(--accent-color);
-      background: rgba(20,184,166,0.14);
-      box-shadow: 0 0 0 1px rgba(20,184,166,0.35) inset;
-    }
-
-    .method-name {
-      font-size: 0.95rem;
-      font-weight: 700;
-    }
-
-    .method-note {
-      color: var(--sidebar-text);
-      font-size: 0.8rem;
-      line-height: 1.3;
-    }
-
     .contact-link,
     .choose-link {
       text-decoration: none;
-    }
-
-    @media (max-width: 640px) {
-      .method-grid {
-        grid-template-columns: 1fr;
-      }
     }
   `]
 })
@@ -366,7 +271,6 @@ export class PaymentPageComponent implements OnInit {
   isTrialExpired = false;
   daysLeft = 0;
   selectedPlan: SelectedPlan | null = null;
-  selectedMethod: PaymentMethod | null = null;
   loading = false;
   paymentError: string | null = null;
 
@@ -391,11 +295,6 @@ export class PaymentPageComponent implements OnInit {
 
   startCheckout(): void {
     if (!this.selectedPlan || this.selectedPlan.key === 'custom') {
-      return;
-    }
-
-    if (this.selectedMethod !== 'stripe') {
-      this.paymentError = 'Please choose Stripe Checkout to continue online payment.';
       return;
     }
 
@@ -448,15 +347,6 @@ export class PaymentPageComponent implements OnInit {
     };
 
     this.selectedPlan = planMap[planKey] ?? this.readStoredPlan();
-
-    if (this.selectedPlan?.key && this.selectedPlan.key !== 'custom') {
-      this.selectedMethod = null;
-    }
-  }
-
-  selectMethod(method: PaymentMethod): void {
-    this.selectedMethod = method;
-    this.paymentError = null;
   }
 
   private readStoredPlan(): SelectedPlan | null {
