@@ -703,7 +703,10 @@ export class SuperAdminDashboardComponent implements OnInit {
         },
         error: (err) => {
           console.error('[SuperAdmin] loadPackages error:', err);
-          this.packageError = `Failed to load packages (${err?.status ?? err?.name ?? 'timeout'}).`;
+          const detail = err.error?.detail ? ` ${err.error.detail}` : '';
+          this.packageError = err.error?.message
+            ? `${err.error.message}${detail}`
+            : `Failed to load packages (${err?.status ?? err?.name ?? 'timeout'}).`;
           this.packagesLoading = false;
         }
       });
@@ -728,7 +731,10 @@ export class SuperAdminDashboardComponent implements OnInit {
       },
       error: (err) => {
         console.error('[SuperAdmin] savePackageDiscount error:', err);
-        this.packageError = err.error?.message || 'Failed to save package discount.';
+        const detail = err.error?.detail ? ` ${err.error.detail}` : '';
+        this.packageError = err.error?.message
+          ? `${err.error.message}${detail}`
+          : 'Failed to save package discount.';
         this.packageActionLoading = null;
       }
     });
