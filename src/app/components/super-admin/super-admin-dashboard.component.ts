@@ -32,6 +32,18 @@ interface Stats {
   suspended: number;
 }
 
+interface PackageRow {
+  id: number;
+  key: string;
+  name: string;
+  monthlyPriceJmd: number;
+  isCustom: boolean;
+  discountEnabled: boolean;
+  discountPercent: number;
+  discountedMonthlyPriceJmd: number;
+  updatedAt: string;
+}
+
 @Component({
   selector: 'app-super-admin-dashboard',
   standalone: true,
@@ -60,6 +72,18 @@ interface Stats {
       <div class="sa-body">
         <h1>Platform Dashboard</h1>
 
+        <div class="tab-bar" role="tablist" aria-label="Super admin sections">
+          <button type="button" [class.active]="activeTab === 'users'" (click)="activeTab = 'users'">
+            <mat-icon>groups</mat-icon>
+            Users
+          </button>
+          <button type="button" [class.active]="activeTab === 'packages'" (click)="activeTab = 'packages'">
+            <mat-icon>sell</mat-icon>
+            Packages
+          </button>
+        </div>
+
+        @if (activeTab === 'users') {
         <!-- Stats cards -->
         <div class="stats-grid" *ngIf="stats">
           <div class="stat-card">
@@ -148,6 +172,59 @@ interface Stats {
             </tbody>
           </table>
         </div>
+        }
+
+        @if (activeTab === 'packages') {
+        <div class="packages-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Package Discounts</h2>
+              <p>Apply percentage discounts per package. Checkout will use the discounted price.</p>
+            </div>
+            <button class="btn-refresh" type="button" (click)="loadPackages()">
+              <mat-icon>refresh</mat-icon>
+              Refresh
+            </button>
+          </div>
+
+          <div class="alert-error" *ngIf="packageError">{{ packageError }}</div>
+          <div class="loading" *ngIf="packagesLoading">Loading packages...</div>
+
+          <div class="package-grid" *ngIf="!packagesLoading">
+            <article class="package-card" *ngFor="let pkg of packages">
+              <div class="package-top">
+                <div>
+                  <span class="package-key">{{ pkg.key }}</span>
+                  <h3>{{ pkg.name }}</h3>
+                </div>
+                <span class="status-pill" [class.pill-active]="pkg.discountEnabled" [class.pill-pending]="!pkg.discountEnabled">
+                  {{ pkg.discountEnabled ? 'Discount Active' : 'No Discount' }}
+                </span>
+              </div>
+
+              <div class="price-row">
+                <span class="old-price" [class.is-discounted]="pkg.discountEnabled">{{ formatCurrency(pkg.monthlyPriceJmd) }}</span>
+                <span class="new-price">{{ formatCurrency(pkg.discountedMonthlyPriceJmd) }}</span>
+                <span class="price-period">/mo</span>
+              </div>
+
+              <label class="toggle-row">
+                <input type="checkbox" [(ngModel)]="pkg.discountEnabled">
+                <span>Enable discount</span>
+              </label>
+
+              <label class="discount-field">
+                <span>Discount percent</span>
+                <input type="number" min="0" max="100" step="0.01" [(ngModel)]="pkg.discountPercent">
+              </label>
+
+              <button class="btn-save" type="button" (click)="savePackageDiscount(pkg)" [disabled]="packageActionLoading === pkg.id">
+                {{ packageActionLoading === pkg.id ? 'Saving...' : 'Save Discount' }}
+              </button>
+            </article>
+          </div>
+        </div>
+        }
       </div>
     </div>
   `,
@@ -215,6 +292,37 @@ interface Stats {
       font-weight: 700;
       margin-bottom: 28px;
       color: #F1F5F9;
+    }
+
+    .tab-bar {
+      display: inline-flex;
+      gap: 6px;
+      padding: 5px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      margin-bottom: 28px;
+    }
+    .tab-bar button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: #94A3B8;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .tab-bar button.active {
+      background: rgba(4,120,87,0.22);
+      color: #F1F5F9;
+    }
+    .tab-bar mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
     }
 
     /* Stats */
@@ -354,6 +462,121 @@ interface Stats {
     }
     .loading { color: #64748B; padding: 40px; text-align: center; }
 
+    .packages-panel {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 22px;
+    }
+    .panel-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .panel-heading h2 {
+      font-size: 1.25rem;
+      margin-bottom: 6px;
+    }
+    .panel-heading p {
+      color: #94A3B8;
+      font-size: 0.9rem;
+    }
+    .btn-refresh,
+    .btn-save {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(4,120,87,0.45);
+      background: rgba(4,120,87,0.18);
+      color: #A7F3D0;
+      padding: 9px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-save {
+      width: 100%;
+      margin-top: 4px;
+    }
+    .btn-save:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    .package-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+    .package-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .package-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+    .package-key {
+      color: #94A3B8;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .package-card h3 {
+      font-size: 1.25rem;
+      margin-top: 4px;
+    }
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .old-price {
+      color: #94A3B8;
+      font-size: 0.95rem;
+    }
+    .old-price.is-discounted {
+      text-decoration: line-through;
+      color: #F87171;
+    }
+    .new-price {
+      color: #F1F5F9;
+      font-size: 1.6rem;
+      font-weight: 800;
+    }
+    .price-period {
+      color: #94A3B8;
+    }
+    .toggle-row,
+    .discount-field {
+      display: grid;
+      gap: 7px;
+      color: #CBD5E1;
+      font-size: 0.88rem;
+      margin-bottom: 14px;
+    }
+    .toggle-row {
+      grid-template-columns: auto 1fr;
+      align-items: center;
+    }
+    .discount-field input {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #F1F5F9;
+      border-radius: 8px;
+      padding: 10px 12px;
+      outline: none;
+    }
+
     @media (max-width: 900px) {
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
       .sa-body { padding: 20px 16px; }
@@ -361,17 +584,23 @@ interface Stats {
     @media (max-width: 600px) {
       .stats-grid { grid-template-columns: 1fr 1fr; }
       .table-toolbar { flex-direction: column; align-items: stretch; }
+      .panel-heading { flex-direction: column; }
     }
   `]
 })
 export class SuperAdminDashboardComponent implements OnInit {
   stats: Stats | null = null;
   businesses: BusinessRow[] = [];
+  packages: PackageRow[] = [];
   loading = true;
+  packagesLoading = false;
   error = '';
+  packageError = '';
+  activeTab: 'users' | 'packages' = 'users';
   filterStatus = 'All';
   searchTerm = '';
   actionLoading: number | null = null;
+  packageActionLoading: number | null = null;
 
   constructor(
     private http: HttpClient,
@@ -382,6 +611,7 @@ export class SuperAdminDashboardComponent implements OnInit {
   ngOnInit(): void {
     this.loadStats();
     this.loadBusinesses();
+    this.loadPackages();
   }
 
   loadStats(): void {
@@ -459,6 +689,57 @@ export class SuperAdminDashboardComponent implements OnInit {
         this.actionLoading = null;
       }
     });
+  }
+
+  loadPackages(): void {
+    this.packagesLoading = true;
+    this.packageError = '';
+    this.http.get<PackageRow[]>(`${environment.apiUrl}/superadmin/packages`)
+      .pipe(timeout(15000))
+      .subscribe({
+        next: (data) => {
+          this.packages = data;
+          this.packagesLoading = false;
+        },
+        error: (err) => {
+          console.error('[SuperAdmin] loadPackages error:', err);
+          this.packageError = `Failed to load packages (${err?.status ?? err?.name ?? 'timeout'}).`;
+          this.packagesLoading = false;
+        }
+      });
+  }
+
+  savePackageDiscount(pkg: PackageRow): void {
+    const discountPercent = Number(pkg.discountPercent) || 0;
+    if (discountPercent < 0 || discountPercent > 100) {
+      this.packageError = 'Discount percent must be between 0 and 100.';
+      return;
+    }
+
+    this.packageActionLoading = pkg.id;
+    this.packageError = '';
+    this.http.put<PackageRow>(`${environment.apiUrl}/superadmin/packages/${pkg.id}/discount`, {
+      discountEnabled: pkg.discountEnabled,
+      discountPercent
+    }).subscribe({
+      next: (updated) => {
+        this.packages = this.packages.map(item => item.id === updated.id ? updated : item);
+        this.packageActionLoading = null;
+      },
+      error: (err) => {
+        console.error('[SuperAdmin] savePackageDiscount error:', err);
+        this.packageError = err.error?.message || 'Failed to save package discount.';
+        this.packageActionLoading = null;
+      }
+    });
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-JM', {
+      style: 'currency',
+      currency: 'JMD',
+      minimumFractionDigits: 0
+    }).format(amount);
   }
 
   logout(): void {
