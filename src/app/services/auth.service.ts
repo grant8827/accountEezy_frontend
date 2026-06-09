@@ -133,6 +133,7 @@ export class AuthService {
       }),
       catchError(error => {
         console.error('Login error:', error);
+        console.error('Login error body:', error.error);
         const errorMessage = error.error?.message || error.message || 'Login failed. Please try again.';
         this.errorSubject.next(errorMessage);
         this.isLoadingSubject.next(false);
