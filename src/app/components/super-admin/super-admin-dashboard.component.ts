@@ -14,7 +14,7 @@ interface BusinessRow {
   trn: string;
   sector: string;
   businessType: string;
-  status: string;
+  status: string | number;
   trialStartDate: string;
   businessEmail: string;
   businessPhone: string;
@@ -77,6 +77,13 @@ interface UserLookupResult {
 }
 
 type EditableBusinessStatus = 'Active' | 'Suspended' | 'Deactivated';
+
+const businessStatusLabels: Record<number, string> = {
+  0: 'Pending',
+  1: 'Active',
+  2: 'Suspended',
+  3: 'Deactivated'
+};
 
 @Component({
   selector: 'app-super-admin-dashboard',
@@ -241,8 +248,8 @@ type EditableBusinessStatus = 'Active' | 'Suspended' | 'Deactivated';
                 <td class="text-center">{{ biz.employeeCount }}</td>
                 <td>{{ biz.trialStartDate | date:'mediumDate' }}</td>
                 <td>
-                  <span class="status-pill" [class]="'pill-' + biz.status.toLowerCase()">
-                    {{ biz.status }}
+                  <span class="status-pill" [class]="statusPillClass(biz.status)">
+                    {{ statusLabel(biz.status) }}
                   </span>
                 </td>
                 <td>
@@ -278,8 +285,8 @@ type EditableBusinessStatus = 'Active' | 'Suspended' | 'Deactivated';
             <div class="status-editor-body">
               <div class="status-editor-current">
                 <span class="lookup-label">Current Status</span>
-                <span class="status-pill" [class]="'pill-' + statusEditorBusiness.status.toLowerCase()">
-                  {{ statusEditorBusiness.status }}
+                <span class="status-pill" [class]="statusPillClass(statusEditorBusiness.status)">
+                  {{ statusLabel(statusEditorBusiness.status) }}
                 </span>
               </div>
 
@@ -287,24 +294,24 @@ type EditableBusinessStatus = 'Active' | 'Suspended' | 'Deactivated';
                 <button
                   type="button"
                   class="status-choice active"
-                  [class.is-selected]="statusEditorBusiness.status === 'Active'"
-                  [disabled]="actionLoading === statusEditorBusiness.id || statusEditorBusiness.status === 'Active'"
+                  [class.is-selected]="statusLabel(statusEditorBusiness.status) === 'Active'"
+                  [disabled]="actionLoading === statusEditorBusiness.id || statusLabel(statusEditorBusiness.status) === 'Active'"
                   (click)="activate(statusEditorBusiness)">
                   Activate
                 </button>
                 <button
                   type="button"
                   class="status-choice suspended"
-                  [class.is-selected]="statusEditorBusiness.status === 'Suspended'"
-                  [disabled]="actionLoading === statusEditorBusiness.id || statusEditorBusiness.status === 'Suspended'"
+                  [class.is-selected]="statusLabel(statusEditorBusiness.status) === 'Suspended'"
+                  [disabled]="actionLoading === statusEditorBusiness.id || statusLabel(statusEditorBusiness.status) === 'Suspended'"
                   (click)="suspend(statusEditorBusiness)">
                   Suspend
                 </button>
                 <button
                   type="button"
                   class="status-choice deactivated"
-                  [class.is-selected]="statusEditorBusiness.status === 'Deactivated'"
-                  [disabled]="actionLoading === statusEditorBusiness.id || statusEditorBusiness.status === 'Deactivated'"
+                  [class.is-selected]="statusLabel(statusEditorBusiness.status) === 'Deactivated'"
+                  [disabled]="actionLoading === statusEditorBusiness.id || statusLabel(statusEditorBusiness.status) === 'Deactivated'"
                   (click)="deactivate(statusEditorBusiness)">
                   Deactivate
                 </button>
@@ -952,7 +959,10 @@ export class SuperAdminDashboardComponent implements OnInit {
       .pipe(timeout(15000))
       .subscribe({
         next: (data) => {
-          this.businesses = data;
+          this.businesses = data.map(business => ({
+            ...business,
+            status: this.normalizeBusinessStatus(business.status)
+          }));
           this.loading = false;
         },
         error: (err) => {
@@ -965,7 +975,7 @@ export class SuperAdminDashboardComponent implements OnInit {
 
   get filteredBusinesses(): BusinessRow[] {
     return this.businesses.filter(b => {
-      const matchesStatus = this.filterStatus === 'All' || b.status === this.filterStatus;
+      const matchesStatus = this.filterStatus === 'All' || this.statusLabel(b.status) === this.filterStatus;
       const term = this.searchTerm.toLowerCase();
       const matchesSearch = !term ||
         b.companyName.toLowerCase().includes(term) ||
@@ -1036,7 +1046,7 @@ export class SuperAdminDashboardComponent implements OnInit {
   }
 
   private updateBusinessStatus(biz: BusinessRow, status: EditableBusinessStatus): void {
-    const endpoint = status.toLowerCase();
+    const endpoint = this.statusActionPath(status);
     this.error = '';
     this.actionLoading = biz.id;
     this.http.post<{ message: string }>(
@@ -1116,5 +1126,36 @@ export class SuperAdminDashboardComponent implements OnInit {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  statusLabel(status: string | number | null | undefined): string {
+    return this.normalizeBusinessStatus(status);
+  }
+
+  statusPillClass(status: string | number | null | undefined): string {
+    return `pill-${this.normalizeBusinessStatus(status).toLowerCase()}`;
+  }
+
+  private normalizeBusinessStatus(status: string | number | null | undefined): string {
+    if (typeof status === 'string') {
+      return status;
+    }
+
+    if (typeof status === 'number') {
+      return businessStatusLabels[status] ?? 'Unknown';
+    }
+
+    return 'Unknown';
+  }
+
+  private statusActionPath(status: EditableBusinessStatus): 'activate' | 'suspend' | 'deactivate' {
+    switch (status) {
+      case 'Active':
+        return 'activate';
+      case 'Suspended':
+        return 'suspend';
+      case 'Deactivated':
+        return 'deactivate';
+    }
   }
 }
