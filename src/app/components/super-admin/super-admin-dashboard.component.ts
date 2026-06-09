@@ -30,6 +30,7 @@ interface Stats {
   active: number;
   pending: number;
   suspended: number;
+  deactivated: number;
 }
 
 interface PackageRow {
@@ -42,6 +43,37 @@ interface PackageRow {
   discountPercent: number;
   discountedMonthlyPriceJmd: number;
   updatedAt: string;
+}
+
+interface UserLookupResult {
+  appUser: {
+    id: string;
+    email: string;
+    userName: string;
+    businessId: number | null;
+    isAdmin: boolean;
+    isSuperAdmin: boolean;
+    emailConfirmed: boolean;
+    business: {
+      id: number;
+      companyName: string;
+      status: string;
+      trn: string;
+      businessEmail: string;
+      paymentStatus: string;
+      subscriptionStatus: string;
+      selectedPlan: string | null;
+      billingPeriod: string | null;
+    } | null;
+  } | null;
+  employee: {
+    id: number;
+    name: string;
+    email: string;
+    businessId: number;
+    isActive: boolean;
+  } | null;
+  loginExpectation: string;
 }
 
 @Component({
@@ -102,6 +134,63 @@ interface PackageRow {
             <span class="stat-value">{{ stats.suspended }}</span>
             <span class="stat-label">Suspended</span>
           </div>
+          <div class="stat-card deactivated">
+            <span class="stat-value">{{ stats.deactivated }}</span>
+            <span class="stat-label">Deactivated</span>
+          </div>
+        </div>
+
+        <div class="lookup-panel">
+          <div class="lookup-copy">
+            <h2>User Lookup</h2>
+            <p>Check an email against the app user, employee, and linked business status.</p>
+          </div>
+          <div class="lookup-form">
+            <input class="search-input" [(ngModel)]="userLookupEmail" (keyup.enter)="lookupUser()" placeholder="Enter user email..." />
+            <button class="btn-refresh" type="button" (click)="lookupUser()" [disabled]="userLookupLoading">
+              <mat-icon>search</mat-icon>
+              {{ userLookupLoading ? 'Checking...' : 'Check User' }}
+            </button>
+          </div>
+
+          <div class="alert-error lookup-error" *ngIf="userLookupError">{{ userLookupError }}</div>
+
+          <div class="lookup-result" *ngIf="userLookupResult">
+            <div class="lookup-status">
+              <span class="status-pill"
+                [class.pill-active]="lookupBusinessStatus === 'Active' || userLookupResult.appUser?.isSuperAdmin || userLookupResult.employee?.isActive"
+                [class.pill-pending]="lookupBusinessStatus === 'Pending'"
+                [class.pill-suspended]="lookupBusinessStatus === 'Suspended' || userLookupResult.employee?.isActive === false"
+                [class.pill-deactivated]="lookupBusinessStatus === 'Deactivated'">
+                {{ lookupBusinessStatus || (userLookupResult.employee?.isActive ? 'Employee Active' : 'Found') }}
+              </span>
+              <strong>{{ userLookupResult.loginExpectation }}</strong>
+            </div>
+
+            <div class="lookup-grid">
+              <div>
+                <span class="lookup-label">App User</span>
+                <p>{{ userLookupResult.appUser?.email || 'Not found' }}</p>
+                <small *ngIf="userLookupResult.appUser">
+                  Admin: {{ userLookupResult.appUser.isAdmin ? 'Yes' : 'No' }} · Super Admin: {{ userLookupResult.appUser.isSuperAdmin ? 'Yes' : 'No' }}
+                </small>
+              </div>
+              <div>
+                <span class="lookup-label">Business</span>
+                <p>{{ userLookupResult.appUser?.business?.companyName || 'No linked business' }}</p>
+                <small *ngIf="userLookupResult.appUser?.business">
+                  TRN: {{ userLookupResult.appUser?.business?.trn }} · Payment: {{ userLookupResult.appUser?.business?.paymentStatus }}
+                </small>
+              </div>
+              <div>
+                <span class="lookup-label">Employee</span>
+                <p>{{ userLookupResult.employee?.name || 'Not found' }}</p>
+                <small *ngIf="userLookupResult.employee">
+                  Active: {{ userLookupResult.employee.isActive ? 'Yes' : 'No' }} · Business ID: {{ userLookupResult.employee.businessId }}
+                </small>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Filter + search -->
@@ -112,6 +201,7 @@ interface PackageRow {
             <button [class.active]="filterStatus === 'Pending'" (click)="filterStatus = 'Pending'">Pending</button>
             <button [class.active]="filterStatus === 'Active'" (click)="filterStatus = 'Active'">Active</button>
             <button [class.active]="filterStatus === 'Suspended'" (click)="filterStatus = 'Suspended'">Suspended</button>
+            <button [class.active]="filterStatus === 'Deactivated'" (click)="filterStatus = 'Deactivated'">Deactivated</button>
           </div>
         </div>
 
@@ -156,12 +246,16 @@ interface PackageRow {
                 <td>
                   <div class="action-btns">
                     <button class="btn-approve" *ngIf="biz.status !== 'Active'"
-                      (click)="approve(biz)" [disabled]="actionLoading === biz.id">
-                      Approve
+                      (click)="activate(biz)" [disabled]="actionLoading === biz.id">
+                      Activate
                     </button>
                     <button class="btn-suspend" *ngIf="biz.status !== 'Suspended'"
                       (click)="suspend(biz)" [disabled]="actionLoading === biz.id">
                       Suspend
+                    </button>
+                    <button class="btn-deactivate" *ngIf="biz.status !== 'Deactivated'"
+                      (click)="deactivate(biz)" [disabled]="actionLoading === biz.id">
+                      Deactivate
                     </button>
                   </div>
                 </td>
@@ -328,7 +422,7 @@ interface PackageRow {
     /* Stats */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 16px;
       margin-bottom: 32px;
     }
@@ -344,10 +438,12 @@ interface PackageRow {
     .stat-card.active  { border-color: rgba(74,222,128,0.3); background: rgba(74,222,128,0.05); }
     .stat-card.pending { border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.05); }
     .stat-card.suspended { border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.05); }
+    .stat-card.deactivated { border-color: rgba(148,163,184,0.3); background: rgba(148,163,184,0.05); }
     .stat-value { font-size: 2rem; font-weight: 700; color: #F1F5F9; }
     .stat-card.active .stat-value  { color: #4ADE80; }
     .stat-card.pending .stat-value { color: #FBBF24; }
     .stat-card.suspended .stat-value { color: #F87171; }
+    .stat-card.deactivated .stat-value { color: #94A3B8; }
     .stat-label { font-size: 0.82rem; color: #64748B; text-transform: uppercase; letter-spacing: 0.06em; }
 
     /* Toolbar */
@@ -433,10 +529,11 @@ interface PackageRow {
     .pill-active   { background: rgba(74,222,128,0.15); color: #4ADE80; border: 1px solid rgba(74,222,128,0.3); }
     .pill-pending  { background: rgba(251,191,36,0.15); color: #FBBF24; border: 1px solid rgba(251,191,36,0.3); }
     .pill-suspended { background: rgba(248,113,113,0.15); color: #F87171; border: 1px solid rgba(248,113,113,0.3); }
+    .pill-deactivated { background: rgba(148,163,184,0.14); color: #CBD5E1; border: 1px solid rgba(148,163,184,0.3); }
 
     /* Action buttons */
-    .action-btns { display: flex; gap: 8px; }
-    .btn-approve, .btn-suspend {
+    .action-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+    .btn-approve, .btn-suspend, .btn-deactivate {
       padding: 6px 12px;
       border-radius: 6px;
       font-size: 0.8rem;
@@ -445,11 +542,13 @@ interface PackageRow {
       border: none;
       transition: opacity 0.15s;
     }
-    .btn-approve:disabled, .btn-suspend:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-approve:disabled, .btn-suspend:disabled, .btn-deactivate:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn-approve { background: rgba(74,222,128,0.15); color: #4ADE80; border: 1px solid rgba(74,222,128,0.3); }
     .btn-approve:hover:not(:disabled) { background: rgba(74,222,128,0.25); }
     .btn-suspend { background: rgba(248,113,113,0.12); color: #F87171; border: 1px solid rgba(248,113,113,0.3); }
     .btn-suspend:hover:not(:disabled) { background: rgba(248,113,113,0.22); }
+    .btn-deactivate { background: rgba(148,163,184,0.12); color: #CBD5E1; border: 1px solid rgba(148,163,184,0.3); }
+    .btn-deactivate:hover:not(:disabled) { background: rgba(148,163,184,0.22); }
 
     .alert-error {
       background: rgba(248,113,113,0.1);
@@ -461,6 +560,76 @@ interface PackageRow {
       font-size: 0.88rem;
     }
     .loading { color: #64748B; padding: 40px; text-align: center; }
+
+    .lookup-panel {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+    .lookup-copy {
+      margin-bottom: 14px;
+    }
+    .lookup-copy h2 {
+      font-size: 1.05rem;
+      margin-bottom: 4px;
+      color: #F1F5F9;
+    }
+    .lookup-copy p,
+    .lookup-result small {
+      color: #94A3B8;
+      font-size: 0.85rem;
+    }
+    .lookup-form {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+    }
+    .lookup-error {
+      margin-top: 14px;
+      margin-bottom: 0;
+    }
+    .lookup-result {
+      border-top: 1px solid rgba(255,255,255,0.08);
+      margin-top: 16px;
+      padding-top: 16px;
+    }
+    .lookup-status {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      color: #F1F5F9;
+    }
+    .lookup-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .lookup-grid > div {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .lookup-label {
+      display: block;
+      color: #64748B;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .lookup-grid p {
+      color: #F1F5F9;
+      font-weight: 700;
+      margin-bottom: 4px;
+      overflow-wrap: anywhere;
+    }
 
     .packages-panel {
       background: rgba(255,255,255,0.03);
@@ -579,11 +748,13 @@ interface PackageRow {
 
     @media (max-width: 900px) {
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .lookup-grid { grid-template-columns: 1fr; }
       .sa-body { padding: 20px 16px; }
     }
     @media (max-width: 600px) {
       .stats-grid { grid-template-columns: 1fr 1fr; }
       .table-toolbar { flex-direction: column; align-items: stretch; }
+      .lookup-form { grid-template-columns: 1fr; }
       .panel-heading { flex-direction: column; }
     }
   `]
@@ -601,6 +772,10 @@ export class SuperAdminDashboardComponent implements OnInit {
   searchTerm = '';
   actionLoading: number | null = null;
   packageActionLoading: number | null = null;
+  userLookupEmail = '';
+  userLookupLoading = false;
+  userLookupError = '';
+  userLookupResult: UserLookupResult | null = null;
 
   constructor(
     private http: HttpClient,
@@ -650,15 +825,53 @@ export class SuperAdminDashboardComponent implements OnInit {
       const matchesSearch = !term ||
         b.companyName.toLowerCase().includes(term) ||
         (b.ownerEmail || '').toLowerCase().includes(term) ||
+        (b.ownerName || '').toLowerCase().includes(term) ||
+        (b.businessEmail || '').toLowerCase().includes(term) ||
+        (b.sector || '').toLowerCase().includes(term) ||
         b.trn.toLowerCase().includes(term);
       return matchesStatus && matchesSearch;
     });
   }
 
-  approve(biz: BusinessRow): void {
+  get lookupBusinessStatus(): string {
+    return this.userLookupResult?.appUser?.business?.status || '';
+  }
+
+  lookupUser(): void {
+    const email = this.userLookupEmail.trim();
+    this.userLookupError = '';
+    this.userLookupResult = null;
+
+    if (!email) {
+      this.userLookupError = 'Enter an email address to check.';
+      return;
+    }
+
+    this.userLookupLoading = true;
+    this.http.get<UserLookupResult>(
+      `${environment.apiUrl}/superadmin/users/lookup`,
+      { params: { email } }
+    )
+      .pipe(timeout(15000))
+      .subscribe({
+        next: (result) => {
+          this.userLookupResult = result;
+          this.userLookupLoading = false;
+        },
+        error: (err) => {
+          console.error('[SuperAdmin] lookupUser error:', err);
+          this.userLookupError = err.error?.message
+            ? err.error.message
+            : `Failed to check user (${err?.status ?? err?.name ?? 'timeout'}).`;
+          this.userLookupLoading = false;
+        }
+      });
+  }
+
+  activate(biz: BusinessRow): void {
     this.actionLoading = biz.id;
     this.http.post<{ message: string }>(
-      `${environment.apiUrl}/superadmin/businesses/${biz.id}/approve`,
+      `${environment.apiUrl}/superadmin/businesses/${biz.id}/activate`,
       {}
     ).subscribe({
       next: () => {
@@ -667,7 +880,7 @@ export class SuperAdminDashboardComponent implements OnInit {
         this.loadStats();
       },
       error: () => {
-        this.error = 'Failed to approve business.';
+        this.error = 'Failed to activate business.';
         this.actionLoading = null;
       }
     });
@@ -686,6 +899,24 @@ export class SuperAdminDashboardComponent implements OnInit {
       },
       error: () => {
         this.error = 'Failed to suspend business.';
+        this.actionLoading = null;
+      }
+    });
+  }
+
+  deactivate(biz: BusinessRow): void {
+    this.actionLoading = biz.id;
+    this.http.post<{ message: string }>(
+      `${environment.apiUrl}/superadmin/businesses/${biz.id}/deactivate`,
+      {}
+    ).subscribe({
+      next: () => {
+        biz.status = 'Deactivated';
+        this.actionLoading = null;
+        this.loadStats();
+      },
+      error: () => {
+        this.error = 'Failed to deactivate business.';
         this.actionLoading = null;
       }
     });
