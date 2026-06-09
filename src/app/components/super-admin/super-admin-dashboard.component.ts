@@ -76,6 +76,8 @@ interface UserLookupResult {
   loginExpectation: string;
 }
 
+type EditableBusinessStatus = 'Active' | 'Suspended' | 'Deactivated';
+
 @Component({
   selector: 'app-super-admin-dashboard',
   standalone: true,
@@ -245,17 +247,11 @@ interface UserLookupResult {
                 </td>
                 <td>
                   <div class="action-btns">
-                    <button class="btn-approve" *ngIf="biz.status !== 'Active'"
-                      (click)="activate(biz)" [disabled]="actionLoading === biz.id">
-                      Activate
-                    </button>
-                    <button class="btn-suspend" *ngIf="biz.status !== 'Suspended'"
-                      (click)="suspend(biz)" [disabled]="actionLoading === biz.id">
-                      Suspend
-                    </button>
-                    <button class="btn-deactivate" *ngIf="biz.status !== 'Deactivated'"
-                      (click)="deactivate(biz)" [disabled]="actionLoading === biz.id">
-                      Deactivate
+                    <button class="btn-edit"
+                      type="button"
+                      (click)="openStatusEditor(biz)"
+                      [disabled]="actionLoading === biz.id">
+                      Edit
                     </button>
                   </div>
                 </td>
@@ -265,6 +261,58 @@ interface UserLookupResult {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <div class="status-editor-overlay" *ngIf="statusEditorBusiness" (click)="closeStatusEditor()">
+          <div class="status-editor-dialog" (click)="$event.stopPropagation()">
+            <div class="status-editor-header">
+              <div>
+                <h2>Edit Account Status</h2>
+                <p>{{ statusEditorBusiness.companyName }}</p>
+              </div>
+              <button class="status-editor-close" type="button" (click)="closeStatusEditor()" aria-label="Close status editor">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <div class="status-editor-body">
+              <div class="status-editor-current">
+                <span class="lookup-label">Current Status</span>
+                <span class="status-pill" [class]="'pill-' + statusEditorBusiness.status.toLowerCase()">
+                  {{ statusEditorBusiness.status }}
+                </span>
+              </div>
+
+              <div class="status-editor-actions">
+                <button
+                  type="button"
+                  class="status-choice active"
+                  [class.is-selected]="statusEditorBusiness.status === 'Active'"
+                  [disabled]="actionLoading === statusEditorBusiness.id || statusEditorBusiness.status === 'Active'"
+                  (click)="activate(statusEditorBusiness)">
+                  Activate
+                </button>
+                <button
+                  type="button"
+                  class="status-choice suspended"
+                  [class.is-selected]="statusEditorBusiness.status === 'Suspended'"
+                  [disabled]="actionLoading === statusEditorBusiness.id || statusEditorBusiness.status === 'Suspended'"
+                  (click)="suspend(statusEditorBusiness)">
+                  Suspend
+                </button>
+                <button
+                  type="button"
+                  class="status-choice deactivated"
+                  [class.is-selected]="statusEditorBusiness.status === 'Deactivated'"
+                  [disabled]="actionLoading === statusEditorBusiness.id || statusEditorBusiness.status === 'Deactivated'"
+                  (click)="deactivate(statusEditorBusiness)">
+                  Deactivate
+                </button>
+              </div>
+
+              <p class="status-editor-help">Super admin can change a business account between active, suspended, and deactivated here.</p>
+            </div>
+          </div>
         </div>
         }
 
@@ -533,22 +581,118 @@ interface UserLookupResult {
 
     /* Action buttons */
     .action-btns { display: flex; flex-wrap: wrap; gap: 8px; }
-    .btn-approve, .btn-suspend, .btn-deactivate {
+    .btn-edit {
       padding: 6px 12px;
       border-radius: 6px;
       font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
-      border: none;
       transition: opacity 0.15s;
     }
-    .btn-approve:disabled, .btn-suspend:disabled, .btn-deactivate:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-approve { background: rgba(74,222,128,0.15); color: #4ADE80; border: 1px solid rgba(74,222,128,0.3); }
-    .btn-approve:hover:not(:disabled) { background: rgba(74,222,128,0.25); }
-    .btn-suspend { background: rgba(248,113,113,0.12); color: #F87171; border: 1px solid rgba(248,113,113,0.3); }
-    .btn-suspend:hover:not(:disabled) { background: rgba(248,113,113,0.22); }
-    .btn-deactivate { background: rgba(148,163,184,0.12); color: #CBD5E1; border: 1px solid rgba(148,163,184,0.3); }
-    .btn-deactivate:hover:not(:disabled) { background: rgba(148,163,184,0.22); }
+    .btn-edit:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-edit {
+      background: rgba(59,130,246,0.14);
+      color: #BFDBFE;
+      border: 1px solid rgba(59,130,246,0.3);
+    }
+    .btn-edit:hover:not(:disabled) { background: rgba(59,130,246,0.24); }
+
+    .status-editor-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.72);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+    .status-editor-dialog {
+      width: min(100%, 460px);
+      background: #0F172A;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      box-shadow: 0 28px 70px rgba(0,0,0,0.45);
+      overflow: hidden;
+    }
+    .status-editor-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 22px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .status-editor-header h2 {
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+    .status-editor-header p {
+      color: #94A3B8;
+      font-size: 0.9rem;
+    }
+    .status-editor-close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      color: #CBD5E1;
+      cursor: pointer;
+    }
+    .status-editor-body {
+      padding: 20px 22px 22px;
+      display: grid;
+      gap: 18px;
+    }
+    .status-editor-current {
+      display: grid;
+      gap: 8px;
+    }
+    .status-editor-actions {
+      display: grid;
+      gap: 10px;
+    }
+    .status-choice {
+      width: 100%;
+      text-align: left;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      color: #E2E8F0;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+    }
+    .status-choice.active {
+      border-color: rgba(74,222,128,0.35);
+      color: #4ADE80;
+    }
+    .status-choice.suspended {
+      border-color: rgba(248,113,113,0.35);
+      color: #F87171;
+    }
+    .status-choice.deactivated {
+      border-color: rgba(148,163,184,0.35);
+      color: #CBD5E1;
+    }
+    .status-choice.is-selected {
+      background: rgba(255,255,255,0.08);
+      box-shadow: inset 0 0 0 1px currentColor;
+    }
+    .status-choice:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .status-editor-help {
+      color: #94A3B8;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
 
     .alert-error {
       background: rgba(248,113,113,0.1);
@@ -776,6 +920,7 @@ export class SuperAdminDashboardComponent implements OnInit {
   userLookupLoading = false;
   userLookupError = '';
   userLookupResult: UserLookupResult | null = null;
+  statusEditorBusiness: BusinessRow | null = null;
 
   constructor(
     private http: HttpClient,
@@ -868,55 +1013,44 @@ export class SuperAdminDashboardComponent implements OnInit {
       });
   }
 
+  openStatusEditor(biz: BusinessRow): void {
+    this.statusEditorBusiness = biz;
+  }
+
+  closeStatusEditor(): void {
+    if (this.actionLoading !== this.statusEditorBusiness?.id) {
+      this.statusEditorBusiness = null;
+    }
+  }
+
   activate(biz: BusinessRow): void {
-    this.actionLoading = biz.id;
-    this.http.post<{ message: string }>(
-      `${environment.apiUrl}/superadmin/businesses/${biz.id}/activate`,
-      {}
-    ).subscribe({
-      next: () => {
-        biz.status = 'Active';
-        this.actionLoading = null;
-        this.loadStats();
-      },
-      error: () => {
-        this.error = 'Failed to activate business.';
-        this.actionLoading = null;
-      }
-    });
+    this.updateBusinessStatus(biz, 'Active');
   }
 
   suspend(biz: BusinessRow): void {
-    this.actionLoading = biz.id;
-    this.http.post<{ message: string }>(
-      `${environment.apiUrl}/superadmin/businesses/${biz.id}/suspend`,
-      {}
-    ).subscribe({
-      next: () => {
-        biz.status = 'Suspended';
-        this.actionLoading = null;
-        this.loadStats();
-      },
-      error: () => {
-        this.error = 'Failed to suspend business.';
-        this.actionLoading = null;
-      }
-    });
+    this.updateBusinessStatus(biz, 'Suspended');
   }
 
   deactivate(biz: BusinessRow): void {
+    this.updateBusinessStatus(biz, 'Deactivated');
+  }
+
+  private updateBusinessStatus(biz: BusinessRow, status: EditableBusinessStatus): void {
+    const endpoint = status.toLowerCase();
+    this.error = '';
     this.actionLoading = biz.id;
     this.http.post<{ message: string }>(
-      `${environment.apiUrl}/superadmin/businesses/${biz.id}/deactivate`,
+      `${environment.apiUrl}/superadmin/businesses/${biz.id}/${endpoint}`,
       {}
     ).subscribe({
       next: () => {
-        biz.status = 'Deactivated';
+        biz.status = status;
         this.actionLoading = null;
+        this.closeStatusEditor();
         this.loadStats();
       },
       error: () => {
-        this.error = 'Failed to deactivate business.';
+        this.error = `Failed to update business status to ${status.toLowerCase()}.`;
         this.actionLoading = null;
       }
     });
