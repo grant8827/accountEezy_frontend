@@ -15,6 +15,14 @@ interface BusinessRow {
   sector: string;
   businessType: string;
   status: string | number;
+  paymentStatus?: string | number | null;
+  subscriptionStatus?: string | number | null;
+  selectedPlan?: string | null;
+  billingPeriod?: string | null;
+  paymentCompletedAt?: string | null;
+  nextPaymentDueAt?: string | null;
+  gracePeriodEndsAt?: string | null;
+  lastPaymentMethod?: string | null;
   trialStartDate: string;
   businessEmail: string;
   businessPhone: string;
@@ -83,6 +91,12 @@ const businessStatusLabels: Record<number, string> = {
   1: 'Active',
   2: 'Suspended',
   3: 'Deactivated'
+};
+
+const paymentStatusLabels: Record<number, string> = {
+  0: 'Unpaid',
+  1: 'Paid',
+  2: 'PaymentFailed'
 };
 
 @Component({
@@ -230,6 +244,7 @@ const businessStatusLabels: Record<number, string> = {
                 <th>Employees</th>
                 <th>Registered</th>
                 <th>Status</th>
+                <th>Payment</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -253,6 +268,11 @@ const businessStatusLabels: Record<number, string> = {
                   </span>
                 </td>
                 <td>
+                  <span class="status-pill" [class]="paymentPillClass(biz.paymentStatus)">
+                    {{ paymentStatusLabel(biz.paymentStatus) }}
+                  </span>
+                </td>
+                <td>
                   <div class="action-btns">
                     <button class="btn-edit"
                       type="button"
@@ -264,7 +284,7 @@ const businessStatusLabels: Record<number, string> = {
                 </td>
               </tr>
               <tr *ngIf="filteredBusinesses.length === 0">
-                <td colspan="8" class="empty-row">No businesses found.</td>
+                <td colspan="9" class="empty-row">No businesses found.</td>
               </tr>
             </tbody>
           </table>
@@ -287,6 +307,9 @@ const businessStatusLabels: Record<number, string> = {
                 <span class="lookup-label">Current Status</span>
                 <span class="status-pill" [class]="statusPillClass(statusEditorBusiness.status)">
                   {{ statusLabel(statusEditorBusiness.status) }}
+                </span>
+                <span class="status-pill" [class]="paymentPillClass(statusEditorBusiness.paymentStatus)">
+                  {{ paymentStatusLabel(statusEditorBusiness.paymentStatus) }}
                 </span>
               </div>
 
@@ -317,7 +340,54 @@ const businessStatusLabels: Record<number, string> = {
                 </button>
               </div>
 
-              <p class="status-editor-help">Super admin can change a business account between active, suspended, and deactivated here.</p>
+              <div class="subscription-form">
+                <label>
+                  <span>Package</span>
+                  <select [(ngModel)]="editorSelectedPlan">
+                    <option value="lite">Lite</option>
+                    <option value="starter">Starter</option>
+                    <option value="growth">Growth</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>Billing</span>
+                  <select [(ngModel)]="editorBillingPeriod">
+                    <option value="Monthly">Monthly</option>
+                    <option value="Yearly">Yearly</option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>Payment</span>
+                  <select [(ngModel)]="editorPaymentStatus">
+                    <option value="Paid">Paid</option>
+                    <option value="Unpaid">Unpaid</option>
+                  </select>
+                </label>
+
+                <button class="btn-save" type="button" (click)="saveBusinessSubscription()" [disabled]="actionLoading === statusEditorBusiness.id">
+                  {{ actionLoading === statusEditorBusiness.id ? 'Saving...' : 'Save Subscription' }}
+                </button>
+              </div>
+
+              <div class="subscription-dates">
+                <div>
+                  <span class="lookup-label">Last Payment</span>
+                  <p>{{ statusEditorBusiness.paymentCompletedAt ? (statusEditorBusiness.paymentCompletedAt | date:'mediumDate') : 'Not paid' }}</p>
+                </div>
+                <div>
+                  <span class="lookup-label">Next Due</span>
+                  <p>{{ statusEditorBusiness.nextPaymentDueAt ? (statusEditorBusiness.nextPaymentDueAt | date:'mediumDate') : 'Not set' }}</p>
+                </div>
+                <div>
+                  <span class="lookup-label">Grace Ends</span>
+                  <p>{{ statusEditorBusiness.gracePeriodEndsAt ? (statusEditorBusiness.gracePeriodEndsAt | date:'mediumDate') : 'Not set' }}</p>
+                </div>
+              </div>
+
+              <p class="status-editor-help">Marking Paid activates the account and sets the next due date. Monthly is due in 30 days; yearly is due in 1 year. A 7-day grace window is added automatically.</p>
             </div>
           </div>
         </div>
@@ -615,7 +685,7 @@ const businessStatusLabels: Record<number, string> = {
       z-index: 1000;
     }
     .status-editor-dialog {
-      width: min(100%, 460px);
+      width: min(100%, 560px);
       background: #0F172A;
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 18px;
@@ -699,6 +769,47 @@ const businessStatusLabels: Record<number, string> = {
       color: #94A3B8;
       font-size: 0.85rem;
       line-height: 1.5;
+    }
+    .subscription-form {
+      display: grid;
+      gap: 12px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .subscription-form label {
+      display: grid;
+      gap: 7px;
+      color: #CBD5E1;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+    .subscription-form select {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #F1F5F9;
+      border-radius: 8px;
+      padding: 10px 12px;
+      outline: none;
+    }
+    .subscription-form option {
+      background: #0F172A;
+      color: #F1F5F9;
+    }
+    .subscription-dates {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .subscription-dates > div {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .subscription-dates p {
+      color: #E2E8F0;
+      font-weight: 700;
+      font-size: 0.85rem;
     }
 
     .alert-error {
@@ -900,6 +1011,7 @@ const businessStatusLabels: Record<number, string> = {
     @media (max-width: 900px) {
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
       .lookup-grid { grid-template-columns: 1fr; }
+      .subscription-dates { grid-template-columns: 1fr; }
       .sa-body { padding: 20px 16px; }
     }
     @media (max-width: 600px) {
@@ -928,6 +1040,9 @@ export class SuperAdminDashboardComponent implements OnInit {
   userLookupError = '';
   userLookupResult: UserLookupResult | null = null;
   statusEditorBusiness: BusinessRow | null = null;
+  editorSelectedPlan = 'lite';
+  editorBillingPeriod: 'Monthly' | 'Yearly' = 'Monthly';
+  editorPaymentStatus: 'Paid' | 'Unpaid' = 'Paid';
 
   constructor(
     private http: HttpClient,
@@ -983,6 +1098,9 @@ export class SuperAdminDashboardComponent implements OnInit {
         (b.ownerName || '').toLowerCase().includes(term) ||
         (b.businessEmail || '').toLowerCase().includes(term) ||
         (b.sector || '').toLowerCase().includes(term) ||
+        (b.selectedPlan || '').toLowerCase().includes(term) ||
+        (b.billingPeriod || '').toLowerCase().includes(term) ||
+        this.paymentStatusLabel(b.paymentStatus).toLowerCase().includes(term) ||
         b.trn.toLowerCase().includes(term);
       return matchesStatus && matchesSearch;
     });
@@ -1025,6 +1143,9 @@ export class SuperAdminDashboardComponent implements OnInit {
 
   openStatusEditor(biz: BusinessRow): void {
     this.statusEditorBusiness = biz;
+    this.editorSelectedPlan = (biz.selectedPlan || 'lite').toLowerCase();
+    this.editorBillingPeriod = this.normalizeBillingPeriod(biz.billingPeriod);
+    this.editorPaymentStatus = this.paymentStatusLabel(biz.paymentStatus) === 'Paid' ? 'Paid' : 'Unpaid';
   }
 
   closeStatusEditor(): void {
@@ -1061,6 +1182,40 @@ export class SuperAdminDashboardComponent implements OnInit {
       },
       error: () => {
         this.error = `Failed to update business status to ${status.toLowerCase()}.`;
+        this.actionLoading = null;
+      }
+    });
+  }
+
+  saveBusinessSubscription(): void {
+    if (!this.statusEditorBusiness) {
+      return;
+    }
+
+    const business = this.statusEditorBusiness;
+    this.error = '';
+    this.actionLoading = business.id;
+    this.http.put<any>(`${environment.apiUrl}/superadmin/businesses/${business.id}/subscription`, {
+      selectedPlan: this.editorSelectedPlan,
+      billingPeriod: this.editorBillingPeriod,
+      paymentStatus: this.editorPaymentStatus === 'Paid' ? 1 : 0
+    }).subscribe({
+      next: (updated) => {
+        business.status = this.normalizeBusinessStatus(updated.status);
+        business.paymentStatus = updated.paymentStatus;
+        business.subscriptionStatus = updated.subscriptionStatus;
+        business.selectedPlan = updated.selectedPlan;
+        business.billingPeriod = updated.billingPeriod;
+        business.paymentCompletedAt = updated.paymentCompletedAt;
+        business.nextPaymentDueAt = updated.nextPaymentDueAt;
+        business.gracePeriodEndsAt = updated.gracePeriodEndsAt;
+        business.lastPaymentMethod = updated.lastPaymentMethod;
+        this.actionLoading = null;
+        this.loadStats();
+      },
+      error: (err) => {
+        console.error('[SuperAdmin] saveBusinessSubscription error:', err);
+        this.error = err.error?.message || 'Failed to save subscription.';
         this.actionLoading = null;
       }
     });
@@ -1136,6 +1291,19 @@ export class SuperAdminDashboardComponent implements OnInit {
     return `pill-${this.normalizeBusinessStatus(status).toLowerCase()}`;
   }
 
+  paymentStatusLabel(status: string | number | null | undefined): string {
+    if (typeof status === 'number') {
+      return paymentStatusLabels[status] ?? 'Unknown';
+    }
+
+    return status || 'Unpaid';
+  }
+
+  paymentPillClass(status: string | number | null | undefined): string {
+    const label = this.paymentStatusLabel(status).toLowerCase();
+    return label === 'paid' ? 'pill-active' : 'pill-suspended';
+  }
+
   private normalizeBusinessStatus(status: string | number | null | undefined): string {
     if (typeof status === 'string') {
       return status;
@@ -1157,5 +1325,9 @@ export class SuperAdminDashboardComponent implements OnInit {
       case 'Deactivated':
         return 'deactivate';
     }
+  }
+
+  private normalizeBillingPeriod(period: string | null | undefined): 'Monthly' | 'Yearly' {
+    return String(period || '').toLowerCase() === 'yearly' ? 'Yearly' : 'Monthly';
   }
 }

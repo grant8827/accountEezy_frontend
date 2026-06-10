@@ -323,7 +323,9 @@ export class RegisterComponent implements OnInit {
       country:            this.addressForm.value.country,
       businessPhone:      this.contactForm.value.business_phone?.trim(),
       businessEmail:      this.contactForm.value.business_email?.trim(),
-      website:            this.contactForm.value.website?.trim() || ''
+      website:            this.contactForm.value.website?.trim() || '',
+      selectedPlan:       this.selectedPlanKey,
+      billingPeriod:      this.selectedPlan?.billing === 'yearly' ? 'Yearly' : 'Monthly'
     };
 
     this.authService.register(registerPayload).subscribe({

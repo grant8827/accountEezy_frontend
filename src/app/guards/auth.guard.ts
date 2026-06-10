@@ -24,6 +24,20 @@ export class AuthGuard implements CanActivate {
           this.router.navigate(['/login']);
           return false;
         }
+
+        const user = this.authService.getCurrentUser();
+        if (user && (user.requiresPayment || user.isSuspended) && !state.url.includes('/payment')) {
+          this.router.navigate(['/payment'], {
+            queryParams: {
+              reason: user.isSuspended ? 'past-due' : 'payment-required',
+              businessId: user.businessId || undefined,
+              plan: user.selectedPlan || undefined,
+              billing: user.billingPeriod?.toLowerCase() === 'yearly' ? 'yearly' : 'monthly'
+            }
+          });
+          return false;
+        }
+
         return true;
       })
     );

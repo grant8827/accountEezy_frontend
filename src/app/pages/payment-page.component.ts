@@ -56,6 +56,10 @@ interface CheckoutSessionResponse {
           <div class="payment-error">{{ paymentError }}</div>
         }
 
+        @if (paymentNotice) {
+          <div class="payment-notice">{{ paymentNotice }}</div>
+        }
+
         @if (selectedPlan) {
           <mat-card class="checkout-card">
             <mat-card-content>
@@ -256,6 +260,17 @@ interface CheckoutSessionResponse {
       text-align: left;
     }
 
+    .payment-notice {
+      width: min(520px, 100%);
+      margin: 0 auto 1.5rem;
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(251,191,36,0.35);
+      background: rgba(251,191,36,0.12);
+      color: #FDE68A;
+      text-align: left;
+    }
+
     .custom-note {
       color: var(--sidebar-text);
       margin: 0 0 1.25rem;
@@ -273,6 +288,8 @@ export class PaymentPageComponent implements OnInit {
   selectedPlan: SelectedPlan | null = null;
   loading = false;
   paymentError: string | null = null;
+  paymentNotice: string | null = null;
+  businessId: number | null = null;
 
   constructor(
     private authService: AuthService,
@@ -289,6 +306,19 @@ export class PaymentPageComponent implements OnInit {
       if (params['reason'] === 'trial-expired') {
         this.isTrialExpired = true;
       }
+      if (params['reason'] === 'past-due') {
+        this.paymentNotice = 'Account was suspended for past due payment. Please pay now to continue.';
+      } else if (params['reason'] === 'payment-required') {
+        this.paymentNotice = 'Complete payment to activate your account and continue.';
+      } else if (params['payment'] === 'cancelled') {
+        this.paymentNotice = 'Checkout was cancelled. You can restart payment below.';
+      }
+
+      const businessId = Number(params['businessId']);
+      this.businessId = Number.isFinite(businessId) && businessId > 0
+        ? businessId
+        : Number(localStorage.getItem('registrationBusinessId')) || null;
+
       this.loadSelectedPlan(params['plan'], params['billing']);
     });
   }
@@ -306,7 +336,7 @@ export class PaymentPageComponent implements OnInit {
       billing: this.selectedPlan.billing,
       customerEmail: localStorage.getItem('registrationEmail') || undefined,
       businessName: localStorage.getItem('registrationBusinessName') || undefined,
-      businessId: Number(localStorage.getItem('registrationBusinessId')) || undefined,
+      businessId: this.businessId || undefined,
       successUrl: `${window.location.origin}/login?registered=1&payment=success`,
       cancelUrl: `${window.location.origin}/payment?plan=${this.selectedPlan.key}&billing=${this.selectedPlan.billing}&payment=cancelled`
     }).pipe(

@@ -449,6 +449,22 @@ export class LoginComponent {
         next: (response) => {
           if (response.success && response.data) {
             const user = response.data.user;
+
+            if (user.isSuspended) {
+              alert('Account was suspended for past due payment. Please pay now and continue.');
+              this.router.navigate(['/payment'], {
+                queryParams: this.paymentQueryParams(user, 'past-due')
+              });
+              return;
+            }
+
+            if (user.requiresPayment) {
+              this.router.navigate(['/payment'], {
+                queryParams: this.paymentQueryParams(user, 'payment-required')
+              });
+              return;
+            }
+
             if (user.isSuperAdmin) {
               // Platform super-admin → super-admin dashboard
               this.router.navigate(['/super-admin']);
@@ -472,6 +488,14 @@ export class LoginComponent {
         }
       });
     }
+  }
+
+  private paymentQueryParams(user: any, reason: string): Record<string, string | number> {
+    const params: Record<string, string | number> = { reason };
+    if (user.businessId) params['businessId'] = user.businessId;
+    if (user.selectedPlan) params['plan'] = user.selectedPlan;
+    if (user.billingPeriod) params['billing'] = String(user.billingPeriod).toLowerCase() === 'yearly' ? 'yearly' : 'monthly';
+    return params;
   }
 
   onForgotSubmit(): void {

@@ -17,6 +17,14 @@ export interface User {
   employeeName?: string | null;
   isAdmin?: boolean;
   isSuperAdmin?: boolean;
+  requiresPayment?: boolean;
+  isSuspended?: boolean;
+  selectedPlan?: string | null;
+  billingPeriod?: string | null;
+  paymentStatus?: string | null;
+  subscriptionStatus?: string | null;
+  nextPaymentDueAt?: string | null;
+  gracePeriodEndsAt?: string | null;
   // retained for display compatibility
   role?: string;
 }
@@ -63,6 +71,8 @@ export interface RegisterRequest {
   businessPhone: string;
   businessEmail: string;
   website?: string;
+  selectedPlan?: string | null;
+  billingPeriod?: string | null;
 }
 
 @Injectable({
