@@ -11,13 +11,14 @@ interface BackendEmployee {
   name: string;
   nisNumber: string;  // NISNumber in C# becomes nisNumber in JSON
   grossSalary: number;
-  payCycle: string;
+  payCycle: string | number;
   businessId: number;
   trn?: string;
   employeeIdNumber?: string;
   bankAccountNumber?: string;
   bankName?: string;
   dateOfBirth?: string;
+  phoneNumber?: string;
   address?: string;
   email?: string;
   isActive: boolean;
@@ -39,12 +40,13 @@ interface EmployeeRequest {
   name: string;
   nisNumber: string;
   grossSalary: number;
-  payCycle: string;
+  payCycle: number;
   trn?: string;
   employeeIdNumber?: string;
   bankAccountNumber?: string;
   bankName?: string;
   dateOfBirth?: string;
+  phoneNumber?: string;
   address?: string;
   email?: string;
   password?: string;
@@ -94,6 +96,7 @@ export class EmployeeService {
       bankAccountNumber: backendEmp.bankAccountNumber,
       bankName: backendEmp.bankName,
       dateOfBirth: backendEmp.dateOfBirth,
+      phoneNumber: backendEmp.phoneNumber,
       address: backendEmp.address,
       payCycle: this.mapPayCycleToFrontend(backendEmp.payCycle),
       employmentType: (backendEmp.employmentType as 'Salary' | 'Hourly') || 'Salary',
@@ -120,6 +123,7 @@ export class EmployeeService {
       bankAccountNumber: employee.bankAccountNumber,
       bankName: employee.bankName,
       dateOfBirth: employee.dateOfBirth,
+      phoneNumber: employee.phoneNumber,
       address: employee.address,
       email: employee.email,
       password: employee.password,
@@ -139,20 +143,37 @@ export class EmployeeService {
     };
   }
 
-  private mapPayCycleToFrontend(payCycle?: string): string {
-    if (!payCycle) {
+  private mapPayCycleToFrontend(payCycle?: string | number): string {
+    if (payCycle === undefined || payCycle === null || payCycle === '') {
       return 'Monthly';
+    }
+
+    if (typeof payCycle === 'number') {
+      const payCycleMap: Record<number, string> = {
+        0: 'Weekly',
+        1: 'Fortnightly',
+        2: 'Monthly'
+      };
+
+      return payCycleMap[payCycle] || 'Monthly';
     }
 
     return payCycle === 'Bi-Weekly' ? 'Fortnightly' : payCycle;
   }
 
-  private mapPayCycleToBackend(payCycle?: string): string {
+  private mapPayCycleToBackend(payCycle?: string): number {
     if (!payCycle) {
-      return 'Monthly';
+      return 2;
     }
 
-    return payCycle === 'Bi-Weekly' ? 'Fortnightly' : payCycle;
+    const normalized = payCycle === 'Bi-Weekly' ? 'Fortnightly' : payCycle;
+    const payCycleMap: Record<string, number> = {
+      Weekly: 0,
+      Fortnightly: 1,
+      Monthly: 2
+    };
+
+    return payCycleMap[normalized] ?? 2;
   }
 
   getAll(): Observable<Employee[]> {
@@ -163,6 +184,7 @@ export class EmployeeService {
 
   create(employee: Employee): Observable<Employee> {
     const request = this.mapToBackend(employee);
+    console.debug('Creating employee request:', request);
     return this.http.post<BackendEmployee>(this.apiUrl, request).pipe(
       map(backendEmp => this.mapToFrontend(backendEmp))
     );

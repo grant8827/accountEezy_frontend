@@ -745,13 +745,32 @@ export class EmployeeListComponent implements OnInit {
             this.snackBar.open('Employee added successfully!', 'Close', { duration: 3000 });
           },
           error: (error) => {
-            console.error('Error adding employee:', error);
-            const msg = error?.error?.message || error?.message || `Failed to add employee (${error?.status ?? 'unknown error'})`;
+            console.error('Error adding employee:', error, error?.error);
+            const msg = this.formatEmployeeError(error);
             this.snackBar.open(msg, 'Close', { duration: 5000 });
           }
         });
       }
     });
+  }
+
+  private formatEmployeeError(error: any): string {
+    const validationErrors = error?.error?.errors;
+    if (validationErrors && typeof validationErrors === 'object') {
+      const details = Object.entries(validationErrors)
+        .flatMap(([field, messages]) =>
+          Array.isArray(messages)
+            ? messages.map(message => `${field}: ${message}`)
+            : [`${field}: ${messages}`]
+        )
+        .join(' ');
+
+      if (details) {
+        return details;
+      }
+    }
+
+    return error?.error?.message || error?.error?.title || error?.message || `Failed to add employee (${error?.status ?? 'unknown error'})`;
   }
 
   navigateToRecords() {
