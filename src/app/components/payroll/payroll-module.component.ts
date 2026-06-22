@@ -26,9 +26,11 @@ import { Employee as AppEmployee } from '../../types/index';
 interface PayrollBatchSummary {
   id: number; label: string; payCycle: string;
   startDate: string; endDate: string; payDate?: string;
-  status: number; createdAt: string;
+  status: PayrollBatchStatusValue; createdAt: string;
   employeeCount: number; totalNet: number; totalRemittance: number;
 }
+
+type PayrollBatchStatusValue = number | 'Draft' | 'Processed' | 'Paid' | string;
 
 interface BatchEntryInput {
   employeeId: number; name: string; baseSalary: number;
@@ -49,7 +51,7 @@ interface PayrollEntry {
 
 interface PayrollBatchDetail {
   id: number; label: string; payCycle: string;
-  startDate: string; endDate: string; status: number;
+  startDate: string; endDate: string; status: PayrollBatchStatusValue;
   business: { companyName: string; address: string; businessEmail: string | null; businessPhone: string | null; logoUrl: string | null; } | null;
   entries: PayrollEntry[];
 }
@@ -292,28 +294,28 @@ const DEFAULT_TAX: TaxConfig = {
             <ng-container matColumnDef="status">
               <th mat-header-cell *matHeaderCellDef>Status</th>
               <td mat-cell *matCellDef="let b">
-                <span class="status-chip" [class]="'status-' + b.status">{{ statusLabel(b.status) }}</span>
+                <span class="status-chip" [class]="'status-' + statusCode(b.status)">{{ statusLabel(b.status) }}</span>
               </td>
             </ng-container>
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef>Actions</th>
               <td mat-cell *matCellDef="let b">
-                <button mat-icon-button matTooltip="Run Payroll" *ngIf="b.status === 0" (click)="selectBatchForProcessing(b)">
+                <button mat-icon-button matTooltip="Run Payroll" *ngIf="statusCode(b.status) === 0" (click)="selectBatchForProcessing(b)">
                   <mat-icon>play_circle</mat-icon>
                 </button>
-                <button mat-icon-button matTooltip="Edit / Reprocess" *ngIf="b.status === 1" (click)="selectBatchForEditing(b)">
+                <button mat-icon-button matTooltip="Edit / Reprocess" *ngIf="statusCode(b.status) === 1" (click)="selectBatchForEditing(b)">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button matTooltip="View Payslips" *ngIf="b.status > 0" (click)="loadBatchDetail(b.id, true)">
+                <button mat-icon-button matTooltip="View Payslips" *ngIf="statusCode(b.status) > 0" (click)="loadBatchDetail(b.id, true)">
                   <mat-icon>visibility</mat-icon>
                 </button>
-                <button mat-icon-button matTooltip="Remittance Report" *ngIf="b.status > 0" (click)="loadRemittance(b.id)">
+                <button mat-icon-button matTooltip="Remittance Report" *ngIf="statusCode(b.status) > 0" (click)="loadRemittance(b.id)">
                   <mat-icon>receipt_long</mat-icon>
                 </button>
-                <button mat-icon-button matTooltip="Mark as Paid" *ngIf="b.status === 1" (click)="markPaid(b.id)">
+                <button mat-icon-button matTooltip="Mark as Paid" *ngIf="statusCode(b.status) === 1" (click)="markPaid(b.id)">
                   <mat-icon>paid</mat-icon>
                 </button>
-                <button mat-icon-button matTooltip="Delete" *ngIf="b.status !== 2" (click)="deleteBatch(b.id)" class="delete-btn">
+                <button mat-icon-button matTooltip="Delete" *ngIf="statusCode(b.status) !== 2" (click)="deleteBatch(b.id)" class="delete-btn">
                   <mat-icon>delete</mat-icon>
                 </button>
               </td>
@@ -341,7 +343,7 @@ const DEFAULT_TAX: TaxConfig = {
               <span><mat-icon>event</mat-icon> <strong>{{ activeBatch.label }}</strong></span>
               <span class="muted">{{ activeBatch.startDate | date:'dd MMM yyyy' }} – {{ activeBatch.endDate | date:'dd MMM yyyy' }}</span>
               <span><mat-icon>sync</mat-icon> {{ activeBatch.payCycle }}</span>
-              <span class="status-chip" [class]="'status-' + activeBatch.status">{{ statusLabel(activeBatch.status) }}</span>
+              <span class="status-chip" [class]="'status-' + statusCode(activeBatch.status)">{{ statusLabel(activeBatch.status) }}</span>
             </div>
           </mat-card-content>
         </mat-card>
@@ -418,7 +420,7 @@ const DEFAULT_TAX: TaxConfig = {
             <button mat-raised-button class="gold-btn run-btn" (click)="processBatch()" [disabled]="processing || includedCount === 0">
               <mat-spinner *ngIf="processing" diameter="20"></mat-spinner>
               <mat-icon *ngIf="!processing">rocket_launch</mat-icon>
-              {{ processing ? 'Processing…' : (activeBatch.status === 1 ? 'Reprocess' : 'Run') + ' Payroll for ' + includedCount + ' Employees' }}
+              {{ processing ? 'Processing…' : (statusCode(activeBatch.status) === 1 ? 'Reprocess' : 'Run') + ' Payroll for ' + includedCount + ' Employees' }}
             </button>
           </mat-card-actions>
         </mat-card>
@@ -1268,8 +1270,19 @@ export class PayrollModuleComponent implements OnInit {
     }
   }
 
-  statusLabel(status: number): string {
-    return ['Draft', 'Processed', 'Paid'][status] ?? 'Unknown';
+  statusCode(status: PayrollBatchStatusValue): number {
+    if (typeof status === 'number') return status;
+
+    switch (status.trim().toLowerCase()) {
+      case 'draft': return 0;
+      case 'processed': return 1;
+      case 'paid': return 2;
+      default: return -1;
+    }
+  }
+
+  statusLabel(status: PayrollBatchStatusValue): string {
+    return ['Draft', 'Processed', 'Paid'][this.statusCode(status)] ?? 'Unknown';
   }
 
   switchTab(index: number) { this.activeTab = index; }

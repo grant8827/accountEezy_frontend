@@ -16,8 +16,10 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { EmployeeFormDialogComponent } from './employee-form-dialog.component';
+import { EmployeeLimitDialogComponent } from './employee-limit-dialog.component';
 import { Employee } from '../../types/index';
 import { EmployeeService } from '../../services/employee.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-employee-list',
@@ -698,8 +700,30 @@ export class EmployeeListComponent implements OnInit {
     private employeeService: EmployeeService,
     private snackBar: MatSnackBar,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
   ) {}
+
+  private getPlanLimit(plan: string | null | undefined): number {
+    switch (plan?.toLowerCase()) {
+      case 'lite':    return 5;
+      case 'starter': return 15;
+      case 'growth':  return 35;
+      default:        return Infinity;
+    }
+  }
+
+  private showUpgradeDialog(currentPlan: string | null, employeeLimit: number, currentCount?: number) {
+    this.dialog.open(EmployeeLimitDialogComponent, {
+      width: '480px',
+      maxWidth: '90vw',
+      data: {
+        currentPlan,
+        employeeLimit,
+        currentCount: currentCount ?? this.employees.length
+      }
+    });
+  }
 
   ngOnInit() {
     this.loadEmployees();
@@ -730,6 +754,14 @@ export class EmployeeListComponent implements OnInit {
   }
 
   openAddDialog() {
+    const user = this.authService.getCurrentUser();
+    const limit = this.getPlanLimit(user?.selectedPlan);
+
+    if (this.employees.length >= limit) {
+      this.showUpgradeDialog(user?.selectedPlan ?? null, limit);
+      return;
+    }
+
     const dialogRef = this.dialog.open(EmployeeFormDialogComponent, {
       width: '600px',
       maxWidth: '90vw',
@@ -745,6 +777,11 @@ export class EmployeeListComponent implements OnInit {
             this.snackBar.open('Employee added successfully!', 'Close', { duration: 3000 });
           },
           error: (error) => {
+            if (error.status === 403 && error.error?.requiresUpgrade) {
+              const { currentPlan, employeeLimit, currentCount } = error.error;
+              this.showUpgradeDialog(currentPlan, employeeLimit, currentCount);
+              return;
+            }
             console.error('Error adding employee:', error, error?.error);
             const msg = this.formatEmployeeError(error);
             this.snackBar.open(msg, 'Close', { duration: 5000 });
