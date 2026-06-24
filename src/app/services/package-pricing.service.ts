@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, shareReplay } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface PackagePrice {
@@ -24,16 +24,10 @@ export interface PackagePrice {
   providedIn: 'root'
 })
 export class PackagePricingService {
-  private packages$?: Observable<PackagePrice[]>;
-
   constructor(private http: HttpClient) {}
 
   getPackages(): Observable<PackagePrice[]> {
-    this.packages$ ??= this.http.get<PackagePrice[]>(`${environment.apiUrl}/superadmin/packages`).pipe(
-      shareReplay(1)
-    );
-
-    return this.packages$;
+    return this.http.get<PackagePrice[]>(`${environment.apiUrl}/superadmin/packages`);
   }
 
   getPackageMap(): Observable<Record<string, PackagePrice>> {
