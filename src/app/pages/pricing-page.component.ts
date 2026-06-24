@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { PackagePrice, PackagePricingService } from '../services/package-pricing.service';
 
 @Component({
   selector: 'app-pricing-page',
@@ -60,7 +61,7 @@ import { RouterModule } from '@angular/router';
           <div class="pricing-badge pricing-badge--free">Lite</div>
           <div class="pricing-price">
             <span class="price-currency">J$</span>
-            <span class="price-amount">{{ planPrice(3500) }}</span>
+            <span class="price-amount">{{ planPriceFor('lite', 3500) }}</span>
             <span class="price-period">/{{ yearly ? 'yr' : 'mo' }}</span>
           </div>
           <p class="pricing-desc">For micro-businesses moving payroll and HR out of spreadsheets.</p>
@@ -80,7 +81,7 @@ import { RouterModule } from '@angular/router';
           <div class="pricing-badge pricing-badge--pro">Starter</div>
           <div class="pricing-price">
             <span class="price-currency">J$</span>
-            <span class="price-amount">{{ planPrice(6500) }}</span>
+            <span class="price-amount">{{ planPriceFor('starter', 6500) }}</span>
             <span class="price-period">/{{ yearly ? 'yr' : 'mo' }}</span>
           </div>
           <p class="pricing-desc">For small teams that need payroll, ledger tracking and HR basics.</p>
@@ -92,7 +93,7 @@ import { RouterModule } from '@angular/router';
             <li>✓ Leave requests</li>
             <li>✓ Employee portal access</li>
           </ul>
-          <a class="btn btn-primary-inv w-full" [routerLink]="['/register']" [queryParams]="{plan: 'starter', billing: billingPeriod}">Start 14-Day Trial</a>
+          <a class="btn btn-primary-inv w-full" [routerLink]="['/register']" [queryParams]="{plan: 'starter', billing: billingPeriod}">{{ trialCtaFor('starter') }}</a>
         </div>
 
         <!-- GROWTH -->
@@ -100,7 +101,7 @@ import { RouterModule } from '@angular/router';
           <div class="pricing-badge pricing-badge--enterprise">Growth</div>
           <div class="pricing-price">
             <span class="price-currency">J$</span>
-            <span class="price-amount">{{ planPrice(12500) }}</span>
+            <span class="price-amount">{{ planPriceFor('growth', 12500) }}</span>
             <span class="price-period">/{{ yearly ? 'yr' : 'mo' }}</span>
           </div>
           <p class="pricing-desc">For growing companies with more payroll, reporting and support needs.</p>
@@ -398,19 +399,49 @@ import { RouterModule } from '@angular/router';
     }
   `]
 })
-export class PricingPageComponent {
+export class PricingPageComponent implements OnInit {
   yearly = false;
+  packages: Record<string, PackagePrice> = {};
+
+  constructor(private packagePricing: PackagePricingService) {}
+
+  ngOnInit(): void {
+    this.packagePricing.getPackageMap().subscribe({
+      next: packages => {
+        this.packages = packages;
+      },
+      error: error => {
+        console.error('Failed to load package pricing:', error);
+      }
+    });
+  }
 
   get billingPeriod(): 'monthly' | 'yearly' {
     return this.yearly ? 'yearly' : 'monthly';
   }
 
   get customBasePrice(): string {
-    return this.yearly ? 'J$144,000/year' : 'J$15,000/mo';
+    return this.yearly
+      ? `J$${this.planPriceValue('custom', 15000, 'yearly').toLocaleString('en-US', { maximumFractionDigits: 0 })}/year`
+      : `J$${this.planPriceValue('custom', 15000, 'monthly').toLocaleString('en-US', { maximumFractionDigits: 0 })}/mo`;
   }
 
   planPrice(monthlyPrice: number): string {
     const price = this.yearly ? monthlyPrice * 12 * 0.8 : monthlyPrice;
     return price.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  }
+
+  planPriceFor(planKey: string, fallbackMonthlyPrice: number): string {
+    return this.planPriceValue(planKey, fallbackMonthlyPrice, this.billingPeriod)
+      .toLocaleString('en-US', { maximumFractionDigits: 0 });
+  }
+
+  trialCtaFor(planKey: string): string {
+    const days = this.packages[planKey]?.freeTrialDays ?? 14;
+    return days > 0 ? `Start ${days}-Day Trial` : 'Get Started';
+  }
+
+  private planPriceValue(planKey: string, fallbackMonthlyPrice: number, billing: 'monthly' | 'yearly'): number {
+    return this.packagePricing.priceFor(this.packages[planKey], billing, fallbackMonthlyPrice);
   }
 }

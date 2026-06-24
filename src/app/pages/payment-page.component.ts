@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { finalize, timeout } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { environment } from '../../environments/environment';
+import { PackagePrice, PackagePricingService } from '../services/package-pricing.service';
 
 interface SelectedPlan {
   key: string;
@@ -14,6 +15,7 @@ interface SelectedPlan {
   price: number;
   billing: 'monthly' | 'yearly';
   features: string[];
+  freeTrialDays?: number;
 }
 
 interface CheckoutSessionResponse {
@@ -294,7 +296,8 @@ export class PaymentPageComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private route: ActivatedRoute,
-    private http: HttpClient
+    private http: HttpClient,
+    private packagePricing: PackagePricingService
   ) {}
 
   ngOnInit(): void {
@@ -320,6 +323,10 @@ export class PaymentPageComponent implements OnInit {
         : Number(localStorage.getItem('registrationBusinessId')) || null;
 
       this.loadSelectedPlan(params['plan'], params['billing']);
+      this.packagePricing.getPackageMap().subscribe({
+        next: packages => this.loadSelectedPlan(params['plan'], params['billing'], packages),
+        error: error => console.error('Failed to load package pricing:', error)
+      });
     });
   }
 
@@ -366,14 +373,20 @@ export class PaymentPageComponent implements OnInit {
     });
   }
 
-  private loadSelectedPlan(planParam?: string, billingParam?: string): void {
+  private loadSelectedPlan(planParam?: string, billingParam?: string, packages?: Record<string, PackagePrice>): void {
     const billing = billingParam === 'yearly' ? 'yearly' : 'monthly';
     const planKey = planParam || localStorage.getItem('selectedPlanKey') || '';
+    const price = (key: string, fallbackMonthly: number) =>
+      this.packagePricing.priceFor(packages?.[key], billing, fallbackMonthly);
+    const trialFeature = (key: string) => {
+      const days = packages?.[key]?.freeTrialDays;
+      return days && days > 0 ? [`${days}-day free trial`] : [];
+    };
     const planMap: Record<string, SelectedPlan> = {
-      lite: { key: 'lite', name: 'Lite', price: this.planPrice(3500, billing), billing, features: ['Up to 5 employees', 'Payroll calculator', 'GCT tracking'] },
-      starter: { key: 'starter', name: 'Starter', price: this.planPrice(6500, billing), billing, features: ['6-15 employees', 'Full payroll automation', 'Employee portal access'] },
-      growth: { key: 'growth', name: 'Growth', price: this.planPrice(12500, billing), billing, features: ['16-35 employees', 'Advanced tax breakdowns', 'Priority support'] },
-      custom: { key: 'custom', name: 'Custom', price: 0, billing, features: ['36+ employees', 'Dedicated account support', 'Custom reporting setup'] }
+      lite: { key: 'lite', name: 'Lite', price: price('lite', 3500), billing, features: ['Up to 5 employees', 'Payroll calculator', 'GCT tracking', ...trialFeature('lite')], freeTrialDays: packages?.['lite']?.freeTrialDays },
+      starter: { key: 'starter', name: 'Starter', price: price('starter', 6500), billing, features: ['6-15 employees', 'Full payroll automation', 'Employee portal access', ...trialFeature('starter')], freeTrialDays: packages?.['starter']?.freeTrialDays },
+      growth: { key: 'growth', name: 'Growth', price: price('growth', 12500), billing, features: ['16-35 employees', 'Advanced tax breakdowns', 'Priority support', ...trialFeature('growth')], freeTrialDays: packages?.['growth']?.freeTrialDays },
+      custom: { key: 'custom', name: 'Custom', price: price('custom', 15000), billing, features: ['36+ employees', 'Dedicated account support', 'Custom reporting setup', ...trialFeature('custom')], freeTrialDays: packages?.['custom']?.freeTrialDays }
     };
 
     this.selectedPlan = planMap[planKey] ?? this.readStoredPlan();

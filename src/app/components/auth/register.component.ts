@@ -14,12 +14,14 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatDividerModule } from '@angular/material/divider';
 import { AuthService } from '../../services/auth.service';
+import { PackagePrice, PackagePricingService } from '../../services/package-pricing.service';
 
 interface SelectedPlan {
   name: string;
   price: number;
   billing: 'monthly' | 'yearly';
   features: string[];
+  freeTrialDays?: number;
 }
 
 const BUSINESS_TYPES = [
@@ -117,9 +119,10 @@ export class RegisterComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private http: HttpClient
+  private router: Router,
+  private route: ActivatedRoute,
+  private http: HttpClient,
+  private packagePricing: PackagePricingService
   ) {
     this.error$ = this.authService.error$;
 
@@ -166,18 +169,11 @@ export class RegisterComponent implements OnInit {
       const planName = params['plan'];
       const billing = params['billing'] === 'yearly' ? 'yearly' : 'monthly';
       if (planName) {
-        const planMap: Record<string, SelectedPlan> = {
-          lite:    { name: 'Lite',    price: this.planPrice(3500, billing),  billing, features: ['Up to 5 employees', 'Payroll calculator', 'GCT tracking'] },
-          starter: { name: 'Starter', price: this.planPrice(6500, billing),  billing, features: ['6-15 employees', 'Full payroll automation', 'Employee portal access'] },
-          growth:  { name: 'Growth',  price: this.planPrice(12500, billing), billing, features: ['16-35 employees', 'Advanced tax breakdowns', 'Priority support'] },
-          custom:  { name: 'Custom',  price: 0, billing, features: ['36+ employees', billing === 'yearly' ? 'From J$144,000/year + J$1,920 per employee over 35' : 'From J$15,000/mo + J$200 per employee over 35', 'Dedicated account support'] }
-        };
-        this.selectedPlan = planMap[planName] ?? null;
-        if (this.selectedPlan) {
-          this.selectedPlanKey = planName;
-          localStorage.setItem('selectedPlan', JSON.stringify(this.selectedPlan));
-          localStorage.setItem('selectedPlanKey', planName);
-        }
+        this.setSelectedPlan(planName, billing);
+        this.packagePricing.getPackageMap().subscribe({
+          next: packages => this.setSelectedPlan(planName, billing, packages[planName]),
+          error: error => console.error('Failed to load package pricing:', error)
+        });
       } else {
         // Fallback to storage (in case of page refresh)
         const planFromStorage = localStorage.getItem('selectedPlan');
@@ -202,6 +198,28 @@ export class RegisterComponent implements OnInit {
 
   private planPrice(monthlyPrice: number, billing: 'monthly' | 'yearly'): number {
     return billing === 'yearly' ? monthlyPrice * 12 * 0.8 : monthlyPrice;
+  }
+
+  private setSelectedPlan(planName: string, billing: 'monthly' | 'yearly', packagePrice?: PackagePrice): void {
+    const price = (fallbackMonthly: number) =>
+      this.packagePricing.priceFor(packagePrice, billing, fallbackMonthly);
+    const trialFeature = packagePrice?.freeTrialDays && packagePrice.freeTrialDays > 0
+      ? [`${packagePrice.freeTrialDays}-day free trial`]
+      : [];
+
+    const planMap: Record<string, SelectedPlan> = {
+      lite:    { name: 'Lite',    price: price(3500),  billing, features: ['Up to 5 employees', 'Payroll calculator', 'GCT tracking', ...trialFeature], freeTrialDays: packagePrice?.freeTrialDays },
+      starter: { name: 'Starter', price: price(6500),  billing, features: ['6-15 employees', 'Full payroll automation', 'Employee portal access', ...trialFeature], freeTrialDays: packagePrice?.freeTrialDays },
+      growth:  { name: 'Growth',  price: price(12500), billing, features: ['16-35 employees', 'Advanced tax breakdowns', 'Priority support', ...trialFeature], freeTrialDays: packagePrice?.freeTrialDays },
+      custom:  { name: 'Custom',  price: price(15000), billing, features: ['36+ employees', billing === 'yearly' ? 'From custom yearly pricing + J$1,920 per employee over 35' : 'From custom monthly pricing + J$200 per employee over 35', 'Dedicated account support', ...trialFeature], freeTrialDays: packagePrice?.freeTrialDays }
+    };
+
+    this.selectedPlan = planMap[planName] ?? null;
+    if (this.selectedPlan) {
+      this.selectedPlanKey = planName;
+      localStorage.setItem('selectedPlan', JSON.stringify(this.selectedPlan));
+      localStorage.setItem('selectedPlanKey', planName);
+    }
   }
 
   autoPopulateBusinessName(): void {

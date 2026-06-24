@@ -10,6 +10,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Employee } from '../../types/index';
 
 @Component({
@@ -27,7 +28,8 @@ import { Employee } from '../../types/index';
     MatDatepickerModule,
     MatNativeDateModule,
     MatIconModule,
-    MatButtonToggleModule
+    MatButtonToggleModule,
+    MatSnackBarModule
   ],
   template: `
     <div class="dialog-container">
@@ -280,16 +282,17 @@ import { Employee } from '../../types/index';
           </div>
 
           <!-- Employee Portal Access Section -->
-          <div class="section-header">
+          <div class="section-header portal-header" [class.portal-disabled]="!portalAccessEnabled" (click)="showPortalUpgradeMessage()">
             <mat-icon>vpn_key</mat-icon>
             <h3>Employee Portal Access</h3>
           </div>
 
+          <div class="portal-access-panel" [class.portal-disabled]="!portalAccessEnabled" (click)="showPortalUpgradeMessage()">
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Portal Password {{ isEditMode ? '(leave blank to keep current)' : '' }}</mat-label>
+            <mat-label>Portal Password {{ portalAccessEnabled ? (isEditMode ? '(leave blank to keep current)' : '(required)') : '(upgrade required)' }}</mat-label>
             <mat-icon matPrefix>lock</mat-icon>
-            <input matInput type="password" formControlName="password" placeholder="Enter password for employee login">
-            <mat-hint>Employee will use their email and this password to access the employee portal</mat-hint>
+            <input matInput type="password" formControlName="password" [required]="portalAccessEnabled && !isEditMode" placeholder="Enter password for employee login">
+            <mat-hint>{{ portalAccessEnabled ? 'Employee will use their email and this password to access the employee portal' : 'This option is not part of your package. Upgrade to use employee portal.' }}</mat-hint>
             @if (employeeForm.get('password')?.hasError('required') && employeeForm.get('password')?.touched) {
               <mat-error>Password is required for new employees</mat-error>
             }
@@ -297,6 +300,7 @@ import { Employee } from '../../types/index';
               <mat-error>Password must be at least 6 characters</mat-error>
             }
           </mat-form-field>
+          </div>
 
           <!-- YTD Balances Section -->
           <div class="section-header">
@@ -424,6 +428,22 @@ import { Employee } from '../../types/index';
       color: #1f2937;
     }
 
+    .portal-header.portal-disabled {
+      cursor: pointer;
+      opacity: 0.55;
+      border-bottom-color: #cbd5e1;
+    }
+
+    .portal-access-panel.portal-disabled {
+      cursor: pointer;
+      opacity: 0.55;
+      filter: grayscale(0.4);
+    }
+
+    .portal-access-panel.portal-disabled mat-form-field {
+      pointer-events: none;
+    }
+
     .form-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -464,18 +484,21 @@ export class EmployeeFormDialogComponent implements OnInit {
   employeeForm: FormGroup;
   isEditMode: boolean = false;
   viewOnly: boolean = false;
+  portalAccessEnabled: boolean = true;
 
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<EmployeeFormDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { employee?: Employee, businessId: number, viewOnly?: boolean }
+    private snackBar: MatSnackBar,
+    @Inject(MAT_DIALOG_DATA) public data: { employee?: Employee, businessId: number, viewOnly?: boolean, currentPlan?: string | null }
   ) {
     this.isEditMode = !!data.employee;
     this.viewOnly = !!data.viewOnly;
+    this.portalAccessEnabled = data.currentPlan?.toLowerCase() !== 'lite';
 
     const passwordValidators = this.isEditMode
       ? [] // Password optional for edit
-      : [Validators.required, Validators.minLength(6)]; // Required for new employee
+      : (this.portalAccessEnabled ? [Validators.required, Validators.minLength(6)] : []); // Required only when portal access is included
 
     this.employeeForm = this.fb.group({
       firstName: [data.employee?.firstName || '', Validators.required],
@@ -506,11 +529,26 @@ export class EmployeeFormDialogComponent implements OnInit {
       ytdPaye: [data.employee?.ytdPaye ?? 0],
       ytdTotalDeductions: [data.employee?.ytdTotalDeductions ?? 0]
     });
+
+    if (!this.portalAccessEnabled) {
+      this.employeeForm.get('password')?.disable();
+    }
   }
 
   ngOnInit() {}
 
+  showPortalUpgradeMessage() {
+    if (this.portalAccessEnabled) {
+      return;
+    }
+
+    this.snackBar.open('This option is not part of your package. Upgrade to use employee portal.', 'Close', {
+      duration: 5000
+    });
+  }
+
   onSubmit() {
+    this.employeeForm.markAllAsTouched();
     if (this.employeeForm.valid) {
       const formValue = this.employeeForm.value;
 
@@ -537,7 +575,7 @@ export class EmployeeFormDialogComponent implements OnInit {
         employmentType: formValue.employmentType || 'Salary',
         jobType: formValue.jobType || 'Full-Time',
         vacationDaysBalance: Number(formValue.vacationDaysBalance) || 0,
-        password: formValue.password || undefined, // Only include if provided
+        password: this.portalAccessEnabled ? (formValue.password || undefined) : undefined,
         ytdGross: Number(formValue.ytdGross) || 0,
         ytdNis: Number(formValue.ytdNis) || 0,
         ytdNht: Number(formValue.ytdNht) || 0,

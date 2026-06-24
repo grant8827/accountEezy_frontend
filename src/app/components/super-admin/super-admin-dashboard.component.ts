@@ -46,10 +46,18 @@ interface PackageRow {
   key: string;
   name: string;
   monthlyPriceJmd: number;
+  yearlyPriceJmd?: number | null;
   isCustom: boolean;
   discountEnabled: boolean;
   discountPercent: number;
+  monthlySaleEnabled: boolean;
+  monthlySalePriceJmd?: number | null;
+  yearlySaleEnabled: boolean;
+  yearlySalePriceJmd?: number | null;
+  freeTrialDays: number;
   discountedMonthlyPriceJmd: number;
+  regularYearlyPriceJmd: number;
+  discountedYearlyPriceJmd: number;
   updatedAt: string;
 }
 
@@ -397,8 +405,8 @@ const paymentStatusLabels: Record<number, string> = {
         <div class="packages-panel">
           <div class="panel-heading">
             <div>
-              <h2>Package Discounts</h2>
-              <p>Apply percentage discounts per package. Checkout will use the discounted price.</p>
+              <h2>Package Pricing</h2>
+              <p>Update regular package prices and add monthly or yearly sale prices. Public pricing and checkout use these values.</p>
             </div>
             <button class="btn-refresh" type="button" (click)="loadPackages()">
               <mat-icon>refresh</mat-icon>
@@ -416,29 +424,59 @@ const paymentStatusLabels: Record<number, string> = {
                   <span class="package-key">{{ pkg.key }}</span>
                   <h3>{{ pkg.name }}</h3>
                 </div>
-                <span class="status-pill" [class.pill-active]="pkg.discountEnabled" [class.pill-pending]="!pkg.discountEnabled">
-                  {{ pkg.discountEnabled ? 'Discount Active' : 'No Discount' }}
+                <span class="status-pill" [class.pill-active]="pkg.monthlySaleEnabled || pkg.yearlySaleEnabled" [class.pill-pending]="!pkg.monthlySaleEnabled && !pkg.yearlySaleEnabled">
+                  {{ pkg.monthlySaleEnabled || pkg.yearlySaleEnabled ? 'Sale Active' : 'Regular Price' }}
                 </span>
               </div>
 
               <div class="price-row">
-                <span class="old-price" [class.is-discounted]="pkg.discountEnabled">{{ formatCurrency(pkg.monthlyPriceJmd) }}</span>
+                <span class="old-price" [class.is-discounted]="pkg.monthlySaleEnabled">{{ formatCurrency(pkg.monthlyPriceJmd) }}</span>
                 <span class="new-price">{{ formatCurrency(pkg.discountedMonthlyPriceJmd) }}</span>
                 <span class="price-period">/mo</span>
               </div>
+              <div class="price-row compact-price">
+                <span class="old-price" [class.is-discounted]="pkg.yearlySaleEnabled">{{ formatCurrency(pkg.regularYearlyPriceJmd) }}</span>
+                <span class="new-price">{{ formatCurrency(pkg.discountedYearlyPriceJmd) }}</span>
+                <span class="price-period">/yr</span>
+              </div>
 
-              <label class="toggle-row">
-                <input type="checkbox" [(ngModel)]="pkg.discountEnabled">
-                <span>Enable discount</span>
+              <label class="discount-field">
+                <span>Regular monthly price</span>
+                <input type="number" min="1" step="1" [(ngModel)]="pkg.monthlyPriceJmd">
               </label>
 
               <label class="discount-field">
-                <span>Discount percent</span>
-                <input type="number" min="0" max="100" step="0.01" [(ngModel)]="pkg.discountPercent">
+                <span>Regular yearly price</span>
+                <input type="number" min="1" step="1" [(ngModel)]="pkg.yearlyPriceJmd" placeholder="Auto: monthly x 12 less 20%">
               </label>
 
-              <button class="btn-save" type="button" (click)="savePackageDiscount(pkg)" [disabled]="packageActionLoading === pkg.id">
-                {{ packageActionLoading === pkg.id ? 'Saving...' : 'Save Discount' }}
+              <label class="toggle-row">
+                <input type="checkbox" [(ngModel)]="pkg.monthlySaleEnabled">
+                <span>Monthly sale</span>
+              </label>
+
+              <label class="discount-field">
+                <span>Monthly sale price</span>
+                <input type="number" min="1" step="1" [(ngModel)]="pkg.monthlySalePriceJmd" [disabled]="!pkg.monthlySaleEnabled">
+              </label>
+
+              <label class="toggle-row">
+                <input type="checkbox" [(ngModel)]="pkg.yearlySaleEnabled">
+                <span>Yearly sale</span>
+              </label>
+
+              <label class="discount-field">
+                <span>Yearly sale price</span>
+                <input type="number" min="1" step="1" [(ngModel)]="pkg.yearlySalePriceJmd" [disabled]="!pkg.yearlySaleEnabled">
+              </label>
+
+              <label class="discount-field">
+                <span>Free trial days</span>
+                <input type="number" min="0" step="1" [(ngModel)]="pkg.freeTrialDays">
+              </label>
+
+              <button class="btn-save" type="button" (click)="savePackagePricing(pkg)" [disabled]="packageActionLoading === pkg.id">
+                {{ packageActionLoading === pkg.id ? 'Saving...' : 'Save Package' }}
               </button>
             </article>
           </div>
@@ -1243,28 +1281,60 @@ export class SuperAdminDashboardComponent implements OnInit {
   }
 
   savePackageDiscount(pkg: PackageRow): void {
-    const discountPercent = Number(pkg.discountPercent) || 0;
-    if (discountPercent < 0 || discountPercent > 100) {
-      this.packageError = 'Discount percent must be between 0 and 100.';
+    this.savePackagePricing(pkg);
+  }
+
+  savePackagePricing(pkg: PackageRow): void {
+    const monthlyPriceJmd = Number(pkg.monthlyPriceJmd) || 0;
+    const yearlyPriceJmd = pkg.yearlyPriceJmd === null || pkg.yearlyPriceJmd === undefined || Number(pkg.yearlyPriceJmd) === 0
+      ? null
+      : Number(pkg.yearlyPriceJmd);
+    const monthlySalePriceJmd = pkg.monthlySaleEnabled ? Number(pkg.monthlySalePriceJmd) || 0 : null;
+    const yearlySalePriceJmd = pkg.yearlySaleEnabled ? Number(pkg.yearlySalePriceJmd) || 0 : null;
+
+    if (monthlyPriceJmd <= 0) {
+      this.packageError = 'Regular monthly price must be greater than 0.';
+      return;
+    }
+    if (yearlyPriceJmd !== null && yearlyPriceJmd <= 0) {
+      this.packageError = 'Regular yearly price must be greater than 0.';
+      return;
+    }
+    if (pkg.monthlySaleEnabled && (!monthlySalePriceJmd || monthlySalePriceJmd <= 0)) {
+      this.packageError = 'Monthly sale price must be greater than 0.';
+      return;
+    }
+    if (pkg.yearlySaleEnabled && (!yearlySalePriceJmd || yearlySalePriceJmd <= 0)) {
+      this.packageError = 'Yearly sale price must be greater than 0.';
+      return;
+    }
+    const freeTrialDays = Number(pkg.freeTrialDays) || 0;
+    if (freeTrialDays < 0) {
+      this.packageError = 'Free trial days cannot be negative.';
       return;
     }
 
     this.packageActionLoading = pkg.id;
     this.packageError = '';
     this.http.put<PackageRow>(`${environment.apiUrl}/superadmin/packages/${pkg.id}/discount`, {
-      discountEnabled: pkg.discountEnabled,
-      discountPercent
+      monthlyPriceJmd,
+      yearlyPriceJmd,
+      monthlySaleEnabled: pkg.monthlySaleEnabled,
+      monthlySalePriceJmd,
+      yearlySaleEnabled: pkg.yearlySaleEnabled,
+      yearlySalePriceJmd,
+      freeTrialDays
     }).subscribe({
       next: (updated) => {
         this.packages = this.packages.map(item => item.id === updated.id ? updated : item);
         this.packageActionLoading = null;
       },
       error: (err) => {
-        console.error('[SuperAdmin] savePackageDiscount error:', err);
+        console.error('[SuperAdmin] savePackagePricing error:', err);
         const detail = err.error?.detail ? ` ${err.error.detail}` : '';
         this.packageError = err.error?.message
           ? `${err.error.message}${detail}`
-          : 'Failed to save package discount.';
+          : 'Failed to save package pricing.';
         this.packageActionLoading = null;
       }
     });

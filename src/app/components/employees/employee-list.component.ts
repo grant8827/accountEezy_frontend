@@ -765,7 +765,7 @@ export class EmployeeListComponent implements OnInit {
     const dialogRef = this.dialog.open(EmployeeFormDialogComponent, {
       width: '600px',
       maxWidth: '90vw',
-      data: { businessId: 1 },
+      data: { businessId: 1, currentPlan: user?.selectedPlan ?? null },
       panelClass: 'employee-dialog'
     });
 
@@ -862,7 +862,7 @@ export class EmployeeListComponent implements OnInit {
     this.dialog.open(EmployeeFormDialogComponent, {
       width: '600px',
       maxWidth: '90vw',
-      data: { employee, businessId: 1, viewOnly: true },
+      data: { employee, businessId: 1, viewOnly: true, currentPlan: this.authService.getCurrentUser()?.selectedPlan ?? null },
       panelClass: 'employee-dialog'
     });
   }
@@ -871,7 +871,7 @@ export class EmployeeListComponent implements OnInit {
     const dialogRef = this.dialog.open(EmployeeFormDialogComponent, {
       width: '600px',
       maxWidth: '90vw',
-      data: { employee, businessId: 1 },
+      data: { employee, businessId: 1, currentPlan: this.authService.getCurrentUser()?.selectedPlan ?? null },
       panelClass: 'employee-dialog'
     });
 
