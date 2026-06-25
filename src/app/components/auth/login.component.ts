@@ -437,7 +437,8 @@ export class LoginComponent {
     this.isLoading$ = this.authService.isLoading$;
     this.error$ = this.authService.error$;
     this.route.queryParams.subscribe(params => {
-      this.registeredPending = params['registered'] === '1';
+      // Don't show "pending" banner if payment was just completed successfully
+      this.registeredPending = params['registered'] === '1' && params['payment'] !== 'success';
     });
   }
 
