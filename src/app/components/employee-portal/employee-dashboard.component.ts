@@ -1826,6 +1826,6 @@ export class EmployeeDashboardComponent implements OnInit {
     localStorage.removeItem('employeeId');
     localStorage.removeItem('employeeName');
     localStorage.removeItem('employeeEmail');
-    this.router.navigate(['/login']);
+    this.router.navigate(['/']);
   }
 }
