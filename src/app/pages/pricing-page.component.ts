@@ -59,6 +59,9 @@ import { PackagePrice, PackagePricingService } from '../services/package-pricing
         <!-- LITE -->
         <div class="pricing-card">
           <div class="pricing-badge pricing-badge--free">Lite</div>
+          @if (salePctFor('lite'); as pct) {
+            <div class="sale-pct-badge">{{ pct }}% OFF</div>
+          }
           <div class="pricing-price">
             <span class="price-currency">J$</span>
             <span class="price-amount">{{ planPriceFor('lite', 3500) }}</span>
@@ -74,11 +77,17 @@ import { PackagePrice, PackagePricingService } from '../services/package-pricing
             <li>✓ Email support</li>
           </ul>
           <a class="btn btn-outline w-full" [routerLink]="['/register']" [queryParams]="{plan: 'lite', billing: billingPeriod}">Get Started</a>
+          @if (freeTrialDaysFor('lite') > 0) {
+            <p class="trial-note">{{ freeTrialDaysFor('lite') }}-day free trial included</p>
+          }
         </div>
 
         <!-- STARTER -->
         <div class="pricing-card pricing-card--featured">
           <div class="pricing-badge pricing-badge--pro">Starter</div>
+          @if (salePctFor('starter'); as pct) {
+            <div class="sale-pct-badge sale-pct-badge--featured">{{ pct }}% OFF</div>
+          }
           <div class="pricing-price">
             <span class="price-currency">J$</span>
             <span class="price-amount">{{ planPriceFor('starter', 6500) }}</span>
@@ -94,11 +103,17 @@ import { PackagePrice, PackagePricingService } from '../services/package-pricing
             <li>✓ Employee portal access</li>
           </ul>
           <a class="btn btn-primary-inv w-full" [routerLink]="['/register']" [queryParams]="{plan: 'starter', billing: billingPeriod}">{{ trialCtaFor('starter') }}</a>
+          @if (freeTrialDaysFor('starter') > 0) {
+            <p class="trial-note trial-note--featured">{{ freeTrialDaysFor('starter') }}-day free trial included</p>
+          }
         </div>
 
         <!-- GROWTH -->
         <div class="pricing-card">
           <div class="pricing-badge pricing-badge--enterprise">Growth</div>
+          @if (salePctFor('growth'); as pct) {
+            <div class="sale-pct-badge">{{ pct }}% OFF</div>
+          }
           <div class="pricing-price">
             <span class="price-currency">J$</span>
             <span class="price-amount">{{ planPriceFor('growth', 12500) }}</span>
@@ -114,6 +129,9 @@ import { PackagePrice, PackagePricingService } from '../services/package-pricing
             <li>✓ Export and print workflows</li>
           </ul>
           <a class="btn btn-outline w-full" [routerLink]="['/register']" [queryParams]="{plan: 'growth', billing: billingPeriod}">Get Started</a>
+          @if (freeTrialDaysFor('growth') > 0) {
+            <p class="trial-note">{{ freeTrialDaysFor('growth') }}-day free trial included</p>
+          }
         </div>
 
         <!-- CUSTOM -->
@@ -345,6 +363,35 @@ import { PackagePrice, PackagePricingService } from '../services/package-pricing
     .pricing-card--featured .pricing-features li { color: rgba(255,255,255,0.85); }
     .pricing-card--featured .pricing-features li.disabled { color: rgba(255,255,255,0.3); }
 
+    /* ── Sale badge ── */
+    .sale-pct-badge {
+      display: inline-block;
+      background: rgba(239,68,68,0.15);
+      color: #f87171;
+      border: 1px solid rgba(239,68,68,0.35);
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 3px 10px;
+      margin-bottom: 8px;
+    }
+    .sale-pct-badge--featured {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border-color: rgba(255,255,255,0.3);
+    }
+
+    /* ── Trial note ── */
+    .trial-note {
+      margin-top: 10px;
+      font-size: 0.78rem;
+      color: var(--sidebar-text);
+      text-align: center;
+      opacity: 0.75;
+    }
+    .trial-note--featured { color: rgba(255,255,255,0.65); }
+
     /* ── Buttons ── */
     .w-full { display: block; width: 100%; text-align: center; text-decoration: none; }
 
@@ -439,6 +486,23 @@ export class PricingPageComponent implements OnInit {
   trialCtaFor(planKey: string): string {
     const days = this.packages[planKey]?.freeTrialDays ?? 14;
     return days > 0 ? `Start ${days}-Day Trial` : 'Get Started';
+  }
+
+  freeTrialDaysFor(planKey: string): number {
+    return this.packages[planKey]?.freeTrialDays ?? 0;
+  }
+
+  salePctFor(planKey: string): number | null {
+    const pkg = this.packages[planKey];
+    if (!pkg) return null;
+    if (this.yearly) {
+      if (!pkg.yearlySaleEnabled || !pkg.yearlySalePriceJmd || !pkg.regularYearlyPriceJmd) return null;
+      const pct = Math.round((1 - pkg.yearlySalePriceJmd / pkg.regularYearlyPriceJmd) * 100);
+      return pct > 0 ? pct : null;
+    }
+    if (!pkg.monthlySaleEnabled || !pkg.monthlySalePriceJmd || !pkg.monthlyPriceJmd) return null;
+    const pct = Math.round((1 - pkg.monthlySalePriceJmd / pkg.monthlyPriceJmd) * 100);
+    return pct > 0 ? pct : null;
   }
 
   private planPriceValue(planKey: string, fallbackMonthlyPrice: number, billing: 'monthly' | 'yearly'): number {

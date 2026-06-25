@@ -483,6 +483,12 @@ const paymentStatusLabels: Record<number, string> = {
         </div>
         }
       </div>
+
+      <!-- Toast notification -->
+      <div class="toast" [class.toast--visible]="toast.visible">
+        <mat-icon>check_circle</mat-icon>
+        {{ toast.message }}
+      </div>
     </div>
   `,
   styles: [`
@@ -1058,6 +1064,30 @@ const paymentStatusLabels: Record<number, string> = {
       .lookup-form { grid-template-columns: 1fr; }
       .panel-heading { flex-direction: column; }
     }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #047857;
+      color: #fff;
+      padding: 13px 20px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .toast mat-icon { font-size: 20px; width: 20px; height: 20px; }
+    .toast--visible { transform: translateY(0); opacity: 1; }
   `]
 })
 export class SuperAdminDashboardComponent implements OnInit {
@@ -1073,6 +1103,8 @@ export class SuperAdminDashboardComponent implements OnInit {
   searchTerm = '';
   actionLoading: number | null = null;
   packageActionLoading: number | null = null;
+  toast = { visible: false, message: '' };
+  private toastTimer: ReturnType<typeof setTimeout> | null = null;
   userLookupEmail = '';
   userLookupLoading = false;
   userLookupError = '';
@@ -1249,6 +1281,7 @@ export class SuperAdminDashboardComponent implements OnInit {
         business.gracePeriodEndsAt = updated.gracePeriodEndsAt;
         business.lastPaymentMethod = updated.lastPaymentMethod;
         this.actionLoading = null;
+        this.showToast('Subscription saved!');
         this.loadStats();
       },
       error: (err) => {
@@ -1278,6 +1311,12 @@ export class SuperAdminDashboardComponent implements OnInit {
           this.packagesLoading = false;
         }
       });
+  }
+
+  showToast(message: string): void {
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toast = { visible: true, message };
+    this.toastTimer = setTimeout(() => { this.toast = { ...this.toast, visible: false }; }, 3000);
   }
 
   savePackageDiscount(pkg: PackageRow): void {
@@ -1328,6 +1367,7 @@ export class SuperAdminDashboardComponent implements OnInit {
       next: (updated) => {
         this.packages = this.packages.map(item => item.id === updated.id ? updated : item);
         this.packageActionLoading = null;
+        this.showToast('Package pricing saved!');
       },
       error: (err) => {
         console.error('[SuperAdmin] savePackagePricing error:', err);
