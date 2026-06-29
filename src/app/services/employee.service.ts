@@ -53,6 +53,7 @@ interface EmployeeRequest {
   email?: string;
   password?: string;
   isActive?: boolean;
+  isOnLeave?: boolean;
   employmentType?: string;
   jobType?: string;
   vacationDaysBalance?: number;
@@ -130,6 +131,7 @@ export class EmployeeService {
       email: employee.email,
       password: employee.password,
       isActive: employee.status !== 'inactive',
+      isOnLeave: employee.status === 'on-leave',
       employmentType: employee.employmentType || 'Salary',
       jobType: employee.jobType || 'Full-Time',
       vacationDaysBalance: employee.vacationDaysBalance ?? 0,
