@@ -23,7 +23,7 @@ interface BackendEmployee {
   email?: string;
   isActive: boolean;
   isOnLeave?: boolean;
-  status?: string;
+  status?: 'active' | 'on-leave' | 'inactive';
   employmentType?: string;
   jobType?: string;
   vacationDaysBalance?: number;
@@ -91,7 +91,7 @@ export class EmployeeService {
       hireDate: backendEmp.hireDate ? backendEmp.hireDate.split('T')[0] : new Date().toISOString().split('T')[0],
       businessId: backendEmp.businessId,
       department: backendEmp.department || 'General',
-      status: backendEmp.status ?? (backendEmp.isOnLeave ? 'on-leave' : backendEmp.isActive ? 'active' : 'inactive'),
+      status: (backendEmp.status ?? (backendEmp.isOnLeave ? 'on-leave' : backendEmp.isActive ? 'active' : 'inactive')) as 'active' | 'on-leave' | 'inactive',
       nisNumber: backendEmp.nisNumber,
       trn: backendEmp.trn,
       employeeIdNumber: backendEmp.employeeIdNumber,
