@@ -47,6 +47,8 @@ export interface Employee {
   employmentType?: 'Salary' | 'Hourly';
   jobType?: 'Full-Time' | 'Part-Time' | 'Contract';
   vacationDaysBalance?: number;
+  vacationDayRule?: 'WeekdaysOnly' | 'WeekendIncluded';
+  vacationExemptMonths?: number[];
   // YTD accumulators
   ytdGross?: number;
   ytdNis?: number;

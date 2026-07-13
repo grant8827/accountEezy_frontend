@@ -135,6 +135,21 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
             <mat-icon>beach_access</mat-icon>
             Annual Leave Balance:&nbsp;<strong>{{ leaveBalance }} day{{ leaveBalance !== 1 ? 's' : '' }}</strong>
           </div>
+          <div class="policy-banner">
+            <mat-icon>rule</mat-icon>
+            Vacation rule:&nbsp;<strong>{{ vacationDayRule === 'WeekendIncluded' ? 'Weekend Included (Mon - Sun)' : 'Weekdays Only (Mon - Fri)' }}</strong>
+          </div>
+          @if (vacationExemptMonths.length > 0) {
+            <div class="policy-banner warning-policy">
+              <mat-icon>event_busy</mat-icon>
+              Exempt month(s):&nbsp;<strong>{{ getExemptMonthNames() }}</strong>
+            </div>
+          }
+        }
+        @if (selectedLeaveType === 'Vacation' && hasExemptMonthInRange) {
+          <div class="warning-banner">
+            &#9888; Selected dates include exempt month(s). Please choose dates outside exempt months.
+          </div>
         }
         @if (selectedLeaveType === 'Vacation' && totalDays > 0 && totalDays > leaveBalance) {
           <div class="warning-banner">
@@ -150,14 +165,14 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
               <span class="date-word">From</span>
               <mat-form-field appearance="outline" class="paper-date-field">
                 <mat-label>Start</mat-label>
-                <input matInput [matDatepicker]="fromPicker" formControlName="startDate" placeholder="MM/DD/YYYY" (click)="fromPicker.open()">
+                <input matInput [matDatepicker]="fromPicker" [matDatepickerFilter]="dateSelectableFilter" formControlName="startDate" placeholder="MM/DD/YYYY" (click)="fromPicker.open()">
                 <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
                 <mat-datepicker #fromPicker></mat-datepicker>
               </mat-form-field>
               <span class="date-word">To</span>
               <mat-form-field appearance="outline" class="paper-date-field">
                 <mat-label>End</mat-label>
-                <input matInput [matDatepicker]="toPicker" formControlName="endDate" placeholder="MM/DD/YYYY" (click)="toPicker.open()">
+                <input matInput [matDatepicker]="toPicker" [matDatepickerFilter]="dateSelectableFilter" formControlName="endDate" placeholder="MM/DD/YYYY" (click)="toPicker.open()">
                 <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
                 <mat-datepicker #toPicker></mat-datepicker>
               </mat-form-field>
@@ -415,6 +430,24 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
       border-radius: 4px;
     }
 
+    .policy-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f5f5f5;
+      border-left: 4px solid #64748b;
+      padding: 8px 14px;
+      font-size: 13px;
+      color: #1f2937;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .warning-policy {
+      border-left-color: #d97706;
+      background: #fff7ed;
+      color: #9a3412;
+    }
+
     /* ── Dates section ───────────────────────────────── */
     .dates-section {
       display: flex;
@@ -573,6 +606,14 @@ export class ApplyLeaveDialogComponent {
   vacationForm: FormGroup;
   selectedFile: File | null = null;
   fileError: string | null = null;
+  vacationDayRule: 'WeekdaysOnly' | 'WeekendIncluded' = 'WeekdaysOnly';
+  vacationExemptMonths: number[] = [];
+
+  readonly monthNames: Record<number, string> = {
+    1: 'January', 2: 'February', 3: 'March', 4: 'April',
+    5: 'May', 6: 'June', 7: 'July', 8: 'August',
+    9: 'September', 10: 'October', 11: 'November', 12: 'December'
+  };
 
   get leaveType(): string { return this.selectedLeaveType; }
 
@@ -588,8 +629,38 @@ export class ApplyLeaveDialogComponent {
     const start = this.vacationForm.get('startDate')?.value;
     const end   = this.vacationForm.get('endDate')?.value;
     if (!start || !end) return 0;
-    const diff = Math.ceil((new Date(end).getTime() - new Date(start).getTime()) / 86400000) + 1;
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    if (endDate < startDate) return 0;
+
+    if (this.selectedLeaveType === 'Vacation') {
+      return this.calculateVacationDays(startDate, endDate);
+    }
+
+    const diff = Math.ceil((endDate.getTime() - startDate.getTime()) / 86400000) + 1;
     return diff > 0 ? diff : 0;
+  }
+
+  get hasExemptMonthInRange(): boolean {
+    if (this.selectedLeaveType !== 'Vacation' || this.vacationExemptMonths.length === 0) return false;
+
+    const start = this.vacationForm.get('startDate')?.value;
+    const end = this.vacationForm.get('endDate')?.value;
+    if (!start || !end) return false;
+
+    const s = new Date(start);
+    const e = new Date(end);
+    if (e < s) return false;
+
+    const blocked = new Set(this.vacationExemptMonths);
+    const cursor = new Date(s);
+    while (cursor <= e) {
+      if (blocked.has(cursor.getMonth() + 1)) return true;
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return false;
   }
 
   get matPatTotal(): number {
@@ -606,9 +677,25 @@ export class ApplyLeaveDialogComponent {
     const e = this.vacationForm.get('endDate')?.value;
     if (!s || !e || this.totalDays < 1) return true;
     if (this.selectedLeaveType === 'Sick' && !this.selectedFile) return true;
+    if (this.selectedLeaveType === 'Vacation' && this.hasExemptMonthInRange) return true;
     if (this.selectedLeaveType === 'Vacation' && this.totalDays > this.leaveBalance) return true;
     return false;
   }
+
+  readonly dateSelectableFilter = (date: Date | null): boolean => {
+    if (!date) return false;
+    if (this.selectedLeaveType !== 'Vacation') return true;
+
+    const month = date.getMonth() + 1;
+    if (this.vacationExemptMonths.includes(month)) return false;
+
+    if (this.vacationDayRule === 'WeekdaysOnly') {
+      const day = date.getDay();
+      return day !== 0 && day !== 6;
+    }
+
+    return true;
+  };
 
   employeeName: string;
   employeeIdNumber: string;
@@ -619,12 +706,17 @@ export class ApplyLeaveDialogComponent {
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<ApplyLeaveDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) data: { employeeName: string, employeeIdNumber?: string, hireDate?: string, existingLeave?: any, leaveBalance?: number, position?: string, department?: string }
+    @Inject(MAT_DIALOG_DATA) data: { employeeName: string, employeeIdNumber?: string, hireDate?: string, existingLeave?: any, leaveBalance?: number, position?: string, department?: string, vacationDayRule?: 'WeekdaysOnly' | 'WeekendIncluded', vacationExemptMonths?: number[] }
   ) {
     this.employeeName     = data?.employeeName ?? '';
     this.employeeIdNumber = data?.employeeIdNumber ?? '';
     this.hireDate         = data?.hireDate ? new Date(data.hireDate) : null;
     this.leaveBalance     = data?.leaveBalance ?? 0;
+    this.vacationDayRule  = data?.vacationDayRule ?? 'WeekdaysOnly';
+    this.vacationExemptMonths = (data?.vacationExemptMonths ?? [])
+      .filter((m: number) => m >= 1 && m <= 12)
+      .filter((m: number, i: number, arr: number[]) => arr.indexOf(m) === i)
+      .sort((a: number, b: number) => a - b);
     const existing        = data?.existingLeave;
     this.existingLeaveId  = existing?.id;
 
@@ -695,6 +787,31 @@ export class ApplyLeaveDialogComponent {
       leaveId:       this.existingLeaveId
     };
     this.dialogRef.close(payload);
+  }
+
+  private calculateVacationDays(startDate: Date, endDate: Date): number {
+    const blocked = new Set(this.vacationExemptMonths);
+    const includeWeekends = this.vacationDayRule === 'WeekendIncluded';
+
+    let days = 0;
+    const cursor = new Date(startDate);
+    while (cursor <= endDate) {
+      const month = cursor.getMonth() + 1;
+      const day = cursor.getDay();
+      const weekend = day === 0 || day === 6;
+
+      if (!blocked.has(month) && (includeWeekends || !weekend)) {
+        days++;
+      }
+
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return days;
+  }
+
+  getExemptMonthNames(): string {
+    return this.vacationExemptMonths.map(m => this.monthNames[m]).filter(Boolean).join(', ');
   }
 }
 
@@ -1504,6 +1621,8 @@ export class EmployeeDashboardComponent implements OnInit {
   employeeIdNumber = '';
   hireDate: string | null = null;
   leaveBalance = 0;
+  vacationDayRule: 'WeekdaysOnly' | 'WeekendIncluded' = 'WeekdaysOnly';
+  vacationExemptMonths: number[] = [];
   leaveRequests: LeaveRequest[] = [];
   payslips: any[] = [];
   loadingPayslips = false;
@@ -1577,6 +1696,11 @@ export class EmployeeDashboardComponent implements OnInit {
       next: data => {
         this.leaveRequests = data.leaves ?? data;
         this.leaveBalance = data.vacationDaysBalance ?? 0;
+        this.vacationDayRule = data.vacationDayRule === 'WeekendIncluded' ? 'WeekendIncluded' : 'WeekdaysOnly';
+        this.vacationExemptMonths = (data.vacationExemptMonths ?? [])
+          .filter((m: number) => m >= 1 && m <= 12)
+          .filter((m: number, i: number, arr: number[]) => arr.indexOf(m) === i)
+          .sort((a: number, b: number) => a - b);
         this.cdr.detectChanges();
       },
       error: () => {}
@@ -1747,7 +1871,16 @@ export class EmployeeDashboardComponent implements OnInit {
     const dialogRef = this.dialog.open(ApplyLeaveDialogComponent, {
       width: '720px',
       maxWidth: '95vw',
-      data: { employeeName: this.employeeName, leaveBalance: this.leaveBalance, position: this.employeePosition, department: this.employeeDepartment, employeeIdNumber: this.employeeIdNumber, hireDate: this.hireDate }
+      data: {
+        employeeName: this.employeeName,
+        leaveBalance: this.leaveBalance,
+        position: this.employeePosition,
+        department: this.employeeDepartment,
+        employeeIdNumber: this.employeeIdNumber,
+        hireDate: this.hireDate,
+        vacationDayRule: this.vacationDayRule,
+        vacationExemptMonths: this.vacationExemptMonths
+      }
     });
 
     dialogRef.afterClosed().subscribe((result: LeaveRequestDto & { file?: File | null }) => {
@@ -1761,7 +1894,17 @@ export class EmployeeDashboardComponent implements OnInit {
     const dialogRef = this.dialog.open(ApplyLeaveDialogComponent, {
       width: '720px',
       maxWidth: '95vw',
-      data: { employeeName: this.employeeName, existingLeave: leave, leaveBalance: this.leaveBalance, position: this.employeePosition, department: this.employeeDepartment, employeeIdNumber: this.employeeIdNumber, hireDate: this.hireDate }
+      data: {
+        employeeName: this.employeeName,
+        existingLeave: leave,
+        leaveBalance: this.leaveBalance,
+        position: this.employeePosition,
+        department: this.employeeDepartment,
+        employeeIdNumber: this.employeeIdNumber,
+        hireDate: this.hireDate,
+        vacationDayRule: this.vacationDayRule,
+        vacationExemptMonths: this.vacationExemptMonths
+      }
     });
 
     dialogRef.afterClosed().subscribe((result: any) => {

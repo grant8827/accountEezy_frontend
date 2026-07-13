@@ -27,6 +27,8 @@ interface BackendEmployee {
   employmentType?: string;
   jobType?: string;
   vacationDaysBalance?: number;
+  vacationDayRule?: 'WeekdaysOnly' | 'WeekendIncluded';
+  vacationExemptMonths?: number[];
   position?: string;
   department?: string;
   hireDate?: string;
@@ -57,6 +59,8 @@ interface EmployeeRequest {
   employmentType?: string;
   jobType?: string;
   vacationDaysBalance?: number;
+  vacationDayRule?: 'WeekdaysOnly' | 'WeekendIncluded';
+  vacationExemptMonths?: number[];
   position?: string;
   department?: string;
   hireDate?: string;
@@ -105,6 +109,8 @@ export class EmployeeService {
       employmentType: (backendEmp.employmentType as 'Salary' | 'Hourly') || 'Salary',
       jobType: (backendEmp.jobType as 'Full-Time' | 'Part-Time' | 'Contract') || 'Full-Time',
       vacationDaysBalance: backendEmp.vacationDaysBalance ?? 0,
+      vacationDayRule: (backendEmp.vacationDayRule as 'WeekdaysOnly' | 'WeekendIncluded') || 'WeekdaysOnly',
+      vacationExemptMonths: backendEmp.vacationExemptMonths ?? [],
       ytdGross: backendEmp.ytdGross ?? 0,
       ytdNis: backendEmp.ytdNis ?? 0,
       ytdNht: backendEmp.ytdNht ?? 0,
@@ -135,6 +141,8 @@ export class EmployeeService {
       employmentType: employee.employmentType || 'Salary',
       jobType: employee.jobType || 'Full-Time',
       vacationDaysBalance: employee.vacationDaysBalance ?? 0,
+      vacationDayRule: employee.vacationDayRule || 'WeekdaysOnly',
+      vacationExemptMonths: employee.vacationExemptMonths ?? [],
       position: employee.position,
       department: employee.department,
       hireDate: employee.hireDate,

@@ -10,6 +10,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Employee } from '../../types/index';
 
@@ -29,6 +30,7 @@ import { Employee } from '../../types/index';
     MatNativeDateModule,
     MatIconModule,
     MatButtonToggleModule,
+    MatTooltipModule,
     MatSnackBarModule
   ],
   template: `
@@ -236,6 +238,42 @@ import { Employee } from '../../types/index';
               <mat-icon matPrefix>beach_access</mat-icon>
               <input matInput type="number" formControlName="vacationDaysBalance" placeholder="0" min="0">
             </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Vacation Day Rule</mat-label>
+              <mat-icon matPrefix>rule</mat-icon>
+              <mat-select formControlName="vacationDayRule">
+                <mat-option value="WeekdaysOnly">Weekdays Only (Mon - Fri)</mat-option>
+                <mat-option value="WeekendIncluded">Weekend Included (Mon - Sun)</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <div class="full-width full-row">
+              <div class="field-help-label">
+                <span>Exempt Months</span>
+                <button
+                  type="button"
+                  class="help-pill"
+                  #monthsHelp="matTooltip"
+                  [matTooltip]="'(Vacation Not Allowed)\n\nSelect one or more month(s) that staff should not be allowed to request vacation.'"
+                  matTooltipPosition="above"
+                  (click)="monthsHelp.toggle()"
+                  aria-label="Vacation months help">
+                  ?
+                </button>
+              </div>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Exempt Months</mat-label>
+                <mat-select formControlName="vacationExemptMonths" multiple>
+                  @for (month of monthOptions; track month.value) {
+                    <mat-option [value]="month.value">{{ month.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
           </div>
 
           <div class="form-row">
@@ -454,6 +492,42 @@ import { Employee } from '../../types/index';
       width: 100%;
     }
 
+    .full-row {
+      grid-column: 1 / -1;
+    }
+
+    .field-help-label {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      margin: 0 0 0.35rem 0.1rem;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(0,0,0,0.7);
+    }
+
+    .help-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid #94a3b8;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .help-pill:hover {
+      border-color: #64748b;
+      background: #eef2ff;
+    }
+
     mat-dialog-actions {
       padding: 1.5rem;
       border-top: 1px solid #e5e7eb;
@@ -485,6 +559,20 @@ export class EmployeeFormDialogComponent implements OnInit {
   isEditMode: boolean = false;
   viewOnly: boolean = false;
   portalAccessEnabled: boolean = true;
+  readonly monthOptions = [
+    { value: 1, label: 'January' },
+    { value: 2, label: 'February' },
+    { value: 3, label: 'March' },
+    { value: 4, label: 'April' },
+    { value: 5, label: 'May' },
+    { value: 6, label: 'June' },
+    { value: 7, label: 'July' },
+    { value: 8, label: 'August' },
+    { value: 9, label: 'September' },
+    { value: 10, label: 'October' },
+    { value: 11, label: 'November' },
+    { value: 12, label: 'December' }
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -517,6 +605,8 @@ export class EmployeeFormDialogComponent implements OnInit {
       employmentType: [data.employee?.employmentType || 'Salary'],
       jobType: [data.employee?.jobType || 'Full-Time'],
       vacationDaysBalance: [data.employee?.vacationDaysBalance ?? 0],
+      vacationDayRule: [data.employee?.vacationDayRule || 'WeekdaysOnly'],
+      vacationExemptMonths: [data.employee?.vacationExemptMonths ?? []],
       hireDate: [data.employee?.hireDate ? new Date(data.employee.hireDate) : new Date(), Validators.required],
       status: [data.employee?.status || 'active'],
       bankName: [data.employee?.bankName || ''],
@@ -575,6 +665,11 @@ export class EmployeeFormDialogComponent implements OnInit {
         employmentType: formValue.employmentType || 'Salary',
         jobType: formValue.jobType || 'Full-Time',
         vacationDaysBalance: Number(formValue.vacationDaysBalance) || 0,
+        vacationDayRule: formValue.vacationDayRule || 'WeekdaysOnly',
+        vacationExemptMonths: (formValue.vacationExemptMonths || [])
+          .filter((m: number) => m >= 1 && m <= 12)
+          .filter((m: number, i: number, arr: number[]) => arr.indexOf(m) === i)
+          .sort((a: number, b: number) => a - b),
         password: this.portalAccessEnabled ? (formValue.password || undefined) : undefined,
         ytdGross: Number(formValue.ytdGross) || 0,
         ytdNis: Number(formValue.ytdNis) || 0,
