@@ -19,7 +19,8 @@ interface SelectedPlan {
 }
 
 interface CheckoutSessionResponse {
-  sessionId: string;
+  sessionId?: string;
+  transactionId?: string;
   url: string;
 }
 
@@ -84,7 +85,7 @@ interface CheckoutSessionResponse {
                 <a class="btn-plan btn-featured contact-link" href="mailto:sales@hrbooks360.com">Contact Sales</a>
               } @else {
                 <button mat-raised-button class="btn-plan btn-featured" type="button" (click)="startCheckout()" [disabled]="loading">
-                  {{ loading ? 'Starting checkout...' : 'Continue to Stripe Checkout' }}
+                  {{ loading ? 'Starting Stripe checkout...' : 'Continue to Stripe Checkout' }}
                 </button>
               }
             </mat-card-content>
@@ -315,6 +316,8 @@ export class PaymentPageComponent implements OnInit {
         this.paymentNotice = 'Complete payment to activate your account and continue.';
       } else if (params['payment'] === 'cancelled') {
         this.paymentNotice = 'Checkout was cancelled. You can restart payment below.';
+      } else if (params['payment'] === 'failed') {
+        this.paymentError = 'WiPay could not verify or complete that payment. No account access was changed.';
       }
 
       const businessId = Number(params['businessId']);
@@ -365,7 +368,7 @@ export class PaymentPageComponent implements OnInit {
         } else if (err.status === 0) {
           this.paymentError = 'Cannot reach the payment API. Check the backend URL, CORS/proxy setup, and deployment.';
         } else if (err.status === 503) {
-          this.paymentError = err.error?.message || 'Payments are temporarily unavailable. Check Stripe configuration on the backend.';
+          this.paymentError = err.error?.message || 'Stripe is temporarily unavailable.';
         } else {
           this.paymentError = err.error?.message || 'Could not start Stripe checkout. Please try again.';
         }
