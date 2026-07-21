@@ -1,379 +1,98 @@
 <app-header></app-header>
 
-<!-- ══════════════════════════════════════════════════
-     HERO
-══════════════════════════════════════════════════ -->
-<section class="hero">
-  <div class="hero-glow hero-glow--left"></div>
-  <div class="hero-glow hero-glow--right"></div>
-
-  <div class="hero-inner">
-    <div class="hero-content">
-      <div class="hero-badge">
-        <span class="badge-dot"></span>
-        🇯🇲 &nbsp;Jamaica 2026 Tax Compliant
-      </div>
-
-      <h1 class="hero-title">
-        HR, Payroll &amp;<br />
-        Finance —&nbsp;<span class="gradient-text">In One Dashboard.</span>
-      </h1>
-
-      <p class="hero-sub">
-        Run employee records, payroll, leave requests, transaction ledgers,
-        GCT tracking and TAJ-ready reports from one secure workspace built
-        for Jamaican businesses.
-      </p>
-
-      <div class="hero-cta">
-        <a class="btn btn-primary" routerLink="/pricing">
-          Get Started
-          <span class="btn-arrow">→</span>
+<main>
+  <section class="hero">
+    <div class="hero-orb hero-orb--one"></div>
+    <div class="hero-orb hero-orb--two"></div>
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <a class="eyebrow" href="#product">
+          <span class="eyebrow-dot"></span>
+          Built for Jamaican businesses
+          <span aria-hidden="true">↗</span>
         </a>
-        <a class="btn btn-outline" routerLink="/login">Sign In</a>
-      </div>
-
-      <div class="hero-trust">
-        <span class="trust-item">✓ No credit card required</span>
-        <span class="trust-dot">·</span>
-        <span class="trust-item">✓ Free 14-day trial</span>
-        <span class="trust-dot">·</span>
-        <span class="trust-item">✓ Cancel anytime</span>
-      </div>
-    </div>
-
-    <!-- Dashboard preview -->
-    <div class="hero-dashboard" aria-hidden="true">
-      <div class="dash-window">
-        <div class="dash-topbar">
-          <span class="dot red"></span>
-          <span class="dot yellow"></span>
-          <span class="dot green"></span>
-          <span class="dash-title">HRBooks360 Dashboard</span>
+        <h1>Your people. Your books.<br /><span>One complete view.</span></h1>
+        <p class="hero-lede">Payroll, HR, tax and everyday finances finally work together—so you can spend less time managing admin and more time growing your business.</p>
+        <div class="hero-actions">
+          <a class="button button--primary" routerLink="/pricing">Start free for 14 days <span>→</span></a>
+          <a class="button button--text" routerLink="/features"><span class="play">▶</span> See how it works</a>
         </div>
-        <div class="dash-body">
-          <div class="dash-kpis">
-            <div class="kpi kpi--profit">
-              <span class="kpi-label">Net Profit</span>
-              <span class="kpi-value">J$842,300</span>
-              <span class="kpi-change up">▲ 12.4%</span>
+        <div class="hero-proof">
+          <div class="avatar-stack" aria-hidden="true"><span>KW</span><span>MC</span><span>DP</span></div>
+          <p><strong>No card required</strong><br />Set up in minutes, cancel anytime</p>
+        </div>
+      </div>
+
+      <div class="product-stage" aria-label="HRBooks360 product preview">
+        <div class="product-window">
+          <aside class="preview-nav">
+            <div class="preview-mark">H</div>
+            <span class="nav-pill active"></span><span class="nav-pill"></span><span class="nav-pill"></span><span class="nav-pill"></span>
+            <div class="nav-avatar">GG</div>
+          </aside>
+          <div class="preview-main">
+            <div class="preview-top"><div><span>OVERVIEW</span><h3>Good morning, John</h3></div><button>+ Add transaction</button></div>
+            <div class="metric-row">
+              <article><span>NET PROFIT</span><strong>J$842,300</strong><small class="positive">↗ 12.4% this month</small></article>
+              <article><span>PAYROLL</span><strong>J$418,250</strong><small>Next run · Jul 25</small></article>
+              <article><span>TEAM</span><strong>24</strong><small>2 requests pending</small></article>
             </div>
-            <div class="kpi kpi--tax">
-              <span class="kpi-label">Tax Liabilities</span>
-              <span class="kpi-value red">J$94,150</span>
-              <span class="kpi-change">GCT + Payroll</span>
-            </div>
-            <div class="kpi kpi--status">
-              <span class="kpi-label">Cash Flow</span>
-              <span class="kpi-value">J$512,800</span>
-              <span class="kpi-change up">Healthy</span>
-            </div>
-          </div>
-          <div class="dash-chart">
-            <div class="chart-label">Revenue vs Expenses</div>
-            <div class="chart-bars">
-              <div class="bar-group">
-                <div class="bar bar-rev" style="height:60%"></div>
-                <div class="bar bar-exp" style="height:35%"></div>
-                <span class="bar-month">Oct</span>
-              </div>
-              <div class="bar-group">
-                <div class="bar bar-rev" style="height:75%"></div>
-                <div class="bar bar-exp" style="height:42%"></div>
-                <span class="bar-month">Nov</span>
-              </div>
-              <div class="bar-group">
-                <div class="bar bar-rev" style="height:65%"></div>
-                <div class="bar bar-exp" style="height:38%"></div>
-                <span class="bar-month">Dec</span>
-              </div>
-              <div class="bar-group">
-                <div class="bar bar-rev" style="height:85%"></div>
-                <div class="bar bar-exp" style="height:48%"></div>
-                <span class="bar-month">Jan</span>
-              </div>
-              <div class="bar-group">
-                <div class="bar bar-rev" style="height:90%"></div>
-                <div class="bar bar-exp" style="height:52%"></div>
-                <span class="bar-month">Feb</span>
-              </div>
-            </div>
-            <div class="chart-legend">
-              <span><i class="leg-dot rev"></i>Revenue</span>
-              <span><i class="leg-dot exp"></i>Expenses</span>
+            <div class="preview-grid">
+              <article class="chart-card">
+                <div class="card-heading"><div><span>CASH FLOW</span><strong>Income &amp; expenses</strong></div><small>Last 6 months⌄</small></div>
+                <div class="chart">
+                  <div class="chart-labels"><span>800k</span><span>600k</span><span>400k</span><span>200k</span></div>
+                  <svg viewBox="0 0 500 180" preserveAspectRatio="none" role="img" aria-label="Revenue chart trending upward">
+                    <defs><linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3278f0" stop-opacity=".28"/><stop offset="1" stop-color="#3278f0" stop-opacity="0"/></linearGradient></defs>
+                    <path class="area" d="M0,152 C65,130 75,140 130,109 S210,123 260,79 S340,88 380,57 S445,65 500,21 L500,180 L0,180Z" />
+                    <path class="line" d="M0,152 C65,130 75,140 130,109 S210,123 260,79 S340,88 380,57 S445,65 500,21" />
+                    <path class="line line--muted" d="M0,155 C55,147 92,156 135,138 S215,150 270,127 S350,145 402,119 S455,127 500,104" />
+                  </svg>
+                  <div class="chart-months"><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span></div>
+                </div>
+              </article>
+              <article class="activity-card">
+                <div class="card-heading"><div><span>ACTIVITY</span><strong>What’s happening</strong></div></div>
+                <div class="activity"><i class="blue">✓</i><p><b>Payroll complete</b><small>24 employees · today</small></p></div>
+                <div class="activity"><i class="green">↗</i><p><b>Income recorded</b><small>J$165,000 · yesterday</small></p></div>
+                <div class="activity"><i class="amber">○</i><p><b>Leave request</b><small>Needs your review</small></p></div>
+                <a routerLink="/features">View all activity →</a>
+              </article>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Floating notification cards -->
-      <div class="float-card float-card--tl">
-        <span class="fc-icon">🔔</span>
-        <div>
-          <div class="fc-title">Leave Request</div>
-          <div class="fc-sub">2 approvals waiting in HR</div>
-        </div>
-      </div>
-      <div class="float-card float-card--br">
-        <span class="fc-icon">✅</span>
-        <div>
-          <div class="fc-title">SO1 Summary Ready</div>
-          <div class="fc-sub">Payroll deductions prepared</div>
-        </div>
+        <div class="floating-card floating-card--payroll"><i>✓</i><p><span>Payroll submitted</span><strong>24 employees paid</strong></p></div>
+        <div class="floating-card floating-card--tax"><span>SO1</span><p><span>Tax report ready</span><strong>All deductions balanced</strong></p></div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ══════════════════════════════════════════════════
-     STATS BAR
-══════════════════════════════════════════════════ -->
-<div class="stats-bar">
-  <div class="stat">
-    <span class="stat-num">360°</span>
-    <span class="stat-label">HR + Finance Workspace</span>
-  </div>
-  <div class="stat-sep"></div>
-  <div class="stat">
-    <span class="stat-num">SO1</span>
-    <span class="stat-label">Payroll Report Preview</span>
-  </div>
-  <div class="stat-sep"></div>
-  <div class="stat">
-    <span class="stat-num">15%</span>
-    <span class="stat-label">GCT Auto Tracking</span>
-  </div>
-  <div class="stat-sep"></div>
-  <div class="stat">
-    <span class="stat-num">2026</span>
-    <span class="stat-label">Jamaica Tax Year</span>
-  </div>
-</div>
+  <section class="trust-strip">
+    <div class="container trust-inner"><span>One workspace for your entire operation</span><div><b>Payroll</b><b>People</b><b>Ledger</b><b>GCT</b><b>Reports</b></div></div>
+  </section>
 
-<!-- ══════════════════════════════════════════════════
-     FEATURES
-══════════════════════════════════════════════════ -->
-<section class="section section--light">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-tag">Features</span>
-      <h2>Matches the way your dashboard works</h2>
-      <p>Every landing-page promise maps to a real workspace inside HRBooks360.</p>
-    </div>
-
-    <div class="feature-grid">
-      <div class="feature-card">
-        <div class="feature-icon-wrap" style="background: rgba(4,120,87,0.1);">
-          <span class="feature-icon">📈</span>
-        </div>
-        <h3>Business Overview</h3>
-        <p>Track net profit, tax liabilities, cash flow and GCT liability with live KPI cards and monthly charts.</p>
-        <span class="feature-link">Learn more →</span>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon-wrap" style="background: rgba(217,119,6,0.1);">
-          <span class="feature-icon">👥</span>
-        </div>
-        <h3>Employee Records</h3>
-        <p>Store employee details, salaries, job information and HR status in a structured employee workspace.</p>
-        <span class="feature-link">Learn more →</span>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon-wrap" style="background: rgba(16,185,129,0.1);">
-          <span class="feature-icon">💳</span>
-        </div>
-        <h3>Payroll Processing</h3>
-        <p>Calculate statutory deductions, run payroll, prepare payslips and feed payroll totals into reports.</p>
-        <span class="feature-link">Learn more →</span>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon-wrap" style="background: rgba(245,158,11,0.1);">
-          <span class="feature-icon">🧾</span>
-        </div>
-        <h3>Transaction Ledger</h3>
-        <p>Record income and expenses, toggle GCT where needed, filter by frequency and export or print the ledger.</p>
-        <span class="feature-link">Learn more →</span>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon-wrap" style="background: rgba(239,68,68,0.1);">
-          <span class="feature-icon">📋</span>
-        </div>
-        <h3>Reports &amp; Tax</h3>
-        <p>Preview SO1 payroll summaries, tax breakdowns and compliance checklists from the dashboard reports area.</p>
-        <span class="feature-link">Learn more →</span>
-      </div>
-      <div class="feature-card feature-card--cta">
-        <div class="feature-cta-inner">
-          <span class="feature-cta-icon">🗓️</span>
-          <h3>HR self-service included</h3>
-          <p>Employees can view payslips, submit leave requests, read notices and access their profile.</p>
-          <a class="btn btn-primary" routerLink="/pricing">Start Free Trial</a>
-        </div>
+  <section class="section" id="product">
+    <div class="container">
+      <div class="section-intro"><div><span class="kicker">Everything connected</span><h2>Run the business.<br />Skip the busywork.</h2></div><p>HRBooks360 brings the tools small businesses need into one calm, connected workspace—without the enterprise complexity.</p></div>
+      <div class="bento-grid">
+        <article class="bento bento--large">
+          <div class="icon-box">↗</div><span class="kicker">Live business view</span><h3>Know where you stand, every day.</h3><p>Revenue, expenses, payroll and tax obligations update in one clear dashboard.</p>
+          <div class="mini-report"><div><span>NET CASH FLOW</span><strong>J$512,800</strong></div><span class="trend">+18.2%</span><div class="mini-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+        </article>
+        <article class="bento bento--blue"><div class="icon-box light">◎</div><span class="kicker">Smart payroll</span><h3>Pay your team with confidence.</h3><p>Calculate Jamaican statutory deductions, prepare payslips and keep every pay run organized.</p><div class="payroll-line"><span><i>✓</i> July payroll</span><b>Ready to submit</b></div></article>
+        <article class="bento"><div class="icon-box">◇</div><span class="kicker">Employee self-service</span><h3>Give your people what they need.</h3><p>Payslips, leave requests, notices and profiles are always within reach.</p><div class="people-row"><span>KW</span><span>MC</span><span>DP</span><b>+21</b></div></article>
+        <article class="bento"><div class="icon-box">✓</div><span class="kicker">Local compliance</span><h3>Stay ready for reporting.</h3><p>Track GCT and review payroll summaries built around how Jamaican businesses work.</p><ul class="check-list"><li>SO1 payroll summary <b>Ready</b></li><li>GCT tracking <b>Current</b></li><li>Tax breakdown <b>Balanced</b></li></ul></article>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ══════════════════════════════════════════════════
-     HOW IT WORKS
-══════════════════════════════════════════════════ -->
-<section class="section section--dark">
-  <div class="container">
-    <div class="section-header section-header--light">
-      <span class="section-tag section-tag--light">How it Works</span>
-      <h2 class="text-light">From setup to reports</h2>
-      <p class="text-muted">Use the same flow your dashboard is built around.</p>
-    </div>
+  <section class="workflow">
+    <div class="container workflow-grid"><div><span class="kicker kicker--light">A simpler rhythm</span><h2>From Monday morning<br />to month-end.</h2><p>One system keeps the details moving while you keep the business moving.</p><a class="button button--white" routerLink="/features">Explore all features →</a></div><ol><li><span>01</span><div><h3>Set up your workspace</h3><p>Add your company details, employees and tax settings.</p></div></li><li><span>02</span><div><h3>Run the day-to-day</h3><p>Process payroll, approve leave and record transactions.</p></div></li><li><span>03</span><div><h3>See the whole picture</h3><p>Review performance and prepare your reports in a few clicks.</p></div></li></ol></div>
+  </section>
 
-    <div class="steps-grid">
-      <div class="step-card">
-        <div class="step-number">01</div>
-        <div class="step-icon">🏢</div>
-        <h3>Create the company workspace</h3>
-        <p>Register the business, secure the account and set the foundation for HR and finance records.</p>
-      </div>
-      <div class="step-connector">
-        <div class="connector-line"></div>
-        <div class="connector-arrow">›</div>
-      </div>
-      <div class="step-card">
-        <div class="step-number">02</div>
-        <div class="step-icon">👥</div>
-        <h3>Add employees, payroll and ledger lines</h3>
-        <p>Enter employee records, process payroll and record transactions with GCT where applicable.</p>
-      </div>
-      <div class="step-connector">
-        <div class="connector-line"></div>
-        <div class="connector-arrow">›</div>
-      </div>
-      <div class="step-card">
-        <div class="step-number">03</div>
-        <div class="step-icon">📤</div>
-        <h3>Review dashboard reports</h3>
-        <p>Use the overview, tax breakdown and SO1 summary to monitor obligations before filing.</p>
-      </div>
-    </div>
-  </div>
-</section>
+  <section class="quote-section"><div class="container"><blockquote>“We can finally see payroll, people and tax obligations without jumping between spreadsheets.”</blockquote><div class="quote-person"><span>KW</span><p><strong>Karen Williams</strong><br />Operations Director · Kingston</p></div></div></section>
 
-<!-- ══════════════════════════════════════════════════
-     COMPLIANCE RIBBON
-══════════════════════════════════════════════════ -->
-<div class="compliance-ribbon">
-  <div class="ribbon-inner">
-    <div class="ribbon-item"><span class="ribbon-tick">✔</span> Income Tax Threshold J$1,902,360</div>
-    <div class="ribbon-sep">|</div>
-    <div class="ribbon-item"><span class="ribbon-tick">✔</span> NIS 3% Employee / 3% Employer</div>
-    <div class="ribbon-sep">|</div>
-    <div class="ribbon-item"><span class="ribbon-tick">✔</span> NHT 2% / 3%</div>
-    <div class="ribbon-sep">|</div>
-    <div class="ribbon-item"><span class="ribbon-tick">✔</span> Ed Tax 2.25% / 3.5%</div>
-    <div class="ribbon-sep">|</div>
-    <div class="ribbon-item"><span class="ribbon-tick">✔</span> HEART 3% Employer</div>
-    <div class="ribbon-sep">|</div>
-    <div class="ribbon-item"><span class="ribbon-tick">✔</span> GCT 15% Auto-Applied</div>
-  </div>
-</div>
+  <section class="final-cta"><div class="cta-orb"></div><div class="container"><span class="kicker kicker--light">Make work feel lighter</span><h2>Ready for a clearer way<br />to run your business?</h2><p>Start your free 14-day trial. No credit card required.</p><div><a class="button button--white" routerLink="/pricing">Start free today →</a><a class="button button--ghost" routerLink="/login">Sign in</a></div></div></section>
+</main>
 
-<!-- ══════════════════════════════════════════════════
-     TESTIMONIALS
-══════════════════════════════════════════════════ -->
-<section class="section section--gradient">
-  <div class="container">
-    <div class="section-header section-header--light">
-      <span class="section-tag section-tag--light">Testimonials</span>
-      <h2 class="text-light">Trusted by Jamaican businesses</h2>
-    </div>
-
-    <div class="testimonial-grid">
-      <div class="testimonial-card">
-        <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-text">"We can see payroll, leave requests and tax obligations without jumping between spreadsheets."</p>
-        <div class="testimonial-author">
-          <div class="author-avatar">KW</div>
-          <div>
-            <div class="author-name">Karen Williams</div>
-            <div class="author-role">CEO, Williams Distributors Ltd · Kingston</div>
-          </div>
-        </div>
-      </div>
-      <div class="testimonial-card">
-        <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-text">"The transaction ledger and GCT tracking make month-end review much easier for our finance team."</p>
-        <div class="testimonial-author">
-          <div class="author-avatar">MC</div>
-          <div>
-            <div class="author-name">Marcus Clarke</div>
-            <div class="author-role">Owner, Clarke &amp; Associates · Montego Bay</div>
-          </div>
-        </div>
-      </div>
-      <div class="testimonial-card">
-        <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-text">"Employees can check payslips and leave updates themselves, which cuts down on admin messages."</p>
-        <div class="testimonial-author">
-          <div class="author-avatar">DP</div>
-          <div>
-            <div class="author-name">Denise Patterson</div>
-            <div class="author-role">CFO, Patterson Group · Portmore</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════
-     FINAL CTA
-══════════════════════════════════════════════════ -->
-<section class="cta-section">
-  <div class="cta-glow"></div>
-  <div class="cta-inner">
-    <h2>Ready to run HR and finance from one place?</h2>
-    <p>Bring employees, payroll, transactions, leave requests and reports into one dashboard.</p>
-    <div class="cta-actions">
-      <a class="btn btn-primary btn-xl" routerLink="/pricing">
-        Create Your Free Account
-        <span class="btn-arrow">→</span>
-      </a>
-      <a class="btn btn-ghost btn-xl" routerLink="/login">Sign In Instead</a>
-    </div>
-    <p class="cta-sub">No credit card required &nbsp;·&nbsp; 14-day free trial &nbsp;·&nbsp; Cancel anytime</p>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════
-     FOOTER
-══════════════════════════════════════════════════ -->
-<footer class="footer">
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <div class="footer-logo">💼 HR<span class="logo-accent">Books360</span></div>
-      <p class="footer-tagline">HR, payroll and financial tracking made simple for Jamaican businesses.</p>
-    </div>
-    <div class="footer-links">
-      <div class="footer-col">
-        <h4>Product</h4>
-        <a routerLink="/features">Features</a>
-        <a routerLink="/pricing">Pricing</a>
-        <a routerLink="/pricing">Get Started</a>
-      </div>
-      <div class="footer-col">
-        <h4>Company</h4>
-        <a routerLink="/about">About</a>
-        <a href="#">Contact</a>
-        <a href="#">Privacy Policy</a>
-      </div>
-      <div class="footer-col">
-        <h4>Tax Resources</h4>
-        <a href="https://www.taj.gov.jm" target="_blank" rel="noopener">TAJ Portal</a>
-        <a href="#">2026 Rate Card</a>
-        <a href="#">SO1 Guide</a>
-      </div>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <span>© 2026 HRBooks360. All rights reserved.</span>
-    <span>Built for 🇯🇲 Jamaica</span>
-  </div>
-</footer>
+<footer class="footer"><div class="container footer-top"><a class="footer-logo" routerLink="/"><img src="hrbooks360_logo.png" alt="HRBooks360 — People. Process. Performance." /></a><p>Your people. Your books.<br />One complete view.</p><div><a routerLink="/features">Features</a><a routerLink="/pricing">Pricing</a><a routerLink="/about">About</a><a routerLink="/login">Sign in</a></div></div><div class="container footer-bottom"><span>© 2026 HRBooks360</span><span>Built with purpose in Jamaica 🇯🇲</span></div></footer>

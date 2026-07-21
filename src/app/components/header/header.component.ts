@@ -11,8 +11,7 @@ import { CommonModule } from '@angular/common';
       <div class="header-container">
         <div class="logo">
           <a routerLink="/" (click)="closeMenu()">
-            <span class="logo-icon">💼</span>
-            <span class="logo-text">HRBooks<span class="logo-accent">360</span></span>
+            <img src="hrbooks360_logo.png" alt="HRBooks360 — People. Process. Performance." />
           </a>
         </div>
 
@@ -60,16 +59,16 @@ import { CommonModule } from '@angular/common';
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(12px);
+      background: rgba(251, 252, 255, 0.82);
+      backdrop-filter: blur(18px);
       border-bottom: 1px solid var(--neutral-200);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      box-shadow: none;
     }
 
     .header-container {
-      max-width: 1280px;
+      max-width: 1228px;
       margin: 0 auto;
-      padding: 16px 32px;
+      padding: 14px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -91,13 +90,28 @@ import { CommonModule } from '@angular/common';
       transform: scale(1.02);
     }
 
+    .logo img {
+      display: block;
+      width: 142px;
+      height: 48px;
+      object-fit: contain;
+    }
+
     .logo-icon {
-      font-size: 1.5rem;
-      filter: drop-shadow(0 2px 4px rgba(79, 70, 229, 0.2));
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--color-primary);
+      color: white;
+      font-size: 1rem;
+      font-weight: 900;
+      box-shadow: 0 6px 16px rgba(21, 101, 216, 0.22);
     }
 
     .logo-accent {
-      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+      background: linear-gradient(135deg, var(--primary-color), #4c86eb);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
