@@ -70,7 +70,7 @@ import { environment } from '../../../environments/environment';
               <div class="field-wrap">
                 <label>Email address</label>
                 <div class="input-box" [class.input-error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
-                  <mat-icon>mail_outline</mat-icon>
+                  <mat-icon class="input-icon" aria-hidden="true">mail_outline</mat-icon>
                   <input type="email" formControlName="email" placeholder="you@company.com" autocomplete="email">
                 </div>
                 @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
@@ -84,7 +84,7 @@ import { environment } from '../../../environments/environment';
                   <button type="button" class="link-btn" (click)="showForgot = true">Forgot password?</button>
                 </div>
                 <div class="input-box" [class.input-error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
-                  <mat-icon>lock_outline</mat-icon>
+                  <mat-icon class="input-icon" aria-hidden="true">lock_outline</mat-icon>
                   <input [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="••••••••" autocomplete="current-password">
                   <button type="button" class="eye-btn" (click)="showPassword = !showPassword">
                     <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
@@ -131,7 +131,7 @@ import { environment } from '../../../environments/environment';
                 <div class="field-wrap">
                   <label>Email address</label>
                   <div class="input-box" [class.input-error]="forgotForm.get('email')?.invalid && forgotForm.get('email')?.touched">
-                    <mat-icon>mail_outline</mat-icon>
+                    <mat-icon class="input-icon" aria-hidden="true">mail_outline</mat-icon>
                     <input type="email" formControlName="email" placeholder="you@company.com" autocomplete="email">
                   </div>
                   @if (forgotForm.get('email')?.invalid && forgotForm.get('email')?.touched) {
@@ -258,13 +258,19 @@ import { environment } from '../../../environments/environment';
       box-shadow: 0 0 0 3px rgba(4,120,87,0.18);
     }
     .input-box.input-error { border-color: #F87171; }
-    .input-box mat-icon {
-      color: var(--text-muted);
-      padding: 0 10px 0 14px;
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
+    .input-box > .input-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--neutral-300);
+      margin: 0 10px 0 14px;
+      padding: 0;
+      font-size: 20px;
+      line-height: 20px;
+      width: 20px;
+      height: 20px;
       flex-shrink: 0;
+      overflow: visible;
     }
     .input-box input {
       flex: 1;
@@ -289,7 +295,16 @@ import { environment } from '../../../environments/environment';
       transition: color 0.2s;
     }
     .eye-btn:hover { color: var(--sidebar-text); }
-    .eye-btn mat-icon { font-size: 18px; width: 18px; height: 18px; }
+    .eye-btn mat-icon {
+      display: block;
+      margin: 0;
+      padding: 0;
+      font-size: 20px;
+      line-height: 20px;
+      width: 20px;
+      height: 20px;
+      overflow: visible;
+    }
 
     .field-error { font-size: 0.78rem; color: #F87171; }
 
