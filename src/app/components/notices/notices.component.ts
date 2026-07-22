@@ -425,7 +425,10 @@ export class NoticesComponent implements OnInit {
 
   loadNotices() {
     this.http.get<Notice[]>(this.apiUrl).subscribe({
-      next: data => this.notices = data,
+      next: data => this.notices = data.map(notice => ({
+        ...notice,
+        read: notice.read ?? false
+      })),
       error: () => this.snackBar.open('Failed to load notices', 'Close', { duration: 3000 })
     });
   }
@@ -483,15 +486,32 @@ export class NoticesComponent implements OnInit {
   }
 
   markAsRead(notice: Notice) {
-    notice.read = true;
+    this.updateReadStatus(notice, true);
   }
 
   toggleRead(notice: Notice) {
-    notice.read = !notice.read;
+    this.updateReadStatus(notice, !notice.read);
   }
 
   markAllAsRead() {
-    this.notices.forEach(n => n.read = true);
+    if (this.getUnreadCount() === 0) return;
+
+    this.http.patch<void>(`${this.apiUrl}/read-all`, {}).subscribe({
+      next: () => {
+        this.notices = this.notices.map(notice => ({ ...notice, read: true }));
+        this.snackBar.open('All notices marked as read', 'Close', { duration: 2000 });
+      },
+      error: () => this.snackBar.open('Failed to mark notices as read', 'Close', { duration: 3000 })
+    });
+  }
+
+  private updateReadStatus(notice: Notice, read: boolean) {
+    this.http.patch<void>(`${this.apiUrl}/${notice.id}/read`, { read }).subscribe({
+      next: () => {
+        this.notices = this.notices.map(item => item.id === notice.id ? { ...item, read } : item);
+      },
+      error: () => this.snackBar.open('Failed to update notice', 'Close', { duration: 3000 })
+    });
   }
 
   deleteNotice(id: number) {

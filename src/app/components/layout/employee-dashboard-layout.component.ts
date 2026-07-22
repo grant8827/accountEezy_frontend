@@ -1,11 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { filter, Subscription } from 'rxjs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-employee-dashboard-layout',
@@ -33,6 +36,18 @@ import { MatDividerModule } from '@angular/material/divider';
         <span class="spacer"></span>
 
         <span class="welcome-text">Welcome, {{ employeeName }}</span>
+        <button
+          mat-icon-button
+          class="notification-button"
+          type="button"
+          (click)="openNotices()"
+          [attr.aria-label]="unreadNoticeCount > 0 ? unreadNoticeCount + ' new notices' : 'No new notices'"
+        >
+          <mat-icon>{{ unreadNoticeCount > 0 ? 'notifications_active' : 'notifications_none' }}</mat-icon>
+          @if (unreadNoticeCount > 0) {
+            <span class="notification-badge">{{ unreadNoticeCount > 99 ? '99+' : unreadNoticeCount }}</span>
+          }
+        </button>
         <button mat-icon-button [matMenuTriggerFor]="userMenu">
           <mat-icon>account_circle</mat-icon>
         </button>
@@ -72,9 +87,12 @@ import { MatDividerModule } from '@angular/material/divider';
               <mat-icon>event_available</mat-icon>
               <span>Leaves</span>
             </a>
-            <a class="nav-link" routerLink="/employee-dashboard/notices" routerLinkActive="active" (click)="menuOpen = false">
+            <a class="nav-link" routerLink="/employee-dashboard/notices" routerLinkActive="active" (click)="openNotices()">
               <mat-icon>notifications</mat-icon>
               <span>Notices</span>
+              @if (unreadNoticeCount > 0) {
+                <span class="sidebar-badge">{{ unreadNoticeCount > 99 ? '99+' : unreadNoticeCount }}</span>
+              }
             </a>
             <a class="nav-link" routerLink="/employee-dashboard/profile" routerLinkActive="active" (click)="menuOpen = false">
               <mat-icon>person</mat-icon>
@@ -136,6 +154,52 @@ import { MatDividerModule } from '@angular/material/divider';
       margin-right: 1rem;
       font-size: 0.9rem;
       color: var(--text-muted);
+    }
+
+    .notification-button {
+      position: relative;
+      margin-right: 0.25rem;
+      color: var(--text-muted);
+    }
+
+    .notification-button:has(.notification-badge) {
+      color: var(--color-primary);
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: 3px;
+      right: 2px;
+      min-width: 17px;
+      height: 17px;
+      padding: 0 4px;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--bg-card);
+      border-radius: 999px;
+      background: #dc2626;
+      color: white;
+      font-size: 0.62rem;
+      font-weight: 800;
+      line-height: 1;
+      animation: notice-pulse 2s ease-in-out infinite;
+    }
+
+    .sidebar-badge {
+      min-width: 22px;
+      margin-left: auto;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #dc2626;
+      color: white;
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    @keyframes notice-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+      50% { box-shadow: 0 0 0 5px rgba(220, 38, 38, 0.16); }
     }
 
     .main-container {
@@ -285,16 +349,72 @@ import { MatDividerModule } from '@angular/material/divider';
     }
   `]
 })
-export class EmployeeDashboardLayoutComponent implements OnInit {
+export class EmployeeDashboardLayoutComponent implements OnInit, OnDestroy {
   employeeName: string = '';
   employeeEmail: string = '';
   menuOpen = false;
+  unreadNoticeCount = 0;
+  private latestNoticeAt = '';
+  private refreshTimer?: ReturnType<typeof setInterval>;
+  private routerSubscription?: Subscription;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private http: HttpClient) {}
 
   ngOnInit() {
     this.employeeName = localStorage.getItem('employeeName') || 'Employee';
     this.employeeEmail = localStorage.getItem('employeeEmail') || '';
+    this.loadNoticeAlert();
+    this.refreshTimer = setInterval(() => this.loadNoticeAlert(), 60_000);
+    this.routerSubscription = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(event => {
+      if ((event as NavigationEnd).urlAfterRedirects.includes('/employee-dashboard/notices')) {
+        this.markNoticesSeen();
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
+    this.routerSubscription?.unsubscribe();
+  }
+
+  openNotices() {
+    this.menuOpen = false;
+    this.markNoticesSeen();
+    this.router.navigate(['/employee-dashboard/notices']);
+  }
+
+  private loadNoticeAlert() {
+    const token = localStorage.getItem('employeeToken');
+    if (!token) return;
+
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    this.http.get<Array<{ createdAt: string }>>(`${environment.apiUrl}/employee-portal/notices`, { headers }).subscribe({
+      next: notices => {
+        this.latestNoticeAt = notices.reduce(
+          (latest, notice) => notice.createdAt > latest ? notice.createdAt : latest,
+          ''
+        );
+        const lastSeen = localStorage.getItem(this.noticeSeenKey) || '';
+        this.unreadNoticeCount = notices.filter(notice => notice.createdAt > lastSeen).length;
+
+        if (this.router.url.includes('/employee-dashboard/notices')) {
+          this.markNoticesSeen();
+        }
+      }
+    });
+  }
+
+  private markNoticesSeen() {
+    if (this.latestNoticeAt) {
+      localStorage.setItem(this.noticeSeenKey, this.latestNoticeAt);
+    }
+    this.unreadNoticeCount = 0;
+  }
+
+  private get noticeSeenKey(): string {
+    return `employeeNoticeSeen:${localStorage.getItem('employeeId') || this.employeeEmail || 'unknown'}`;
   }
 
   logout() {
@@ -302,6 +422,7 @@ export class EmployeeDashboardLayoutComponent implements OnInit {
     localStorage.removeItem('employeeId');
     localStorage.removeItem('employeeName');
     localStorage.removeItem('employeeEmail');
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
     this.router.navigate(['/']);
   }
 }
