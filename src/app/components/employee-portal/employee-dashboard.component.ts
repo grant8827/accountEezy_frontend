@@ -130,25 +130,27 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
         }
 
         <!-- ── Annual Leave balance banner ──────────────────────────── -->
-        @if (selectedLeaveType === 'Vacation') {
-          <div class="balance-banner">
-            <mat-icon>beach_access</mat-icon>
-            Annual Leave Balance:&nbsp;<strong>{{ leaveBalance }} day{{ leaveBalance !== 1 ? 's' : '' }}</strong>
-          </div>
+        @if (selectedLeaveType) {
+          @if (selectedLeaveType === 'Vacation') {
+            <div class="balance-banner">
+              <mat-icon>beach_access</mat-icon>
+              Annual Leave Balance:&nbsp;<strong>{{ leaveBalance }} day{{ leaveBalance !== 1 ? 's' : '' }}</strong>
+            </div>
+          }
           <div class="policy-banner">
             <mat-icon>rule</mat-icon>
-            Vacation rule:&nbsp;<strong>{{ vacationDayRule === 'WeekendIncluded' ? 'Weekend Included (Mon - Sun)' : 'Weekdays Only (Mon - Fri)' }}</strong>
+            Leave rule:&nbsp;<strong>{{ vacationDayRule === 'WeekendIncluded' ? 'Weekend Included (Mon - Sun)' : 'Weekdays Only (Mon - Fri)' }}</strong>
           </div>
           @if (vacationExemptMonths.length > 0) {
             <div class="policy-banner warning-policy">
               <mat-icon>event_busy</mat-icon>
-              Exempt month(s):&nbsp;<strong>{{ getExemptMonthNames() }}</strong>
+              Restricted month(s):&nbsp;<strong>{{ getExemptMonthNames() }}</strong>
             </div>
           }
         }
-        @if (selectedLeaveType === 'Vacation' && hasExemptMonthInRange) {
+        @if (hasExemptMonthInRange) {
           <div class="warning-banner">
-            &#9888; Selected dates include exempt month(s). Please choose dates outside exempt months.
+            &#9888; Selected dates include restricted month(s). Please choose dates outside those months.
           </div>
         }
         @if (selectedLeaveType === 'Vacation' && totalDays > 0 && totalDays > leaveBalance) {
@@ -190,7 +192,7 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
               <span class="matpat-label">Date leave to begin:</span>
               <mat-form-field appearance="outline" class="paper-date-field matpat-date">
                 <mat-label>Start date</mat-label>
-                <input matInput [matDatepicker]="mpFromPicker" formControlName="startDate" placeholder="MM/DD/YYYY" (click)="mpFromPicker.open()">
+                <input matInput [matDatepicker]="mpFromPicker" [matDatepickerFilter]="dateSelectableFilter" formControlName="startDate" placeholder="MM/DD/YYYY" (click)="mpFromPicker.open()">
                 <mat-datepicker-toggle matSuffix [for]="mpFromPicker"></mat-datepicker-toggle>
                 <mat-datepicker #mpFromPicker></mat-datepicker>
               </mat-form-field>
@@ -200,7 +202,7 @@ import { LeaveRequest, LeaveRequestDto } from '../../types/index';
               <span class="matpat-label">Date of return to duties:</span>
               <mat-form-field appearance="outline" class="paper-date-field matpat-date">
                 <mat-label>Return date</mat-label>
-                <input matInput [matDatepicker]="mpToPicker" formControlName="endDate" placeholder="MM/DD/YYYY" (click)="mpToPicker.open()">
+                <input matInput [matDatepicker]="mpToPicker" [matDatepickerFilter]="dateSelectableFilter" formControlName="endDate" placeholder="MM/DD/YYYY" (click)="mpToPicker.open()">
                 <mat-datepicker-toggle matSuffix [for]="mpToPicker"></mat-datepicker-toggle>
                 <mat-datepicker #mpToPicker></mat-datepicker>
               </mat-form-field>
@@ -634,16 +636,11 @@ export class ApplyLeaveDialogComponent {
     const endDate = new Date(end);
     if (endDate < startDate) return 0;
 
-    if (this.selectedLeaveType === 'Vacation') {
-      return this.calculateVacationDays(startDate, endDate);
-    }
-
-    const diff = Math.ceil((endDate.getTime() - startDate.getTime()) / 86400000) + 1;
-    return diff > 0 ? diff : 0;
+    return this.calculateEligibleLeaveDays(startDate, endDate);
   }
 
   get hasExemptMonthInRange(): boolean {
-    if (this.selectedLeaveType !== 'Vacation' || this.vacationExemptMonths.length === 0) return false;
+    if (!this.selectedLeaveType || this.vacationExemptMonths.length === 0) return false;
 
     const start = this.vacationForm.get('startDate')?.value;
     const end = this.vacationForm.get('endDate')?.value;
@@ -677,14 +674,14 @@ export class ApplyLeaveDialogComponent {
     const e = this.vacationForm.get('endDate')?.value;
     if (!s || !e || this.totalDays < 1) return true;
     if (this.selectedLeaveType === 'Sick' && !this.selectedFile) return true;
-    if (this.selectedLeaveType === 'Vacation' && this.hasExemptMonthInRange) return true;
+    if (this.hasExemptMonthInRange) return true;
     if (this.selectedLeaveType === 'Vacation' && this.totalDays > this.leaveBalance) return true;
     return false;
   }
 
   readonly dateSelectableFilter = (date: Date | null): boolean => {
     if (!date) return false;
-    if (this.selectedLeaveType !== 'Vacation') return true;
+    if (!this.selectedLeaveType) return true;
 
     const month = date.getMonth() + 1;
     if (this.vacationExemptMonths.includes(month)) return false;
@@ -789,7 +786,7 @@ export class ApplyLeaveDialogComponent {
     this.dialogRef.close(payload);
   }
 
-  private calculateVacationDays(startDate: Date, endDate: Date): number {
+  private calculateEligibleLeaveDays(startDate: Date, endDate: Date): number {
     const blocked = new Set(this.vacationExemptMonths);
     const includeWeekends = this.vacationDayRule === 'WeekendIncluded';
 

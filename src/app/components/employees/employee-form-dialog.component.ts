@@ -240,7 +240,7 @@ import { Employee } from '../../types/index';
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Vacation Day Rule</mat-label>
+              <mat-label>Leave Day Rule</mat-label>
               <mat-icon matPrefix>rule</mat-icon>
               <mat-select formControlName="vacationDayRule">
                 <mat-option value="WeekdaysOnly">Weekdays Only (Mon - Fri)</mat-option>
@@ -252,21 +252,21 @@ import { Employee } from '../../types/index';
           <div class="form-row">
             <div class="full-width full-row">
               <div class="field-help-label">
-                <span>Exempt Months</span>
+                <span>Restricted Months</span>
                 <button
                   type="button"
                   class="help-pill"
                   #monthsHelp="matTooltip"
-                  [matTooltip]="'(Vacation Not Allowed)\n\nSelect one or more month(s) that staff should not be allowed to request vacation.'"
+                  [matTooltip]="'(Leave Not Allowed)\n\nSelect one or more month(s) that staff should not be allowed to request leave.'"
                   matTooltipPosition="above"
                   (click)="monthsHelp.toggle()"
-                  aria-label="Vacation months help">
+                  aria-label="Leave months help">
                   ?
                 </button>
               </div>
 
               <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Exempt Months</mat-label>
+                <mat-label>Restricted Months</mat-label>
                 <mat-select formControlName="vacationExemptMonths" multiple>
                   @for (month of monthOptions; track month.value) {
                     <mat-option [value]="month.value">{{ month.label }}</mat-option>
