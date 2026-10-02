@@ -58,7 +58,7 @@ type EditField = typeof EDIT_FIELDS[number];
 
 interface PayrollBatchDetail {
   id: number; label: string; payCycle: string;
-  startDate: string; endDate: string; status: PayrollBatchStatusValue;
+  startDate: string; endDate: string; payDate?: string | null; status: PayrollBatchStatusValue;
   business: { companyName: string; address: string; businessEmail: string | null; businessPhone: string | null; logoUrl: string | null; } | null;
   entries: PayrollEntry[];
 }
@@ -587,6 +587,41 @@ const DEFAULT_TAX: TaxConfig = {
               <mat-icon>info</mat-icon>
               This payroll is already paid. Saving will also adjust the employees' year-to-date figures and the payroll expense transaction by the difference.
             </div>
+            <h3 class="section-title">Pay Period</h3>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Label</mat-label>
+                <input matInput [(ngModel)]="editPeriod.label" maxlength="30">
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Pay Cycle</mat-label>
+                <mat-select [(ngModel)]="editPeriod.payCycle">
+                  <mat-option value="Weekly">Weekly</mat-option>
+                  <mat-option value="Fortnightly">Fortnightly</mat-option>
+                  <mat-option value="Monthly">Monthly</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Start Date</mat-label>
+                <input matInput [matDatepicker]="editStartPicker" [(ngModel)]="editPeriod.startDate">
+                <mat-datepicker-toggle matIconSuffix [for]="editStartPicker"></mat-datepicker-toggle>
+                <mat-datepicker #editStartPicker></mat-datepicker>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>End Date</mat-label>
+                <input matInput [matDatepicker]="editEndPicker" [(ngModel)]="editPeriod.endDate">
+                <mat-datepicker-toggle matIconSuffix [for]="editEndPicker"></mat-datepicker-toggle>
+                <mat-datepicker #editEndPicker></mat-datepicker>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Pay Date</mat-label>
+                <input matInput [matDatepicker]="editPayDatePicker" [(ngModel)]="editPeriod.payDate">
+                <mat-datepicker-toggle matIconSuffix [for]="editPayDatePicker"></mat-datepicker-toggle>
+                <mat-datepicker #editPayDatePicker></mat-datepicker>
+              </mat-form-field>
+            </div>
+
+            <h3 class="section-title">Employee Pay</h3>
             <div class="worksheet-table-wrap">
               <table class="worksheet-table edit-table">
                 <thead>
@@ -767,6 +802,7 @@ const DEFAULT_TAX: TaxConfig = {
     .gold-btn:hover { background-color: #b99a45 !important; }
     .gold-btn mat-spinner { display: inline-block; margin-right: 6px; }
     .gold-btn mat-spinner ::ng-deep circle { stroke: white; }
+    mat-card-actions { gap: 0.75rem; flex-wrap: wrap; }
     .run-btn { font-size: 1rem; padding: 0.5rem 1.5rem; }
     .delete-btn { color: #c62828; }
 
@@ -910,6 +946,7 @@ export class PayrollModuleComponent implements OnInit {
   // Edit payroll (from the Remittance tab)
   editBatch: PayrollBatchDetail | null = null;
   editRows: PayrollEntry[] = [];
+  editPeriod = { label: '', payCycle: 'Monthly', startDate: null as Date | null, endDate: null as Date | null, payDate: null as Date | null };
   loadingEdit = false;
   savingEdit = false;
 
@@ -1159,6 +1196,13 @@ export class PayrollModuleComponent implements OnInit {
     this.http.get<PayrollBatchDetail>(`${environment.apiUrl}/payroll-batches/${this.remittance.batchId}`).subscribe({
       next: batch => {
         this.editBatch = batch;
+        this.editPeriod = {
+          label: batch.label,
+          payCycle: batch.payCycle,
+          startDate: new Date(batch.startDate),
+          endDate: new Date(batch.endDate),
+          payDate: batch.payDate ? new Date(batch.payDate) : null
+        };
         this.editRows = batch.entries.map(e => {
           const row = { ...e };
           EDIT_FIELDS.forEach(f => row[f] = this.round2(e[f]));
@@ -1222,12 +1266,29 @@ export class PayrollModuleComponent implements OnInit {
       })
       .filter(changes => Object.keys(changes).length > 1);
 
-    if (entries.length === 0) {
+    // Pay period details — again only what changed
+    const period = this.editPeriod;
+    const original = this.editBatch;
+    if (!period.label.trim() || !period.startDate || !period.endDate) {
+      this.snack.open('Label, start date and end date are required', 'Close', { duration: 3000 }); return;
+    }
+    if (period.endDate < period.startDate) {
+      this.snack.open('End date cannot be before start date', 'Close', { duration: 3000 }); return;
+    }
+    const sameDate = (a: Date | null, b?: string | null) => (a ? a.getTime() : null) === (b ? new Date(b).getTime() : null);
+    const periodChanges: { label?: string; payCycle?: string; startDate?: Date; endDate?: Date; payDate?: Date } = {};
+    if (period.label.trim() !== original.label) periodChanges.label = period.label.trim();
+    if (period.payCycle !== original.payCycle) periodChanges.payCycle = period.payCycle;
+    if (!sameDate(period.startDate, original.startDate)) periodChanges.startDate = period.startDate;
+    if (!sameDate(period.endDate, original.endDate)) periodChanges.endDate = period.endDate;
+    if (period.payDate && !sameDate(period.payDate, original.payDate)) periodChanges.payDate = period.payDate;
+
+    if (entries.length === 0 && Object.keys(periodChanges).length === 0) {
       this.snack.open('No changes to save', 'Close', { duration: 2500 }); return;
     }
 
     this.savingEdit = true;
-    this.http.put<{ updated: number; expenseUpdated: boolean }>(`${environment.apiUrl}/payroll-batches/${batchId}/entries`, { entries }).subscribe({
+    this.http.put<{ updated: number; expenseUpdated: boolean }>(`${environment.apiUrl}/payroll-batches/${batchId}`, { ...periodChanges, entries }).subscribe({
       next: result => {
         this.savingEdit = false;
         this.cancelPayrollEdit();
@@ -1237,7 +1298,7 @@ export class PayrollModuleComponent implements OnInit {
         if (this.processedBatch?.id === batchId) this.loadBatchDetail(batchId);
         this.snack.open(
           result.expenseUpdated
-            ? 'Payroll updated for ' + result.updated + ' employee(s)'
+            ? 'Payroll updated'
             : 'Payroll updated, but the payroll expense transaction was not found — please correct it in Transactions',
           'Close', { duration: result.expenseUpdated ? 3000 : 8000 });
       },
