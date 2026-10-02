@@ -49,6 +49,13 @@ interface PayrollEntry {
   totalStatutoryDeductions: number; totalDeductions: number; netPay: number;
 }
 
+// Figures that can be corrected from the Remittance tab's Edit button
+const EARNING_FIELDS = ['baseSalary', 'holidayPay', 'bonus'] as const;
+const DEDUCTION_FIELDS = ['employeeNis', 'employeeNht', 'employeeEducationTax', 'employeePaye', 'loanDeduction'] as const;
+const EMPLOYER_FIELDS = ['employerNis', 'employerNht', 'employerEducationTax', 'employerHeart'] as const;
+const EDIT_FIELDS = [...EARNING_FIELDS, ...DEDUCTION_FIELDS, ...EMPLOYER_FIELDS] as const;
+type EditField = typeof EDIT_FIELDS[number];
+
 interface PayrollBatchDetail {
   id: number; label: string; payCycle: string;
   startDate: string; endDate: string; status: PayrollBatchStatusValue;
@@ -562,6 +569,76 @@ const DEFAULT_TAX: TaxConfig = {
             <button mat-raised-button class="gold-btn" (click)="printRemittance()">
               <mat-icon>print</mat-icon> Print Report
             </button>
+            <button mat-raised-button class="gold-btn" (click)="openPayrollEdit()" [disabled]="loadingEdit || !!editBatch">
+              <mat-spinner *ngIf="loadingEdit" diameter="18"></mat-spinner>
+              <mat-icon *ngIf="!loadingEdit">edit</mat-icon> Edit
+            </button>
+          </mat-card-actions>
+        </mat-card>
+
+        <!-- Edit payroll (available even after the batch is paid) -->
+        <mat-card *ngIf="editBatch" class="worksheet-card">
+          <mat-card-header>
+            <mat-card-title>Edit Payroll — {{ editBatch.label }}</mat-card-title>
+            <mat-card-subtitle>Change only the figures that need correcting. Gross, total deductions and net pay update as you type.</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="remittance-note" *ngIf="statusCode(editBatch.status) === 2">
+              <mat-icon>info</mat-icon>
+              This payroll is already paid. Saving will also adjust the employees' year-to-date figures and the payroll expense transaction by the difference.
+            </div>
+            <div class="worksheet-table-wrap">
+              <table class="worksheet-table edit-table">
+                <thead>
+                  <tr>
+                    <th>Employee</th>
+                    <th class="num-col">Base Salary</th>
+                    <th class="num-col">Holiday Pay</th>
+                    <th class="num-col">Bonus</th>
+                    <th class="num-col">Gross Pay</th>
+                    <th class="num-col">NIS</th>
+                    <th class="num-col">NHT</th>
+                    <th class="num-col">Ed. Tax</th>
+                    <th class="num-col">PAYE</th>
+                    <th class="num-col">Loan</th>
+                    <th class="num-col">Total Deductions</th>
+                    <th class="num-col">Net Pay</th>
+                    <th class="num-col">Employer NIS</th>
+                    <th class="num-col">Employer NHT</th>
+                    <th class="num-col">Employer Ed. Tax</th>
+                    <th class="num-col">HEART</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of editRows">
+                    <td><strong>{{ row.employee.name }}</strong></td>
+                    <td class="num-col"><input type="number" class="ws-input" [class.ws-changed]="isEditChanged(row, 'baseSalary')" [(ngModel)]="row.baseSalary" (ngModelChange)="recalcEditRow(row)" min="0" step="0.01"></td>
+                    <td class="num-col"><input type="number" class="ws-input" [class.ws-changed]="isEditChanged(row, 'holidayPay')" [(ngModel)]="row.holidayPay" (ngModelChange)="recalcEditRow(row)" min="0" step="0.01"></td>
+                    <td class="num-col"><input type="number" class="ws-input" [class.ws-changed]="isEditChanged(row, 'bonus')" [(ngModel)]="row.bonus" (ngModelChange)="recalcEditRow(row)" min="0" step="0.01"></td>
+                    <td class="num-col">{{ row.grossPay | currency:'JMD':'symbol':'1.2-2' }}</td>
+                    <td class="num-col"><input type="number" class="ws-input" [class.ws-changed]="isEditChanged(row, 'employeeNis')" [(ngModel)]="row.employeeNis" (ngModelChange)="recalcEditRow(row)" min="0" step="0.01"></td>
+                    <td class="num-col"><input type="number" class="ws-input" [class.ws-changed]="isEditChanged(row, 'employeeNht')" [(ngModel)]="row.employeeNht" (ngModelChange)="recalcEditRow(row)" min="0" step="0.01"></td>
+                    <td class="num-col"><input type="number" class="ws-input" [class.ws-changed]="isEditChanged(row, 'employeeEducationTax')" [(ngModel)]="row.employeeEducationTax" (ngModelChange)="recalcEditRow(row)" min="0" step="0.01"></td>
+                    <td class="num-col"><input type="number" class="ws-input" [class.ws-changed]="isEditChanged(row, 'employeePaye')" [(ngModel)]="row.employeePaye" (ngModelChange)="recalcEditRow(row)" min="0" step="0.01"></td>
+                    <td class="num-col"><input type="number" class="ws-input" [class.ws-changed]="isEditChanged(row, 'loanDeduction')" [(ngModel)]="row.loanDeduction" (ngModelChange)="recalcEditRow(row)" min="0" step="0.01"></td>
+                    <td class="num-col">{{ row.totalDeductions | currency:'JMD':'symbol':'1.2-2' }}</td>
+                    <td class="num-col est-net">{{ row.netPay | currency:'JMD':'symbol':'1.2-2' }}</td>
+                    <td class="num-col"><input type="number" class="ws-input" [class.ws-changed]="isEditChanged(row, 'employerNis')" [(ngModel)]="row.employerNis" min="0" step="0.01"></td>
+                    <td class="num-col"><input type="number" class="ws-input" [class.ws-changed]="isEditChanged(row, 'employerNht')" [(ngModel)]="row.employerNht" min="0" step="0.01"></td>
+                    <td class="num-col"><input type="number" class="ws-input" [class.ws-changed]="isEditChanged(row, 'employerEducationTax')" [(ngModel)]="row.employerEducationTax" min="0" step="0.01"></td>
+                    <td class="num-col"><input type="number" class="ws-input" [class.ws-changed]="isEditChanged(row, 'employerHeart')" [(ngModel)]="row.employerHeart" min="0" step="0.01"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-raised-button class="gold-btn" (click)="savePayrollEdit()" [disabled]="savingEdit">
+              <mat-spinner *ngIf="savingEdit" diameter="18"></mat-spinner>
+              <mat-icon *ngIf="!savingEdit">save</mat-icon>
+              {{ savingEdit ? 'Saving…' : 'Save Changes' }}
+            </button>
+            <button mat-button (click)="cancelPayrollEdit()" [disabled]="savingEdit">Cancel</button>
           </mat-card-actions>
         </mat-card>
       </ng-container>
@@ -723,6 +800,8 @@ const DEFAULT_TAX: TaxConfig = {
     .ws-check-col { width: 40px; text-align: center !important; }
     .ws-excluded td:not(.ws-check-col) { opacity: 0.4; }
     .ws-excluded:hover td { background: transparent !important; }
+    .edit-table th, .edit-table td { white-space: nowrap; }
+    .ws-input.ws-changed { border-color: #C7AE6A; background: #fffbea; }
 
     /* ── Results table ── */
     .results-table ::ng-deep .mat-mdc-header-cell { background: #f9f7f1; }
@@ -827,6 +906,12 @@ export class PayrollModuleComponent implements OnInit {
 
   // Remittance
   remittance: RemittanceReport | null = null;
+
+  // Edit payroll (from the Remittance tab)
+  editBatch: PayrollBatchDetail | null = null;
+  editRows: PayrollEntry[] = [];
+  loadingEdit = false;
+  savingEdit = false;
 
   // Tax settings – percentages (multiply by 100 for display)
   taxConfig: TaxConfig | null = null;
@@ -1059,10 +1144,113 @@ export class PayrollModuleComponent implements OnInit {
   // ── Remittance ──────────────────────────────────────────────────────────────
 
   loadRemittance(id: number) {
+    if (this.editBatch?.id !== id) this.cancelPayrollEdit();
     this.http.get<RemittanceReport>(`${environment.apiUrl}/payroll-batches/${id}/remittance`).subscribe({
       next: r => { this.remittance = r; this.cdr.detectChanges(); setTimeout(() => { this.activeTab = 2; }); },
       error: () => this.snack.open('Failed to load remittance report', 'Close', { duration: 3000 })
     });
+  }
+
+  // ── Edit payroll ────────────────────────────────────────────────────────────
+
+  openPayrollEdit() {
+    if (!this.remittance) return;
+    this.loadingEdit = true;
+    this.http.get<PayrollBatchDetail>(`${environment.apiUrl}/payroll-batches/${this.remittance.batchId}`).subscribe({
+      next: batch => {
+        this.editBatch = batch;
+        this.editRows = batch.entries.map(e => {
+          const row = { ...e };
+          EDIT_FIELDS.forEach(f => row[f] = this.round2(e[f]));
+          return row;
+        });
+        this.loadingEdit = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadingEdit = false;
+        this.cdr.detectChanges();
+        this.snack.open('Failed to load payroll for editing', 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  cancelPayrollEdit() { this.editBatch = null; this.editRows = []; }
+
+  isEditChanged(row: PayrollEntry, field: EditField): boolean {
+    const original = this.editBatch?.entries.find(e => e.id === row.id);
+    return !!original && this.round2(row[field]) !== this.round2(original[field]);
+  }
+
+  // Mirrors the server: only the totals that depend on a changed figure move
+  recalcEditRow(row: PayrollEntry) {
+    const original = this.editBatch?.entries.find(e => e.id === row.id);
+    if (!original) return;
+    const earningsChanged = EARNING_FIELDS.some(f => this.isEditChanged(row, f));
+    const deductionsChanged = DEDUCTION_FIELDS.some(f => this.isEditChanged(row, f));
+
+    row.grossPay = earningsChanged
+      ? this.round2(this.round2(row.baseSalary) + this.round2(row.holidayPay) + this.round2(row.bonus))
+      : original.grossPay;
+    if (deductionsChanged) {
+      row.totalStatutoryDeductions = this.round2(this.round2(row.employeeNis) + this.round2(row.employeeNht)
+        + this.round2(row.employeeEducationTax) + this.round2(row.employeePaye));
+      row.totalDeductions = this.round2(row.totalStatutoryDeductions + this.round2(row.loanDeduction));
+    } else {
+      row.totalStatutoryDeductions = original.totalStatutoryDeductions;
+      row.totalDeductions = original.totalDeductions;
+    }
+    row.netPay = earningsChanged || deductionsChanged
+      ? Math.max(0, this.round2(row.grossPay - row.totalDeductions))
+      : original.netPay;
+  }
+
+  savePayrollEdit() {
+    if (!this.editBatch) return;
+    const batchId = this.editBatch.id;
+
+    if (this.editRows.some(row => EDIT_FIELDS.some(f => this.round2(row[f]) < 0))) {
+      this.snack.open('Payroll amounts cannot be negative', 'Close', { duration: 3000 }); return;
+    }
+
+    // Send only the figures that were actually changed
+    const entries = this.editRows
+      .map(row => {
+        const changes: { id: number } & Partial<Record<EditField, number>> = { id: row.id };
+        EDIT_FIELDS.filter(f => this.isEditChanged(row, f)).forEach(f => changes[f] = this.round2(row[f]));
+        return changes;
+      })
+      .filter(changes => Object.keys(changes).length > 1);
+
+    if (entries.length === 0) {
+      this.snack.open('No changes to save', 'Close', { duration: 2500 }); return;
+    }
+
+    this.savingEdit = true;
+    this.http.put<{ updated: number; expenseUpdated: boolean }>(`${environment.apiUrl}/payroll-batches/${batchId}/entries`, { entries }).subscribe({
+      next: result => {
+        this.savingEdit = false;
+        this.cancelPayrollEdit();
+        this.cdr.detectChanges();
+        this.loadRemittance(batchId);
+        this.loadBatches();
+        if (this.processedBatch?.id === batchId) this.loadBatchDetail(batchId);
+        this.snack.open(
+          result.expenseUpdated
+            ? 'Payroll updated for ' + result.updated + ' employee(s)'
+            : 'Payroll updated, but the payroll expense transaction was not found — please correct it in Transactions',
+          'Close', { duration: result.expenseUpdated ? 3000 : 8000 });
+      },
+      error: (e) => {
+        this.savingEdit = false;
+        this.cdr.detectChanges();
+        this.snack.open(e.error?.message || 'Failed to save payroll changes', 'Close', { duration: 4000 });
+      }
+    });
+  }
+
+  private round2(value: number | null | undefined): number {
+    return Math.round((Number(value) || 0) * 100 + Number.EPSILON) / 100;
   }
 
   printRemittance() {
