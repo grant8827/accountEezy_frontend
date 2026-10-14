@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TransactionsService } from '../../core/services/transactions.service';
 import {
@@ -31,6 +31,8 @@ export class TransactionsComponent implements OnInit {
   readonly transactions = signal<TransactionItem[]>([]);
   readonly frequencyFilter = signal<TransactionFrequency | 0>(0);
   readonly monthFilter = signal<number>(0);
+  readonly searchTerm = signal('');
+  readonly typeFilter = signal<0 | 1 | 2>(0);
   readonly showModal = signal(false);
 
   readonly MONTH_NAMES = [
@@ -49,8 +51,35 @@ export class TransactionsComponent implements OnInit {
     let all = this.transactions();
     if (f !== 0) all = all.filter(t => t.frequency === f);
     if (m !== 0) all = all.filter(t => new Date(t.date).getMonth() + 1 === m);
+    const tf = this.typeFilter();
+    if (tf !== 0) all = all.filter(t => t.type === tf);
+    const q = this.searchTerm().trim().toLowerCase();
+    if (q) {
+      all = all.filter(t =>
+        [t.category, t.description, String(t.amount), t.date]
+          .some(v => (v ?? '').toString().toLowerCase().includes(q)));
+    }
     return all;
   });
+
+  readonly PAGE_SIZE = 10;
+  readonly page = signal(1);
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.filteredTransactions().length / this.PAGE_SIZE)));
+  readonly pagedTransactions = computed(() => {
+    const p = Math.min(this.page(), this.totalPages());
+    return this.filteredTransactions().slice((p - 1) * this.PAGE_SIZE, p * this.PAGE_SIZE);
+  });
+
+  constructor() {
+    effect(() => {
+      this.frequencyFilter(); this.monthFilter(); this.typeFilter(); this.searchTerm();
+      this.page.set(1);
+    });
+  }
+
+  setPage(p: number) {
+    this.page.set(Math.min(Math.max(1, p), this.totalPages()));
+  }
 
   readonly totalIncome = computed(() =>
     this.transactions().filter(t => t.type === 1).reduce((s, t) => s + t.amount, 0)
@@ -183,6 +212,13 @@ export class TransactionsComponent implements OnInit {
 
   setMonthFilter(m: number) {
     this.monthFilter.set(m);
+  }
+
+  showAll() {
+    this.typeFilter.set(0);
+    this.frequencyFilter.set(0);
+    this.monthFilter.set(0);
+    this.searchTerm.set('');
   }
 
   printLedger() {

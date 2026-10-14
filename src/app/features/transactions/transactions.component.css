@@ -407,6 +407,20 @@
 }
 .filter-month-select:focus { border-color: var(--color-primary); }
 
+.filter-search-wrap { position: relative; display: inline-flex; align-items: center; }
+.filter-search-icon { position: absolute; left: 12px; font-size: 0.8rem; pointer-events: none; }
+.filter-search {
+  padding: 6px 14px 6px 32px;
+  font-size: 0.8rem;
+  border: 1.5px solid var(--border-color);
+  border-radius: 20px;
+  background: var(--neutral-50);
+  font-family: inherit;
+  outline: none;
+  min-width: 200px;
+}
+.filter-search:focus { border-color: var(--color-primary); }
+
 @media print {
   .page-header, .summary-row, .modal-backdrop, .filter-bar, .btn-add-trigger, .btn-export, .btn-print, .tx-actions { display: none !important; }
   .tx-shell { background: #fff; }
@@ -507,6 +521,10 @@
   flex-shrink: 0;
 }
 .btn-delete:hover { background: #fecaca; }
+
+.pager { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 16px; }
+.pager-info { font-size: 0.85rem; color: var(--text-muted); }
+.pager .filter-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ── Empty State ─────────────────────────────────────────── */
 .empty-state {

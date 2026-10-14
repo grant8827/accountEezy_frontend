@@ -164,17 +164,23 @@
 
       <!-- Frequency Filter Bar -->
       <div class="filter-bar">
-        <button class="filter-btn" [class.active]="frequencyFilter() === 0" (click)="setFrequencyFilter(0)">All</button>
-        <button class="filter-btn" [class.active]="frequencyFilter() === 1" (click)="setFrequencyFilter(1)">Daily</button>
-        <button class="filter-btn" [class.active]="frequencyFilter() === 2" (click)="setFrequencyFilter(2)">Weekly</button>
-        <button class="filter-btn" [class.active]="frequencyFilter() === 3" (click)="setFrequencyFilter(3)">Monthly</button>
-        <button class="filter-btn" [class.active]="frequencyFilter() === 4" (click)="setFrequencyFilter(4)">Yearly</button>
+        <button class="filter-btn" [class.active]="typeFilter() === 0" (click)="showAll()">All</button>
+        <button class="filter-btn" [class.active]="typeFilter() === 1" (click)="typeFilter.set(1)">Income</button>
+        <button class="filter-btn" [class.active]="typeFilter() === 2" (click)="typeFilter.set(2)">Expense</button>
+        <button class="filter-btn" [class.active]="frequencyFilter() === 2" (click)="setFrequencyFilter(frequencyFilter() === 2 ? 0 : 2)">Weekly</button>
+        <button class="filter-btn" [class.active]="frequencyFilter() === 3" (click)="setFrequencyFilter(frequencyFilter() === 3 ? 0 : 3)">Monthly</button>
+        <button class="filter-btn" [class.active]="frequencyFilter() === 4" (click)="setFrequencyFilter(frequencyFilter() === 4 ? 0 : 4)">Yearly</button>
         <select class="filter-month-select" [value]="monthFilter()" (change)="setMonthFilter(+$any($event.target).value)" title="Filter by month">
           <option value="0">All Months</option>
           @for (name of MONTH_NAMES; track $index) {
             <option [value]="$index + 1">{{ name }}</option>
           }
         </select>
+        <div class="filter-search-wrap">
+          <span class="filter-search-icon">&#128269;</span>
+          <input class="filter-search" type="search" placeholder="Search transactions…"
+                 [value]="searchTerm()" (input)="searchTerm.set($any($event.target).value)" />
+        </div>
       </div>
 
       @if (loadError()) {
@@ -194,7 +200,7 @@
         </div>
       }
 
-      @for (tx of filteredTransactions(); track tx.id) {
+      @for (tx of pagedTransactions(); track tx.id) {
         <div class="tx-row" [class.income]="tx.type === 1" [class.expense]="tx.type === 2">
 
           <div class="tx-type-badge" [class.income-badge]="tx.type === 1" [class.expense-badge]="tx.type === 2">
@@ -232,6 +238,14 @@
             <button class="btn-delete" (click)="remove(tx.id)" title="Delete">&#215;</button>
           </div>
 
+        </div>
+      }
+
+      @if (totalPages() > 1) {
+        <div class="pager">
+          <button class="filter-btn" [disabled]="page() === 1" (click)="setPage(page() - 1)">&#8249; Prev</button>
+          <span class="pager-info">Page {{ page() }} of {{ totalPages() }}</span>
+          <button class="filter-btn" [disabled]="page() >= totalPages()" (click)="setPage(page() + 1)">Next &#8250;</button>
         </div>
       }
     </div>

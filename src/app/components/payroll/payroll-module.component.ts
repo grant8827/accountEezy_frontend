@@ -367,6 +367,13 @@ const DEFAULT_TAX: TaxConfig = {
               <p>No active employees found. Add employees first.</p>
             </div>
             <div class="worksheet-table-wrap" *ngIf="worksheetEntries.length > 0">
+              <div *ngIf="baseEditTarget" style="position:fixed; inset:0; background:rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; z-index:2000;">
+                <div style="background:#fff; padding:24px; border-radius:8px; max-width:380px; text-align:center;">
+                  <p style="margin:0 0 16px;">Are you sure you want to edit the base salary for <strong>{{ baseEditTarget.name }}</strong>?</p>
+                  <button mat-stroked-button (click)="baseEditTarget = null">No</button>
+                  <button mat-raised-button color="primary" style="margin-left:8px;" (click)="confirmBaseEdit()">Yes</button>
+                </div>
+              </div>
               <table class="worksheet-table">
                 <thead>
                   <tr>
@@ -402,7 +409,13 @@ const DEFAULT_TAX: TaxConfig = {
                         {{ (e.hours || 0) * e.hourlyRate | currency:'JMD':'symbol':'1.2-2' }}
                         <span style="display:block; font-size:10px; color:#888;">{{ e.hours || 0 }}h x J&#36;{{ e.hourlyRate.toFixed(2) }}/hr</span>
                       </ng-container>
-                      <ng-template #showBase>{{ e.baseSalary | currency:'JMD':'symbol':'1.2-2' }}</ng-template>
+                      <ng-template #showBase>
+                        <input *ngIf="unlockedBase.has(e.employeeId); else lockedBase" type="number" class="ws-input"
+                               [(ngModel)]="e.baseSalary" min="0" step="0.01" (ngModelChange)="recalcEstimate(e)">
+                        <ng-template #lockedBase>
+                          <span style="cursor:pointer;" title="Click to edit" (click)="baseEditTarget = e">{{ e.baseSalary | currency:'JMD':'symbol':'1.2-2' }}</span>
+                        </ng-template>
+                      </ng-template>
                     </td>
                     <td class="num-col">
                       <input type="number" class="ws-input" [(ngModel)]="e.holidayPay" min="0"
@@ -937,6 +950,8 @@ export class PayrollModuleComponent implements OnInit {
   activeBatch: PayrollBatchSummary | null = null;
   loadingEmployees = false;
   worksheetEntries: BatchEntryInput[] = [];
+  baseEditTarget: BatchEntryInput | null = null;
+  unlockedBase = new Set<number>();
   processing = false;
   processedBatch: PayrollBatchDetail | null = null;
 
@@ -1040,6 +1055,7 @@ export class PayrollModuleComponent implements OnInit {
     }).subscribe({
       next: ({ detail, employees }) => {
         const active = employees.filter(e => e.status !== 'inactive');
+        this.unlockedBase.clear();
         this.worksheetEntries = active.map(emp => {
           const existing = detail.entries.find(e => e.employeeId === emp.id);
           const isHourly = (emp.employmentType || '').toLowerCase() === 'hourly';
@@ -1169,6 +1185,11 @@ export class PayrollModuleComponent implements OnInit {
   }
 
   recalcEstimate(_e: BatchEntryInput) { /* triggers change detection */ }
+
+  confirmBaseEdit() {
+    if (this.baseEditTarget) this.unlockedBase.add(this.baseEditTarget.employeeId);
+    this.baseEditTarget = null;
+  }
 
   get includedCount(): number { return this.worksheetEntries.filter(e => e.included).length; }
   get allIncluded(): boolean { return this.worksheetEntries.length > 0 && this.worksheetEntries.every(e => e.included); }
